@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<Landmarks_Dictionary Name="Assembler_Landmarks" Version="1.0">
+	<Group Name="Right Hip">
+		<Landmark>RASIS</Landmark>
+		<Landmark>LASIS</Landmark>
+		<Landmark>RPSIS</Landmark>
+		<Landmark>LPSIS</Landmark>
+		<Landmark>RHC</Landmark>
+		<Landmark>RME</Landmark>
+		<Landmark>RLE</Landmark>
+    </Group>
+	<Group Name="Left Hip">
+		<Landmark>RASIS</Landmark>
+		<Landmark>LASIS</Landmark>
+		<Landmark>RPSIS</Landmark>
+		<Landmark>LPSIS</Landmark>
+		<Landmark>LHC</Landmark>
+		<Landmark>LME</Landmark>
+		<Landmark>LLE</Landmark>
+    </Group>
+	<Group Name="Right Knee">
+		<Landmark>RHC</Landmark>
+		<Landmark>RME</Landmark>
+		<Landmark>RLE</Landmark>
+		<Landmark>RMC</Landmark>
+		<Landmark>RLC</Landmark>
+		<Landmark>RMM</Landmark>
+		<Landmark>RLM</Landmark>
+    </Group>
+	<Group Name="Left Knee">
+		<Landmark>LHC</Landmark>
+		<Landmark>LME</Landmark>
+		<Landmark>LLE</Landmark>
+		<Landmark>LMC</Landmark>
+		<Landmark>LLC</Landmark>
+		<Landmark>LMM</Landmark>
+		<Landmark>LLM</Landmark>
+    </Group>
+	<Group Name="Right Ankle">
+		<Landmark>RMM</Landmark>
+		<Landmark>RLM</Landmark>
+		<Landmark>RPA_II</Landmark>
+		<Landmark>RPA_CA</Landmark>
+    </Group>
+	<Group Name="Left Ankle">
+		<Landmark>LMM</Landmark>
+		<Landmark>LLM</Landmark>
+		<Landmark>LPA_II</Landmark>
+		<Landmark>LPA_CA</Landmark>
+    </Group>
+</Landmarks_Dictionary>
+
+
+
+
+
+
+
+
+
+

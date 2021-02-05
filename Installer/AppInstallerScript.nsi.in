@@ -1,0 +1,95 @@
+;==========================================================================
+; Program:   ASB
+; Module:    AppInstallerScript.nsi.in
+; Language:  NSIS
+; Date:      $Date: 2021-01-01 12:00:00 $
+; Version:   $Revision: 1.0.0.0 $
+; Authors:   Nicola Vanella
+;==========================================================================
+; Copyright (c) BIC-IOR 2021 (https://github.com/IOR-BIC)
+;
+; This software is distributed WITHOUT ANY WARRANTY; without even
+; the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+; PURPOSE. See the above copyright notice for more information.
+;==========================================================================
+
+!define PRODUCT_NAME "Assembler"
+!define PRODUCT_PUBLISHER "BIC Software"
+!define PRODUCT_WEB_SITE "https://github.com/IOR-BIC"
+
+!define PRODUCT_VERSION "@APP_VERSION@"
+!define PRODUCT_EXE_NAME "${PRODUCT_NAME}.exe"
+;!define PRODUCT_MANUAL_DIR "@MANUAL_HTML_DIR@"
+
+!define PRODUCT_EXECUTABLE_OUTPUT_PATH_WIN "@APP_EXECUTABLE_OUTPUT_PATH@"
+!define PRODUCT_INSTALLER_DIR_WIN "@APP_INSTALLER_DIR@"
+
+!include InstallerCommon.nsh
+
+!macro EditLicencePage
+
+	; Change the Defult License Agreement to Look like a Readme Dialog
+	;!define MUI_TEXT_LICENSE_TITLE "APP TITLE" 
+	;!define MUI_TEXT_LICENSE_SUBTITLE "APP SUBTITLE $(^NameDA)."
+	;!define MUI_INNERTEXT_LICENSE_TOP "APP INNERTEXT"
+	;!define MUI_INNERTEXT_LICENSE_BOTTOM "APP INNERTEXT LICENSE BOTTOM"
+	;!define MUI_LICENSEPAGE_TEXT_BOTTOM "APP TEXT BOTTOM"	
+	
+	!define MUI_LICENSEPAGE_CHECKBOX
+!macroend
+
+!insertmacro Init_MUI 
+
+!macro AddExtraFiles
+	;Add here extra files
+	CreateDirectory "$INSTDIR\data"
+	CreateDirectory "$INSTDIR\data\external"
+	CreateDirectory "$INSTDIR\data\msf"
+	
+	CreateDirectory "$INSTDIR\Layout"
+	SetOutPath "$INSTDIR\Layout"
+	File "@APP_INSTALLER_DIR_WIN@\layout.mly"
+	
+	SetOutPath "$INSTDIR\bin"
+!macroend
+
+!insertmacro CreateInstaller
+
+Section -Post 
+	!insertmacro WriteRegKeys 	
+	
+	${EnumUsersReg} EraseFirstRun temp.key
+	;Add here extra RegKey
+	
+	;Associate *.alb files with App
+	
+	WriteRegStr HKCR ".msf" "" "MSF File"
+	;WriteRegStr HKCR ".alb" "" "App File"
+	;WriteRegStr HKCR "${PRODUCT_NAME}" "" "App File"
+	;WriteRegStr HKCR "${PRODUCT_NAME}\shell" "" "open"
+	WriteRegStr HKCR "App File\DefaultIcon" "" "$INSTDIR\Config\App_File.ico"
+
+  ;WriteRegStr HKCR "App File\shell\open\command" "" '"$INSTDIR\bin\${PRODUCT_EXE_NAME}" "%1"'
+	
+SectionEnd
+
+Function "EraseFirstRun"
+	Pop $0
+	ReadRegStr $0 HKU "$0\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" "AppData"
+	${If} $0 != ""
+	Delete "$0\${PRODUCT_NAME}\FirstRun"  
+	${EndIf}
+	
+FunctionEnd
+
+!macro RemoveExtraFiles
+
+	;Remove App File Association	
+	;DeleteRegKey HKCR "App File"
+	;DeleteRegKey HKCR ".alb"
+	;DeleteRegKey HKCR "${PRODUCT_NAME}"
+	
+!macroend
+
+!insertmacro CreateUninstaller 
+

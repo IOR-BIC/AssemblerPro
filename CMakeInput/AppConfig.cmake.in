@@ -1,0 +1,24 @@
+# Tell the user project where to find headers and libraries
+SET(APP_INCLUDE_DIRS
+  "@ASB_SOURCE_DIR@/Common"
+  "@ASB_SOURCE_DIR@/Operations"
+  "@ASB_SOURCE_DIR@/Views"
+  "@ASB_SOURCE_DIR@/VME"
+  "@ASB_SOURCE_DIR@/vtkAPP"
+  "@ASB_BINARY_DIR@"
+  "@ASB_BINARY_DIR@/vtkAPP"
+)
+
+SET(APP_BUILD_SETTINGS_FILE
+  "@ASB_BINARY_DIR@/APPBuildSettings.cmake"
+)
+
+INCLUDE(
+  "@ASB_BINARY_DIR@/APPLibraryDepends.cmake"
+)
+
+SET(APP_LIBRARY_DIRS "@ASB_BINARY_DIR@/bin")
+
+SET(APP_USE_FILE
+  "@ASB_BINARY_DIR@/APPUse.cmake"
+)
