@@ -214,10 +214,4 @@ IF (WIN32)
     CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/ParabuildScripts/tagCVS.bat.in ${PROJECT_SOURCE_DIR}/ParabuildScripts/tagCVS.bat @ONLY)
   ENDIF (EXISTS "${PROJECT_SOURCE_DIR}/ParabuildScripts/")
 
-  # Version File Info
-  DATE2(date) #(dd-mm-yyyy)
-  STRING (REPLACE "-" "/" APP_DATE ${date} )
-  message(${APP_VERSION} " " ${APP_DATE})
-  CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/Version.txt.in ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.txt @ONLY)
-
 ENDIF (WIN32)

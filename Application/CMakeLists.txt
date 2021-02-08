@@ -16,7 +16,7 @@
 PROJECT (Assembler)
 
 SET(PROJECT_SRCS 
-Assembler.cpp 	Assembler.h
+Assembler.cpp 		Assembler.h
 appLogic.cpp 		appLogic.h
 appViewManager.cpp 	appViewManager.h
 appWizardSample.cpp	appWizardSample.h
@@ -50,4 +50,10 @@ ENDIF (WIN32)
 SET(PROJECT_LIBS albaOperations albaGui albaViews albaVME albaInteraction albaService albaVME albaVisualPipes albaOperations vtkALBA appOperations appInteraction appViews appCommon appGui vtkAPP)# GPUAPI))
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${PROJECT_LIBS})
-
+  
+  # Generate Version File Info  
+  INCLUDE (${ASB_SOURCE_DIR}/CMakeModules/DateTimeMacro.cmake)
+  DATE2(date) #(dd-mm-yyyy)
+  STRING (REPLACE "-" "/" APP_DATE ${date} )
+  message(${PROJECT_NAME} " " ${APP_VERSION} " " ${APP_DATE})
+  CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/Version.txt.in ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.txt @ONLY)
