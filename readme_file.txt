@@ -1,4 +1,4 @@
-Assembler - ALBA Application
+AssemblerPro - ALBA Application
 
 Copyright (c) BIC-IOR 2021 (https://github.com/IOR-BIC)
 

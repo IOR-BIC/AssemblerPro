@@ -1,5 +1,5 @@
 #=========================================================================
-# Program:   Assembler
+# Program:   AssemblerPro
 # Module:    CMakeLists.txt
 # Language:  CMake
 # Date:      $Date: 2021-01-01 12:00:00 $
@@ -21,7 +21,7 @@ if(COMMAND cmake_policy)
 	cmake_policy(SET CMP0048 NEW)
 endif(COMMAND cmake_policy)
 
-PROJECT (Assembler)
+PROJECT (ASB)
 
 #-----------------------------------------------------------------------------
 # This enables support for Visual Studio: Edit & Continue, OpenMP, and parallel compilation

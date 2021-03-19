@@ -1,5 +1,5 @@
 /*=========================================================================
-Program:   Assembler
+Program:   AssemblerPro
 Module:    appLogic.cpp
 Language:  C++
 Date:      $Date: 2021-01-01 12:00:00 $

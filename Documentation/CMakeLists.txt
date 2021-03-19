@@ -1,5 +1,5 @@
 #=========================================================================
-# Program:   Assembler
+# Program:   AssemblerPro
 # Module:    CMakeLists.txt
 # Language:  CMake
 # Date:      $Date: 2021-01-01 12:00:00 $

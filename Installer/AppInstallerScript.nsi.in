@@ -13,7 +13,7 @@
 ; PURPOSE. See the above copyright notice for more information.
 ;==========================================================================
 
-!define PRODUCT_NAME "Assembler"
+!define PRODUCT_NAME "AssemblerPro"
 !define PRODUCT_PUBLISHER "BIC Software"
 !define PRODUCT_WEB_SITE "https://github.com/IOR-BIC"
 

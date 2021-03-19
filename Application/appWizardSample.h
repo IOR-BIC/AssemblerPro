@@ -1,5 +1,5 @@
 /*=========================================================================
-Program:   Assembler
+Program:   AssemblerPro
 Module:    appWizardSample.h
 Language:  C++
 Date:      $Date: 2021-01-01 12:00:00 $

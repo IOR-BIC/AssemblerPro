@@ -1,6 +1,6 @@
 /*=========================================================================
-Program:   Assembler
-Module:    Assembler.cpp
+Program:   AssemblerPro
+Module:    AssemblerPro.cpp
 Language:  C++
 Date:      $Date: 2021-01-01 12:00:00 $
 Version:   $Revision: 1.0.0.0 $
@@ -22,7 +22,7 @@ PURPOSE. See the above copyright notice for more information.
 // This force to include Window, wxWidgets and VTK exactly in this order.
 //----------------------------------------------------------------------------
 
-#include "Assembler.h"
+#include "AssemblerPro.h"
 #include "appDecl.h"
 
 #include "appOpEmpty.h"
@@ -53,10 +53,10 @@ PURPOSE. See the above copyright notice for more information.
 // Create the Application
 //--------------------------------------------------------------------------------
 
-IMPLEMENT_APP(Assembler)
+IMPLEMENT_APP(AssemblerPro)
 
 //--------------------------------------------------------------------------------
-bool Assembler::OnInit()
+bool AssemblerPro::OnInit()
 {
 	InitializeIcons();
 	//InitializeReg();
@@ -73,7 +73,7 @@ bool Assembler::OnInit()
 	// Create Logic Manager
 	m_Logic = new appLogic();
 	albaServiceLocator::SetLogicManager(m_Logic);
-	m_Logic->GetTopWin()->SetTitle("Assembler");
+	m_Logic->GetTopWin()->SetTitle("AssemblerPro");
 
 #ifdef USE_WIZARD
 	m_Logic->PlugWizardManager(true);
@@ -150,7 +150,7 @@ bool Assembler::OnInit()
 }
 
 //--------------------------------------------------------------------------------
-int Assembler::OnExit()
+int AssemblerPro::OnExit()
 {
   cppDEL(m_Logic);
 
@@ -160,7 +160,7 @@ int Assembler::OnExit()
 }
 
 //--------------------------------------------------------------------------------
-void Assembler::InitializeIcons()
+void AssemblerPro::InitializeIcons()
 {
 	albaPictureFactory::GetPictureFactory()->Initialize();
 
@@ -199,7 +199,7 @@ void Assembler::InitializeIcons()
 }
 
 //--------------------------------------------------------------------------------
-// void Assembler::InitializeReg()
+// void AssemblerPro::InitializeReg()
 // {
 //   wxConfig *config = new wxConfig(wxEmptyString);
 // 
@@ -222,13 +222,13 @@ void Assembler::InitializeIcons()
 // }
 
 //--------------------------------------------------------------------------------
-void Assembler::OnFatalException()
+void AssemblerPro::OnFatalException()
 {
 	m_Logic->HandleException();
 }
 
 //--------------------------------------------------------------------------------
-int Assembler::FilterEvent(wxEvent& event)
+int AssemblerPro::FilterEvent(wxEvent& event)
 {
 	int keyCode = ((wxKeyEvent&)event).GetKeyCode();
 	bool controlDown = ((wxKeyEvent&)event).ControlDown();

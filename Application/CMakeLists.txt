@@ -1,5 +1,5 @@
 #==========================================================================
-# Program:   Assembler
+# Program:   AssemblerPro
 # Module:    CMakeLists.txt
 # Language:  CMake
 # Date:      $Date: 2021-01-01 12:00:00 $
@@ -13,10 +13,10 @@
 # PURPOSE. See the above copyright notice for more information.
 #==========================================================================
 
-PROJECT (Assembler)
+PROJECT (AssemblerPro)
 
 SET(PROJECT_SRCS 
-Assembler.cpp 		Assembler.h
+AssemblerPro.cpp 		AssemblerPro.h
 appLogic.cpp 		appLogic.h
 appViewManager.cpp 	appViewManager.h
 appWizardSample.cpp	appWizardSample.h

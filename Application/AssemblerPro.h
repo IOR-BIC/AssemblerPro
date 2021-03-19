@@ -1,6 +1,6 @@
 /*=========================================================================
-Program:   Assembler
-Module:    Assembler.h
+Program:   AssemblerPro
+Module:    AssemblerPro.h
 Language:  C++
 Date:      $Date: 2021-01-01 12:00:00 $
 Version:   $Revision: 1.0.0.0 $
@@ -13,8 +13,8 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE. See the above copyright notice for more information.
 =========================================================================*/
 
-#ifndef __Assembler_H__
-#define __Assembler_H__
+#ifndef __AssemblerPro_H__
+#define __AssemblerPro_H__
 
 //----------------------------------------------------------------------------
 // Include:
@@ -22,9 +22,9 @@ PURPOSE. See the above copyright notice for more information.
 #include "appLogic.h" 
 
 //----------------------------------------------------------------------------
-// Class Name: Assembler
+// Class Name: AssemblerPro
 //----------------------------------------------------------------------------
-class Assembler : public wxApp
+class AssemblerPro : public wxApp
 {
 public:
 
@@ -50,5 +50,5 @@ protected:
 
 	appLogic *m_Logic;
 };
-DECLARE_APP(Assembler)
+DECLARE_APP(AssemblerPro)
 #endif 
