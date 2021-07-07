@@ -117,7 +117,7 @@ void appOpEmpty::CreateGui()
 	// Interface:
 	m_Gui = new appGUI(this);
 
-	m_Gui->HintBox(NULL, "This operation in empty.", "Hint");
+	m_Gui->HintBox(NULL, "This operation is empty.", "Hint");
 
 //	((appGUI*)m_Gui)->HyperLink(NULL, "Link", "https://github.com/IOR-BIC");
 

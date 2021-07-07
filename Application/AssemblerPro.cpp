@@ -25,6 +25,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "AssemblerPro.h"
 #include "appDecl.h"
 
+#include "appOpCreateProsthesis.h"
 #include "appOpEmpty.h"
 
 #include "appUtils.h"
@@ -106,7 +107,10 @@ bool AssemblerPro::OnInit()
 	//////////////////////////////////////////////////////////////////////////	
 
 	// Empty Op
-	m_Logic->Plug(new appOpEmpty("Empty"), "");
+	//m_Logic->Plug(new appOpEmpty("Empty"), "");
+
+	// Create Prosthesis Op
+	m_Logic->Plug(new appOpCreateProsthesis("Create Prosthesis"), "");
 		
 	//////////////////////////////////////////////////////////////////////////
 	//Views
