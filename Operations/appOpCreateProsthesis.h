@@ -31,6 +31,36 @@ class albaGUILab;
 class albaGUIDialog;
 class albaGUIPicButton;
 
+
+struct Component
+{
+	wxString name;
+
+	bool isChanged = false;
+};
+
+struct Model
+{
+	wxString name;
+	wxString image;
+
+	bool isChanged = false;
+
+	std::vector<Component> components;
+};
+
+struct Producer
+{
+	wxString name;
+	wxString webSite;
+	wxString brandImage;
+
+	bool isChanged = false;
+
+	std::vector<Model> models;
+};
+
+
 //----------------------------------------------------------------------------
 // Class Name: appOpCreateProsthesis
 //----------------------------------------------------------------------------
@@ -62,6 +92,13 @@ public:
 		ID_PRODUCER_DIALOG_OK_PRESSED,
 		ID_PRODUCER_DIALOG_TEXT,
 		ID_PRODUCER_DIALOG_IMM,
+
+		ID_MODEL_DIALOG_OK_PRESSED,
+		ID_MODEL_DIALOG_TEXT,
+		ID_MODEL_DIALOG_IMM,
+
+		ID_COMPONENT_DIALOG_OK_PRESSED,
+		ID_COMPONENT_DIALOG_TEXT,
 	};
 
 	/** Constructor. */
@@ -83,6 +120,7 @@ public:
 	/*virtual*/ void OpRun();
 
 	void LoadInfo();
+	void SaveInfo();
 
 	/** Execute the operation. */
 	/*virtual*/ void OpDo();
@@ -103,52 +141,86 @@ protected:
 	void SelectProducer();
 	void AddProducer();
 	void EditProducer();
+	void UpdateProducer();
 
 	void SelectModel();
 	void AddModel();
 	void EditModel();
+	void UpdateModel();
 
 	void SelectComponent();
 	void AddComponent();
 	void EditComponent();
+	void UpdateComponent();
 
-	void UpdateProsthesis();
 
 	wxComboBox *m_ProducerComboBox;
 	int m_SelectedProducer;
-	std::vector<wxString> m_ProducerList;
+	std::vector<wxString> m_ProducerNameList;
 
 	wxComboBox *m_ModelComboBox;
 	int m_SelectedModel;
-	std::vector<wxString> m_ModelList;
+	std::vector<wxString> m_ModelNameList;
 
-	wxComboBox *m_ComponentsComboBox;
+	wxComboBox *m_ComponentComboBox;
 	int m_SelectedComponent;
-	std::vector<wxString> m_ComponentList;
+	std::vector<wxString> m_ComponentNameList;
 
 	void ShowProducerDialog();
 	void HideProducerDialog();
 	void UpdateProducerDialog();
 	
-	// Dialog
-	wxString m_ProducerName;
-	wxString m_ProducerSite;
-	wxString m_ProducerImage;
+	void ShowModelDialog();
+	void HideModelDialog();
+	void UpdateModelDialog();
 
-	bool m_OkButtonPressed;
-	bool m_IsProducerDialogOpened;
+	void ShowComponentDialog();
+	void HideComponentDialog();
+	void UpdateComponentDialog();
+
+	std::vector<Producer> m_ProsthesisVect;
+
+	// Product Dialog
+	wxString m_CurrentProducerName;
+	wxString m_CurrentProducerSite;
+	wxString m_CurrentProducerImage;
+	
 	albaGUIDialog	*m_ProducerDialog;
 
-	wxComboBox *m_ImageComboBox;
-	wxImage	*m_PreviewImage;
-	albaGUIPicButton *m_PreviewImageButton;
+	wxComboBox *m_ProducerImageComboBox;
+	wxImage	*m_ProducerImage;
+	albaGUIPicButton *m_ProducerImageButton;
 
 	wxTextCtrl *m_ProducerName_textCtrl;
 	wxTextCtrl *m_ProducerSite_textCtrl;
 
-	albaGUILab *m_ImageNameLab;
-	albaGUILab *m_SliceInfoLab;
-	albaGUILab *m_TemplateInfoLab;
-	albaGUILab *m_LesionInfoLab;
+	bool m_ProducerOkButtonPressed;
+	bool m_IsProducerDialogOpened;
+
+	// Model Dialog
+	wxString m_CurrentModelName;
+	wxString m_CurrentModelImage;
+
+	albaGUIDialog	*m_ModelDialog;
+
+	wxComboBox *m_ModelImageComboBox;
+	wxImage	*m_ModelImage;
+	albaGUIPicButton *m_ModelImageButton;
+
+	wxTextCtrl *m_ModelName_textCtrl;
+
+	bool m_ModelOkButtonPressed;
+	bool m_IsModelDialogOpened;
+
+	// Component Dialog
+	wxString m_CurrentComponentName;
+	wxString m_CurrentComponentImage;
+
+	albaGUIDialog	*m_ComponentDialog;
+
+	wxTextCtrl *m_ComponentName_textCtrl;
+
+	bool m_ComponentOkButtonPressed;
+	bool m_IsComponentDialogOpened;
 };
 #endif
