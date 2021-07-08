@@ -126,6 +126,7 @@ void appLogic::OnEvent(albaEventBase *alba_event)
 
 		// Operations Events - From toolbar
  		case OP_IMPORTER_DICOM:
+		case OP_CREATE_PROSTHESIS:
  		{
  			m_OpManager->OpRun(e->GetId() - MENU_VIEW_USER_FIRST + OP_USER);
  		}
@@ -520,7 +521,7 @@ void appLogic::CreateToolbar()
 
 	// Operations
 	m_OperationToolbar->AddTool(OP_IMPORTER_DICOM, albaPictureFactory::GetPictureFactory()->GetBmp("IMPORT_DICOM"), _("Import DICOM"));
-	// ...
+	m_OperationToolbar->AddTool(OP_CREATE_PROSTHESIS, albaPictureFactory::GetPictureFactory()->GetBmp("OP_CREATE_PROSTHESIS"), _("Create Prosthesis"));
 	m_OperationToolbar->Realize();
 
 	m_Win->AddDockPane(m_OperationToolbar, wxPaneInfo()

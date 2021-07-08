@@ -116,6 +116,9 @@ public:
 	/** Return true for the acceptable vme type. */
 	/*virtual*/ bool Accept(albaVME *node);
 
+	/** Return an xpm-icon that can be used to represent this operation */
+	virtual char** GetIcon();
+
 	/** Builds operation's interface. */
 	/*virtual*/ void OpRun();
 
@@ -153,19 +156,6 @@ protected:
 	void EditComponent();
 	void UpdateComponent();
 
-
-	wxComboBox *m_ProducerComboBox;
-	int m_SelectedProducer;
-	std::vector<wxString> m_ProducerNameList;
-
-	wxComboBox *m_ModelComboBox;
-	int m_SelectedModel;
-	std::vector<wxString> m_ModelNameList;
-
-	wxComboBox *m_ComponentComboBox;
-	int m_SelectedComponent;
-	std::vector<wxString> m_ComponentNameList;
-
 	void ShowProducerDialog();
 	void HideProducerDialog();
 	void UpdateProducerDialog();
@@ -180,11 +170,25 @@ protected:
 
 	std::vector<Producer> m_ProsthesisVect;
 
+	int m_SelectedProducer;
+	int m_SelectedModel;
+	int m_SelectedComponent;
+
+	Producer m_CurrentProducer;
+	Model m_CurrentModel;
+	Component m_CurrentComponent;
+
+	// Gui Widgets
+	wxComboBox *m_ProducerComboBox;
+	std::vector<wxString> m_ProducerNameList;
+
+	wxComboBox *m_ModelComboBox;
+	std::vector<wxString> m_ModelNameList;
+
+	wxComboBox *m_ComponentComboBox;
+	std::vector<wxString> m_ComponentNameList;
+
 	// Product Dialog
-	wxString m_CurrentProducerName;
-	wxString m_CurrentProducerSite;
-	wxString m_CurrentProducerImage;
-	
 	albaGUIDialog	*m_ProducerDialog;
 
 	wxComboBox *m_ProducerImageComboBox;
@@ -198,9 +202,6 @@ protected:
 	bool m_IsProducerDialogOpened;
 
 	// Model Dialog
-	wxString m_CurrentModelName;
-	wxString m_CurrentModelImage;
-
 	albaGUIDialog	*m_ModelDialog;
 
 	wxComboBox *m_ModelImageComboBox;
@@ -213,9 +214,6 @@ protected:
 	bool m_IsModelDialogOpened;
 
 	// Component Dialog
-	wxString m_CurrentComponentName;
-	wxString m_CurrentComponentImage;
-
 	albaGUIDialog	*m_ComponentDialog;
 
 	wxTextCtrl *m_ComponentName_textCtrl;

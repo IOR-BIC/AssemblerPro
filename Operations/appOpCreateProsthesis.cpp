@@ -24,14 +24,14 @@ PURPOSE. See the above copyright notice for more information.
 #include "appGUI.h"
 
 #include "albaGUI.h"
-#include "albaVME.h"
-#include "wx\window.h"
-#include "albaGUIDialog.h"
-#include "appUtils.h"
-#include "albaGUIPicButton.h"
-#include "albaGUILab.h"
 #include "albaGUIButton.h"
+#include "albaGUIDialog.h"
+#include "albaGUILab.h"
+#include "albaGUIPicButton.h"
+#include "albaVME.h"
+#include "appUtils.h"
 #include "wx\image.h"
+#include "wx\window.h"
 
 //----------------------------------------------------------------------------
 albaCxxTypeMacro(appOpCreateProsthesis);
@@ -85,6 +85,13 @@ bool appOpCreateProsthesis::Accept(albaVME *node)
 }
 
 //----------------------------------------------------------------------------
+char** appOpCreateProsthesis::GetIcon()
+{
+#include "pic/MENU_OP_CREATE_PROSTHESIS.xpm"
+	return MENU_OP_CREATE_PROSTHESIS_xpm;
+}
+
+//----------------------------------------------------------------------------
 albaOp* appOpCreateProsthesis::Copy()
 {
 	appOpCreateProsthesis *cp = new appOpCreateProsthesis(m_Label);
@@ -105,7 +112,6 @@ void appOpCreateProsthesis::OpRun()
 //----------------------------------------------------------------------------
 void appOpCreateProsthesis::LoadInfo()
 {
-
 	wxString imagesPath = appUtils::GetConfigDirectory().c_str();
 
 	m_ProsthesisVect.clear();
@@ -115,7 +121,7 @@ void appOpCreateProsthesis::LoadInfo()
 		Producer producer;
 		producer.name = wxString::Format("Producer %d", (p + 1));
 		producer.webSite = wxString::Format("www.producer_%d.com", (p + 1));
-		producer.brandImage = imagesPath + "/Wizard/DialogV.bmp";
+		producer.brandImage = imagesPath + "/Wizard/Producer.bmp";
 		producer.models.clear();
 
 		for (int m = 0; m < 4; m++)
@@ -223,10 +229,18 @@ void appOpCreateProsthesis::OnEvent(albaEventBase *alba_event)
 		{
 			switch (e->GetId())
 			{
+				// GUI Events
+			case wxOK:
+				OpStop(OP_RUN_OK);
+				break;
+
+			case wxCANCEL:
+				OpStop(OP_RUN_CANCEL);
+				break;
 
 			case ID_SELECT_PRODUCER:
 				SelectProducer();
-			break;
+				break;
 
 			case ID_EDIT_PRODUCER:
 				EditProducer();
@@ -260,6 +274,7 @@ void appOpCreateProsthesis::OnEvent(albaEventBase *alba_event)
 				AddComponent();
 				break;
 
+				// DIALOG Events
 			case ID_PRODUCER_DIALOG_OK_PRESSED:
 			{
 				HideProducerDialog();
@@ -280,7 +295,7 @@ void appOpCreateProsthesis::OnEvent(albaEventBase *alba_event)
 
 				if (wxFileExists(imagePath))
 				{
-					m_CurrentProducerImage = imagePath;
+					m_CurrentProducer.brandImage = imagePath;
 					UpdateProducerDialog();
 				}
 			}
@@ -306,7 +321,7 @@ void appOpCreateProsthesis::OnEvent(albaEventBase *alba_event)
 
 				if (wxFileExists(imagePath))
 				{
-					m_CurrentModelImage = imagePath;
+					m_CurrentModel.image = imagePath;
 					UpdateModelDialog();
 				}
 			}
@@ -324,23 +339,15 @@ void appOpCreateProsthesis::OnEvent(albaEventBase *alba_event)
 			case ID_COMPONENT_DIALOG_TEXT:
 				break;
 
-			case wxOK:
-				OpStop(OP_RUN_OK);
-				break;
-
-			case wxCANCEL:
-				OpStop(OP_RUN_CANCEL);
-				break;
-
 			default:
 				Superclass::OnEvent(alba_event);
 				break;
 			}
 		}
-// 		else
-// 		{
-// 			Superclass::OnEvent(alba_event);
-// 		}
+		// 		else
+		// 		{
+		// 			Superclass::OnEvent(alba_event);
+		// 		}
 	}
 }
 
@@ -438,19 +445,19 @@ void appOpCreateProsthesis::SelectProducer()
 void appOpCreateProsthesis::AddProducer()
 {
 	// Create New Producer
-	m_CurrentProducerName = wxString::Format("new Producer %d", m_ProducerNameList.size());
-	m_CurrentProducerSite = "www." + m_CurrentProducerName + ".com";
-	m_CurrentProducerImage = "";
+	m_CurrentProducer.name = wxString::Format("new Producer %d", m_ProducerNameList.size());
+	m_CurrentProducer.webSite = "www." + m_CurrentProducer.name + ".com";
+	m_CurrentProducer.brandImage = "";
 
 	// Add to Combobox
-	m_ProducerNameList.push_back(m_CurrentProducerName);
-	m_ProducerComboBox->Append(m_CurrentProducerName);
+	m_ProducerNameList.push_back(m_CurrentProducer.name);
+	m_ProducerComboBox->Append(m_CurrentProducer.name);
 	
 	// Add to Vector
 	Producer producer;
-	producer.name = m_CurrentProducerName;
-	producer.webSite = m_CurrentProducerSite;
-	producer.brandImage = m_CurrentProducerImage;
+	producer.name = m_CurrentProducer.name;
+	producer.webSite = m_CurrentProducer.webSite;
+	producer.brandImage = m_CurrentProducer.brandImage;
 	m_ProsthesisVect.push_back(producer);
 
 	// Select
@@ -464,9 +471,9 @@ void appOpCreateProsthesis::AddProducer()
 //----------------------------------------------------------------------------
 void appOpCreateProsthesis::EditProducer()
 {
-	m_CurrentProducerName = m_ProsthesisVect[m_SelectedProducer - 1].name;
-	m_CurrentProducerSite = m_ProsthesisVect[m_SelectedProducer - 1].webSite;
-	m_CurrentProducerImage = m_ProsthesisVect[m_SelectedProducer - 1].brandImage;
+	m_CurrentProducer.name = m_ProsthesisVect[m_SelectedProducer - 1].name;
+	m_CurrentProducer.webSite = m_ProsthesisVect[m_SelectedProducer - 1].webSite;
+	m_CurrentProducer.brandImage = m_ProsthesisVect[m_SelectedProducer - 1].brandImage;
 
 	ShowProducerDialog();
 }
@@ -485,7 +492,7 @@ void appOpCreateProsthesis::UpdateProducer()
 	// Update Vector Element
 	m_ProsthesisVect[m_SelectedProducer - 1].name = newName;
 	m_ProsthesisVect[m_SelectedProducer - 1].webSite = newSite;
-	m_ProsthesisVect[m_SelectedProducer - 1].brandImage = m_CurrentProducerImage;
+	m_ProsthesisVect[m_SelectedProducer - 1].brandImage = m_CurrentProducer.brandImage;
 	m_ProsthesisVect[m_SelectedProducer - 1].isChanged = true;
 
 	UpdateGui();
@@ -516,17 +523,17 @@ void appOpCreateProsthesis::SelectModel()
 void appOpCreateProsthesis::AddModel()
 {
 	// Create New Model
-	m_CurrentModelName = wxString::Format("%s - new Model %d", m_ProducerNameList[m_SelectedProducer], m_ModelNameList.size());
-	m_CurrentModelImage = "";
+	m_CurrentModel.name = wxString::Format("%s - new Model %d", m_ProducerNameList[m_SelectedProducer], m_ModelNameList.size());
+	m_CurrentModel.image = "";
 
 	// Add to Combobox
-	m_ModelNameList.push_back(m_CurrentModelName);
-	m_ModelComboBox->Append(m_CurrentModelName);
+	m_ModelNameList.push_back(m_CurrentModel.name);
+	m_ModelComboBox->Append(m_CurrentModel.name);
 
 	// Add to Vector
 	Model model;
-	model.name = m_CurrentModelName;
-	model.image = m_CurrentModelImage;
+	model.name = m_CurrentModel.name;
+	model.image = m_CurrentModel.name;
 	m_ProsthesisVect[m_SelectedProducer - 1].models.push_back(model);
 
 	// Select
@@ -540,8 +547,8 @@ void appOpCreateProsthesis::AddModel()
 //----------------------------------------------------------------------------
 void appOpCreateProsthesis::EditModel()
 {
-	m_CurrentModelName = m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].name;
-	m_CurrentModelImage = m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].image;
+	m_CurrentModel.name = m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].name;
+	m_CurrentModel.image = m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].image;
 
 	ShowModelDialog();
 }
@@ -558,7 +565,7 @@ void appOpCreateProsthesis::UpdateModel()
 
 	// Update Vector Element
 	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].name = newName;
-	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].image = m_CurrentModelImage;
+	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].image = m_CurrentModel.image;
 	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].isChanged = true;
 
 	UpdateGui();
@@ -576,15 +583,15 @@ void appOpCreateProsthesis::SelectComponent()
 void appOpCreateProsthesis::AddComponent()
 {
 	// Create New Component
-	m_CurrentComponentName = wxString::Format("%s - new Component %d", m_ModelNameList[m_SelectedModel], m_ComponentNameList.size());
+	m_CurrentComponent.name = wxString::Format("%s - new Component %d", m_ModelNameList[m_SelectedModel], m_ComponentNameList.size());
 
 	// Add to Combobox
-	m_ComponentNameList.push_back(m_CurrentComponentName);
-	m_ComponentComboBox->Append(m_CurrentComponentName);
+	m_ComponentNameList.push_back(m_CurrentComponent.name);
+	m_ComponentComboBox->Append(m_CurrentComponent.name);
 
 	// Add to Vector
 	Component component;
-	component.name = m_CurrentComponentName;
+	component.name = m_CurrentComponent.name;
 
 	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].components.push_back(component);
 
@@ -599,7 +606,7 @@ void appOpCreateProsthesis::AddComponent()
 //----------------------------------------------------------------------------
 void appOpCreateProsthesis::EditComponent()
 {
-	m_CurrentComponentName = m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].components[m_SelectedComponent-1].name;
+	m_CurrentComponent.name = m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].components[m_SelectedComponent-1].name;
 
 	ShowComponentDialog();
 }
@@ -640,10 +647,10 @@ void appOpCreateProsthesis::ShowProducerDialog()
 		int panelWidth = 400;
 
 		wxString imagesPath = appUtils::GetConfigDirectory().c_str();
-		wxString imgPath = imagesPath + "/Wizard/DialogV.bmp";
+		wxString imgPath = imagesPath + "/Wizard/Producer.bmp";
 
-		if (wxFileExists(m_CurrentProducerImage))
-			imgPath = m_CurrentProducerImage;
+		if (wxFileExists(m_CurrentProducer.brandImage))
+			imgPath = m_CurrentProducer.brandImage;
 
 		if (wxFileExists(imgPath))
 		{
@@ -675,7 +682,7 @@ void appOpCreateProsthesis::ShowProducerDialog()
 
 		// TEXT - Producer Name
 		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxVERTICAL, m_ProducerDialog, "Producer Name");
-		m_ProducerName_textCtrl = new wxTextCtrl(m_ProducerDialog, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducerName, wxPoint(-1, -1), wxSize(panelWidth, 25), wxALL | wxEXPAND);
+		m_ProducerName_textCtrl = new wxTextCtrl(m_ProducerDialog, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducer.name, wxPoint(-1, -1), wxSize(panelWidth, 25), wxALL | wxEXPAND);
 		m_ProducerName_textCtrl->SetEditable(true);
 		m_ProducerName_textCtrl->SetMaxLength(64);
 		labelSizer1->Add(m_ProducerName_textCtrl, 0, wxALL | wxEXPAND, 0);
@@ -683,7 +690,7 @@ void appOpCreateProsthesis::ShowProducerDialog()
 
 		// TEXT - Producer Web Site
 		wxStaticBoxSizer *labelSizer2 = new wxStaticBoxSizer(wxVERTICAL, m_ProducerDialog, "Web Site");
-		m_ProducerSite_textCtrl = new wxTextCtrl(m_ProducerDialog, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducerSite, wxPoint(-1, -1), wxSize(panelWidth, 25), wxALL | wxEXPAND);
+		m_ProducerSite_textCtrl = new wxTextCtrl(m_ProducerDialog, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducer.webSite, wxPoint(-1, -1), wxSize(panelWidth, 25), wxALL | wxEXPAND);
 		m_ProducerSite_textCtrl->SetEditable(true);
 		m_ProducerSite_textCtrl->SetMaxLength(64);
 		labelSizer2->Add(m_ProducerSite_textCtrl, 0, wxALL | wxEXPAND, 0);
@@ -738,16 +745,16 @@ void appOpCreateProsthesis::UpdateProducerDialog()
 	if (m_ProducerDialog)
 	{
 		// Update Image
-		if (wxFileExists(m_CurrentProducerImage))
+		if (wxFileExists(m_CurrentProducer.brandImage))
 		{
-			m_ProducerImage->LoadFile(m_CurrentProducerImage.c_str(), wxBITMAP_TYPE_ANY);
+			m_ProducerImage->LoadFile(m_CurrentProducer.brandImage.c_str(), wxBITMAP_TYPE_ANY);
 			m_ProducerImageButton->SetBitmapSelected(wxBitmap(*m_ProducerImage));
 			m_ProducerImageButton->Update();
 			m_ProducerDialog->Update();
 		}
 
-		m_ProducerName_textCtrl->SetValue(m_CurrentProducerName);
-		m_ProducerSite_textCtrl->SetValue(m_CurrentProducerSite);
+		m_ProducerName_textCtrl->SetValue(m_CurrentProducer.name);
+		m_ProducerSite_textCtrl->SetValue(m_CurrentProducer.webSite);
 	}
 }
 
@@ -765,14 +772,15 @@ void appOpCreateProsthesis::ShowModelDialog()
 		//////////////////////////////////////////////////////////////////////////
 
 		wxBoxSizer *mainBoxSizer = new wxBoxSizer(wxVERTICAL);
-
+		wxBoxSizer *main2BoxSizer = new wxBoxSizer(wxHORIZONTAL);
+		wxBoxSizer *imageBoxSizer = new wxBoxSizer(wxVERTICAL);
 		//
 		int panelWidth = 400;
 		wxString imagesPath = appUtils::GetConfigDirectory().c_str();
-		wxString imgPath = imagesPath + "/Wizard/DialogV.bmp";
+		wxString imgPath = imagesPath + "/Wizard/Model.bmp";
 
-		if (wxFileExists(m_CurrentModelImage))
-			imgPath = m_CurrentModelImage;
+		if (wxFileExists(m_CurrentModel.image))
+			imgPath = m_CurrentModel.image;
 
 		if (wxFileExists(imgPath))
 		{
@@ -787,12 +795,14 @@ void appOpCreateProsthesis::ShowModelDialog()
 
 			panelWidth = m_ModelImage->GetWidth();
 
-			mainBoxSizer->Add(m_ModelImageButton, 0, wxALL | wxALIGN_CENTER, 0);
+			imageBoxSizer->Add(m_ModelImageButton, 0, wxALL | wxALIGN_LEFT, 0);
 
 			// BUTTON - Change Model Brand Image
 			albaGUIButton *immBtn = new albaGUIButton(m_ModelDialog, ID_MODEL_DIALOG_IMM, "Change Image", wxPoint(-1, -1));
 			immBtn->SetListener(this);
-			mainBoxSizer->Add(immBtn, 0, wxALIGN_RIGHT, 0);
+			imageBoxSizer->Add(immBtn, 0, wxALIGN_RIGHT, 0);
+
+			main2BoxSizer->Add(imageBoxSizer, 0, wxALL, 0);
 
 			delete previewBitmap;
 		}
@@ -803,7 +813,7 @@ void appOpCreateProsthesis::ShowModelDialog()
 
 		// TEXT - Model Name
 		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxVERTICAL, m_ModelDialog, "Model Name");
-		m_ModelName_textCtrl = new wxTextCtrl(m_ModelDialog, ID_MODEL_DIALOG_TEXT, m_CurrentModelName, wxPoint(-1, -1), wxSize(panelWidth, 25), wxALL | wxEXPAND);
+		m_ModelName_textCtrl = new wxTextCtrl(m_ModelDialog, ID_MODEL_DIALOG_TEXT, m_CurrentModel.name, wxPoint(-1, -1), wxSize(panelWidth, 25), wxALL | wxEXPAND);
 		m_ModelName_textCtrl->SetEditable(true);
 		m_ModelName_textCtrl->SetMaxLength(64);
 		labelSizer1->Add(m_ModelName_textCtrl, 0, wxALL | wxEXPAND, 0);
@@ -812,7 +822,8 @@ void appOpCreateProsthesis::ShowModelDialog()
 		// TEXT - Empty Separator
 		infoBoxSizer->Add(new albaGUILab(m_ModelDialog, -1, " "), 0, wxALIGN_LEFT, 5);
 
-		mainBoxSizer->Add(infoBoxSizer, 0, wxALL, 5);
+		main2BoxSizer->Add(infoBoxSizer, 0, wxALL, 0);
+		mainBoxSizer->Add(main2BoxSizer, 0, wxALL, 5);
 
 		// BUTTON - Ok
 		albaGUIButton *okBtn = new albaGUIButton(m_ModelDialog, ID_MODEL_DIALOG_OK_PRESSED, "OK", wxPoint(-1, -1));
@@ -858,15 +869,15 @@ void appOpCreateProsthesis::UpdateModelDialog()
 	if (m_ModelDialog)
 	{
 		// Update Image
-		if (wxFileExists(m_CurrentModelImage))
+		if (wxFileExists(m_CurrentModel.image))
 		{
-			m_ModelImage->LoadFile(m_CurrentModelImage.c_str(), wxBITMAP_TYPE_ANY);
+			m_ModelImage->LoadFile(m_CurrentModel.image.c_str(), wxBITMAP_TYPE_ANY);
 			m_ModelImageButton->SetBitmapSelected(wxBitmap(*m_ModelImage));
 			m_ModelImageButton->Update();
 			m_ModelDialog->Update();
 		}
 
-		m_ModelName_textCtrl->SetValue(m_CurrentModelName);
+		m_ModelName_textCtrl->SetValue(m_CurrentModel.name);
 	}
 }
 
@@ -893,7 +904,7 @@ void appOpCreateProsthesis::ShowComponentDialog()
 
 		// TEXT - Component Name
 		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxVERTICAL, m_ComponentDialog, "Component Name");
-		m_ComponentName_textCtrl = new wxTextCtrl(m_ComponentDialog, ID_COMPONENT_DIALOG_TEXT, m_CurrentComponentName, wxPoint(-1, -1), wxSize(panelWidth, 25), wxALL | wxEXPAND);
+		m_ComponentName_textCtrl = new wxTextCtrl(m_ComponentDialog, ID_COMPONENT_DIALOG_TEXT, m_CurrentComponent.name, wxPoint(-1, -1), wxSize(panelWidth, 25), wxALL | wxEXPAND);
 		m_ComponentName_textCtrl->SetEditable(true);
 		m_ComponentName_textCtrl->SetMaxLength(64);
 		labelSizer1->Add(m_ComponentName_textCtrl, 0, wxALL | wxEXPAND, 0);
@@ -947,6 +958,6 @@ void appOpCreateProsthesis::UpdateComponentDialog()
 {
 	if (m_ComponentDialog)
 	{
-		m_ComponentName_textCtrl->SetValue(m_CurrentComponentName);
+		m_ComponentName_textCtrl->SetValue(m_CurrentComponent.name);
 	}
 }

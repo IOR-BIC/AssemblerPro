@@ -199,7 +199,8 @@ void AssemblerPro::InitializeIcons()
 	// Operation Icons
 #include "pic/IMPORT_DICOM.xpm"
 	albaADDPIC(IMPORT_DICOM);	
-
+#include "pic/OP_CREATE_PROSTHESIS.xpm"
+	albaADDPIC(OP_CREATE_PROSTHESIS);
 }
 
 //--------------------------------------------------------------------------------
