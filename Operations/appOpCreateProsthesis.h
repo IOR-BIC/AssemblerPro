@@ -100,14 +100,19 @@ protected:
 
 	void UpdateGui();
 
+	void SelectProducer();
 	void AddProducer();
 	void EditProducer();
 
+	void SelectModel();
 	void AddModel();
 	void EditModel();
 
+	void SelectComponent();
 	void AddComponent();
 	void EditComponent();
+
+	void UpdateProsthesis();
 
 	wxComboBox *m_ProducerComboBox;
 	int m_SelectedProducer;

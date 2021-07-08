@@ -139,9 +139,7 @@ void appOpCreateProsthesis::OnEvent(albaEventBase *alba_event)
 			{
 
 			case ID_SELECT_PRODUCER:
-				m_SelectedModel = 0; // Reset Selection
-				m_SelectedComponent = 0; // Reset Selection
-				UpdateGui();
+				SelectProducer();
 			break;
 
 			case ID_EDIT_PRODUCER:
@@ -153,7 +151,7 @@ void appOpCreateProsthesis::OnEvent(albaEventBase *alba_event)
 				break;
 
 			case ID_SELECT_MODEL:
-				UpdateGui();
+				SelectModel();
 				break;
 
 			case ID_EDIT_MODEL:
@@ -165,7 +163,7 @@ void appOpCreateProsthesis::OnEvent(albaEventBase *alba_event)
 				break;
 
 			case ID_SELECT_COMPONENT:
-				UpdateGui();
+				SelectComponent();
 				break;
 
 			case ID_EDIT_COMPONENT:
@@ -180,6 +178,8 @@ void appOpCreateProsthesis::OnEvent(albaEventBase *alba_event)
 			{
 				HideProducerDialog();
 				m_OkButtonPressed = true;
+
+				UpdateProsthesis();
 			}
 			break;
 
@@ -191,9 +191,13 @@ void appOpCreateProsthesis::OnEvent(albaEventBase *alba_event)
 			{
 				albaString fileNameFullPath = albaGetDocumentsDirectory().c_str();
 				albaString wildc = "Image file (*.bmp)|*.bmp";
-				m_ProducerImage = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
+				wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
 
-				UpdateProducerDialog();
+				if (wxFileExists(imagePath))
+				{
+					m_ProducerImage = imagePath;
+					UpdateProducerDialog();
+				}
 			}
 			break;
 
@@ -283,38 +287,46 @@ void appOpCreateProsthesis::UpdateGui()
 }
 
 //----------------------------------------------------------------------------
+void appOpCreateProsthesis::SelectProducer()
+{
+	m_SelectedModel = 0; // Reset Model Selection
+	m_SelectedComponent = 0; // Reset Component Selection
+
+	// TODO Load Producer Info and Model List
+
+	UpdateGui();
+}
+//----------------------------------------------------------------------------
 void appOpCreateProsthesis::AddProducer()
 {
 	m_ProducerName = wxString::Format("new Producer %d", m_ProducerList.size());
-	m_ProducerSite = "www." + m_ProducerList[m_SelectedProducer] + ".com";
+	m_ProducerSite = "www." + m_ProducerName + ".com";
 
 	m_ProducerList.push_back(m_ProducerName);
 	m_ProducerComboBox->Append(m_ProducerName);
 	m_SelectedProducer = m_ProducerList.size() - 1;
 	
-	ShowProducerDialog();
+	m_ProducerComboBox->Select(m_SelectedProducer);
+	SelectProducer();
 
-	UpdateGui();
+	EditProducer();
 }
 //----------------------------------------------------------------------------
 void appOpCreateProsthesis::EditProducer()
 {
 	m_ProducerName = m_ProducerList[m_SelectedProducer];
-	
+	m_ProducerSite = "www." + m_ProducerName + ".com";
+
 	ShowProducerDialog();
+}
 
-	m_ProducerName_textCtrl->Update();
-	m_ProducerSite_textCtrl->Update();
-
-	wxString newName = m_ProducerName_textCtrl->GetValue();
-	wxString newSite = m_ProducerSite_textCtrl->GetValue();
-
-	m_ProducerList[m_SelectedProducer] = newName;
-	m_ProducerComboBox->SetString(m_SelectedProducer, newName);
+//----------------------------------------------------------------------------
+void appOpCreateProsthesis::SelectModel()
+{
+	// TODO Load Model Info and Component List
 
 	UpdateGui();
 }
-
 //----------------------------------------------------------------------------
 void appOpCreateProsthesis::AddModel()
 {
@@ -323,9 +335,17 @@ void appOpCreateProsthesis::AddModel()
 //----------------------------------------------------------------------------
 void appOpCreateProsthesis::EditModel()
 {
-
+	//ShowModelDialog();
 }
 
+//----------------------------------------------------------------------------
+void appOpCreateProsthesis::SelectComponent()
+{
+
+	// TODO Load Component Info
+
+	UpdateGui();
+}
 //----------------------------------------------------------------------------
 void appOpCreateProsthesis::AddComponent()
 {
@@ -334,7 +354,20 @@ void appOpCreateProsthesis::AddComponent()
 //----------------------------------------------------------------------------
 void appOpCreateProsthesis::EditComponent()
 {
+	//ShowComponentDialog();
+}
 
+//----------------------------------------------------------------------------
+void appOpCreateProsthesis::UpdateProsthesis()
+{
+	// Producer
+	wxString newName = m_ProducerName_textCtrl->GetValue();
+	wxString newSite = m_ProducerSite_textCtrl->GetValue();
+
+	m_ProducerList[m_SelectedProducer] = newName;
+	m_ProducerComboBox->SetString(m_SelectedProducer, newName);
+
+	UpdateGui();
 }
 
 /// Dialog Producer
@@ -421,6 +454,10 @@ void appOpCreateProsthesis::ShowProducerDialog()
 
 		m_ProducerDialog->SetPosition(wxPoint(posX, posY));
 	}
+	else
+	{
+		UpdateProducerDialog();
+	}
 
 	if (m_IsProducerDialogOpened)
 		HideProducerDialog();
@@ -441,11 +478,18 @@ void appOpCreateProsthesis::HideProducerDialog()
 //----------------------------------------------------------------------------
 void appOpCreateProsthesis::UpdateProducerDialog()
 {
-	if (wxFileExists(m_ProducerImage))
+	if (m_ProducerDialog)
 	{
-		m_PreviewImage->LoadFile(m_ProducerImage.c_str(), wxBITMAP_TYPE_ANY);
-		m_PreviewImageButton->Update();
-		m_ProducerDialog->Update();
-	}
+		// Update Image
+		if (wxFileExists(m_ProducerImage))
+		{
+			m_PreviewImage->LoadFile(m_ProducerImage.c_str(), wxBITMAP_TYPE_ANY);
+			m_PreviewImageButton->SetBitmapSelected(wxBitmap(*m_PreviewImage));
+			m_PreviewImageButton->Update();
+			m_ProducerDialog->Update();
+		}
 
+		m_ProducerName_textCtrl->SetValue(m_ProducerName);
+		m_ProducerSite_textCtrl->SetValue(m_ProducerSite);
+	}
 }
