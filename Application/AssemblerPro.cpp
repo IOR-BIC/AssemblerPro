@@ -27,6 +27,9 @@ PURPOSE. See the above copyright notice for more information.
 
 #include "appOpCreateProsthesis.h"
 #include "appOpEmpty.h"
+#include "appOpExportProsthesisDB.h"
+#include "appOpImportProsthesisDB.h"
+#include "appOpSearchProsthesis.h"
 
 #include "appUtils.h"
 #include "appViewImageCompound.h"
@@ -97,10 +100,15 @@ bool AssemblerPro::OnInit()
 	dicomSettings->SetAutoVMEType(true);
 	dicomSettings->SetOutputType(1); //Type 0=Volume 1=Image
 
+	// Import Prosthesis DB
+	m_Logic->Plug(new appOpImportProsthesisDB("Import Prosthesis DB"), "");
+
 	//////////////////////////////////////////////////////////////////////////
 	//Exporters
 	//////////////////////////////////////////////////////////////////////////
 
+	// Export Prosthesis DB
+	m_Logic->Plug(new appOpExportProsthesisDB("Export Prosthesis DB"), "");
 
 	//////////////////////////////////////////////////////////////////////////
 	//Operations
@@ -110,8 +118,11 @@ bool AssemblerPro::OnInit()
 	//m_Logic->Plug(new appOpEmpty("Empty"), "");
 
 	// Create Prosthesis Op
-	m_Logic->Plug(new appOpCreateProsthesis("Create Prosthesis"), "");
-		
+	m_Logic->Plug(new appOpCreateProsthesis("Create Prosthesis DB"), "");
+
+	// Create Prosthesis Op
+	m_Logic->Plug(new appOpSearchProsthesis("Search Prosthesis"), "");
+
 	//////////////////////////////////////////////////////////////////////////
 	//Views
 	//////////////////////////////////////////////////////////////////////////
@@ -199,8 +210,14 @@ void AssemblerPro::InitializeIcons()
 	// Operation Icons
 #include "pic/IMPORT_DICOM.xpm"
 	albaADDPIC(IMPORT_DICOM);	
+#include "pic/OP_IMPORT_PROSTHESIS.xpm"
+	albaADDPIC(OP_IMPORT_PROSTHESIS);
+#include "pic/OP_EXPORT_PROSTHESIS.xpm"
+	albaADDPIC(OP_EXPORT_PROSTHESIS);
 #include "pic/OP_CREATE_PROSTHESIS.xpm"
 	albaADDPIC(OP_CREATE_PROSTHESIS);
+#include "pic/OP_SEARCH_PROSTHESIS.xpm"
+	albaADDPIC(OP_SEARCH_PROSTHESIS);
 }
 
 //--------------------------------------------------------------------------------

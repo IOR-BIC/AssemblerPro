@@ -118,7 +118,7 @@ public:
 	};
 
 	/** Constructor. */
-	appOpCreateProsthesis(wxString label = "Create Prosthesis");
+	appOpCreateProsthesis(wxString label = "Create Prosthesis DB");
 
 	/** Destructor. */
 	~appOpCreateProsthesis();
