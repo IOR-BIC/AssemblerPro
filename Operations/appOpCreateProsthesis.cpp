@@ -32,6 +32,8 @@ PURPOSE. See the above copyright notice for more information.
 #include "appUtils.h"
 #include "wx\image.h"
 #include "wx\window.h"
+#include "albaGUIValidator.h"
+
 
 //----------------------------------------------------------------------------
 albaCxxTypeMacro(appOpCreateProsthesis);
@@ -549,6 +551,8 @@ void appOpCreateProsthesis::EditModel()
 {
 	m_CurrentModel.name = m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].name;
 	m_CurrentModel.image = m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].image;
+	m_CurrentModel.type = m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].type;
+	m_CurrentModel.side = m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].side;
 
 	ShowModelDialog();
 }
@@ -566,6 +570,8 @@ void appOpCreateProsthesis::UpdateModel()
 	// Update Vector Element
 	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].name = newName;
 	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].image = m_CurrentModel.image;
+	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].type = m_CurrentModel.type;
+	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].side = m_CurrentModel.side;
 	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].isChanged = true;
 
 	UpdateGui();
@@ -682,7 +688,7 @@ void appOpCreateProsthesis::ShowProducerDialog()
 
 		// TEXT - Producer Name
 		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxVERTICAL, m_ProducerDialog, "Producer Name");
-		m_ProducerName_textCtrl = new wxTextCtrl(m_ProducerDialog, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducer.name, wxPoint(-1, -1), wxSize(panelWidth, 25), wxALL | wxEXPAND);
+		m_ProducerName_textCtrl = new wxTextCtrl(m_ProducerDialog, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducer.name, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
 		m_ProducerName_textCtrl->SetEditable(true);
 		m_ProducerName_textCtrl->SetMaxLength(64);
 		labelSizer1->Add(m_ProducerName_textCtrl, 0, wxALL | wxEXPAND, 0);
@@ -690,7 +696,7 @@ void appOpCreateProsthesis::ShowProducerDialog()
 
 		// TEXT - Producer Web Site
 		wxStaticBoxSizer *labelSizer2 = new wxStaticBoxSizer(wxVERTICAL, m_ProducerDialog, "Web Site");
-		m_ProducerSite_textCtrl = new wxTextCtrl(m_ProducerDialog, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducer.webSite, wxPoint(-1, -1), wxSize(panelWidth, 25), wxALL | wxEXPAND);
+		m_ProducerSite_textCtrl = new wxTextCtrl(m_ProducerDialog, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducer.webSite, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
 		m_ProducerSite_textCtrl->SetEditable(true);
 		m_ProducerSite_textCtrl->SetMaxLength(64);
 		labelSizer2->Add(m_ProducerSite_textCtrl, 0, wxALL | wxEXPAND, 0);
@@ -810,14 +816,60 @@ void appOpCreateProsthesis::ShowModelDialog()
 		//////////////////////////////////////////////////////////////////////////
 		// Info Sizer
 		wxBoxSizer *infoBoxSizer = new wxBoxSizer(wxVERTICAL);
-
+		
 		// TEXT - Model Name
 		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxVERTICAL, m_ModelDialog, "Model Name");
-		m_ModelName_textCtrl = new wxTextCtrl(m_ModelDialog, ID_MODEL_DIALOG_TEXT, m_CurrentModel.name, wxPoint(-1, -1), wxSize(panelWidth, 25), wxALL | wxEXPAND);
+		m_ModelName_textCtrl = new wxTextCtrl(m_ModelDialog, ID_MODEL_DIALOG_TEXT, m_CurrentModel.name, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
 		m_ModelName_textCtrl->SetEditable(true);
 		m_ModelName_textCtrl->SetMaxLength(64);
 		labelSizer1->Add(m_ModelName_textCtrl, 0, wxALL | wxEXPAND, 0);
 		infoBoxSizer->Add(labelSizer1, 0, wxALL | wxEXPAND, 5);
+
+		wxBoxSizer *propBoxSizer = new wxBoxSizer(wxHORIZONTAL);
+
+		// RADIO - Type Model
+		wxString typeChoices[]{ "Acetabular","Femoral" };
+		wxRadioBox *typeRadioBox = new wxRadioBox(m_ModelDialog, ID_MODEL_DIALOG_TYPE, "Type", wxPoint(-1, -1), wxSize(-1, -1), 2, typeChoices);
+		typeRadioBox->SetValidator(albaGUIValidator(this, ID_MODEL_DIALOG_TYPE, typeRadioBox, &(m_CurrentModel.type)));
+		propBoxSizer->Add(typeRadioBox, 0, wxALL | wxEXPAND, 5);
+		
+		// RADIO - Side Model
+		wxString sideChoices[]{ "Left","Both","Right" };
+		wxRadioBox *sideRadioBox = new wxRadioBox(m_ModelDialog, ID_MODEL_DIALOG_SIDE, "Side", wxPoint(-1, -1), wxSize(-1, -1), 3, sideChoices);
+		sideRadioBox->SetValidator(albaGUIValidator(this, ID_MODEL_DIALOG_SIDE, sideRadioBox, &(m_CurrentModel.side)));
+		propBoxSizer->Add(sideRadioBox, 0, wxALL | wxEXPAND, 5);
+				
+		infoBoxSizer->Add(propBoxSizer, 0, wxALL | wxEXPAND, 0);
+
+		//////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////
+		// TEST - Moved Components Gui into Dialog
+// 		wxStaticBoxSizer *labelSizer2 = new wxStaticBoxSizer(wxVERTICAL, m_ModelDialog, "Components");
+// 		
+// 		// COMBO - Components
+// 		wxString componentChoices[]{""};
+// 		wxComboBox *componentComboBox = new wxComboBox(m_ModelDialog, ID_SELECT_COMPONENT, "", wxPoint(-1, -1), wxSize(-1, -1), **componentChoices);
+// 		componentComboBox->SetValidator(albaGUIValidator(this, ID_SELECT_MODEL, componentComboBox, &m_SelectedComponent));
+// 		labelSizer2->Add(componentComboBox, 0, wxALL | wxEXPAND, 0);
+// 
+// 		wxBoxSizer *componentActionBoxSizer = new wxBoxSizer(wxHORIZONTAL);
+// 		
+// 		// BUTTON - Edit
+// 		albaGUIButton *editBtn = new albaGUIButton(m_ModelDialog, ID_EDIT_COMPONENT, "Edit", wxPoint(-1, -1));
+// 		editBtn->SetListener(this);
+// 		componentActionBoxSizer->Add(editBtn, 0, wxALIGN_RIGHT, 0);
+// 
+// 		// BUTTON - Add
+// 		albaGUIButton *addBtn = new albaGUIButton(m_ModelDialog, ID_ADD_COMPONENT, "Add", wxPoint(-1, -1));
+// 		addBtn->SetListener(this);
+// 		componentActionBoxSizer->Add(addBtn, 0, wxALIGN_RIGHT, 0);
+// 
+// 		labelSizer2->Add(componentActionBoxSizer, 0, wxALL | wxEXPAND, 0);
+// 
+// 		infoBoxSizer->Add(labelSizer2, 0, wxALL | wxEXPAND, 5);
+		//////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////
+
 
 		// TEXT - Empty Separator
 		infoBoxSizer->Add(new albaGUILab(m_ModelDialog, -1, " "), 0, wxALIGN_LEFT, 5);

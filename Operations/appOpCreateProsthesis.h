@@ -31,6 +31,17 @@ class albaGUILab;
 class albaGUIDialog;
 class albaGUIPicButton;
 
+enum ModelType
+{
+	ACETABULAR,
+	FEMORAL,
+};
+enum ModelSide
+{
+	LEFT,
+	RIGHT,
+	BOTH,
+};
 
 struct Component
 {
@@ -43,6 +54,9 @@ struct Model
 {
 	wxString name;
 	wxString image;
+
+	int type = ACETABULAR;
+	int side = LEFT;
 
 	bool isChanged = false;
 
@@ -95,6 +109,8 @@ public:
 
 		ID_MODEL_DIALOG_OK_PRESSED,
 		ID_MODEL_DIALOG_TEXT,
+		ID_MODEL_DIALOG_TYPE,
+		ID_MODEL_DIALOG_SIDE,
 		ID_MODEL_DIALOG_IMM,
 
 		ID_COMPONENT_DIALOG_OK_PRESSED,
