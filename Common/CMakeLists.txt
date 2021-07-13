@@ -18,6 +18,7 @@ PROJECT(appCommon)
 # Set your list of sources here.
 SET(PROJECT_SRCS
 appUtils.cpp appUtils.h
+albaProsthesisDBManager.cpp albaProsthesisDBManager.h
 )
 
 IF(APP_BUILD_DLL)
