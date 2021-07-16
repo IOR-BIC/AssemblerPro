@@ -32,10 +32,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "appOpSearchProsthesis.h"
 
 #include "appUtils.h"
-#include "appViewImageCompound.h"
 
-#include "albaGUIDicomSettings.h"
-#include "albaOpImporterDicom.h"
 #include "albaOpTransform.h"
 #include "albaPipeFactoryVME.h"
 #include "albaPipeVolumeSliceBlend.h"
@@ -93,13 +90,6 @@ bool AssemblerPro::OnInit()
 	//Importers
 	//////////////////////////////////////////////////////////////////////////
 
-	// DICOM Importer
-	albaGUIDicomSettings *dicomSettings = new albaGUIDicomSettings(NULL, "DICOM");
-	m_Logic->Plug(new albaOpImporterDicom("DICOM", true), "", true, dicomSettings);
-	dicomSettings->SetSkipCrop(true);
-	dicomSettings->SetAutoVMEType(true);
-	dicomSettings->SetOutputType(1); //Type 0=Volume 1=Image
-
 	// Import Prosthesis DB
 	m_Logic->Plug(new appOpImportProsthesisDB("Import Prosthesis DB"), "");
 
@@ -128,9 +118,9 @@ bool AssemblerPro::OnInit()
 	//////////////////////////////////////////////////////////////////////////
 
 	// Image View
-	appViewImageCompound *view_image = new appViewImageCompound("Image");
-	view_image->PackageView();
-	m_Logic->Plug(view_image);
+// 	appViewImageCompound *view_image = new appViewImageCompound("Image");
+// 	view_image->PackageView();
+// 	m_Logic->Plug(view_image);
 
 	// VTK View (Surface)
 	m_Logic->Plug(new albaViewVTK("Surface"));

@@ -78,7 +78,7 @@ void appLogic::Init(int argc, char **argv)
 	InitAboutDialog();
 	
 	// Create and Open View
-	//ViewCreate(VIEW_START);
+	ViewCreate(VIEW_SURFACE);
 }
 //----------------------------------------------------------------------------
 void appLogic::InitAboutDialog()
@@ -112,12 +112,6 @@ void appLogic::OnEvent(albaEventBase *alba_event)
 		break;
 
 		// View Events
-		case ID_SHOW_IMAGE_VIEW:
-		{
-			ViewCreate(VIEW_IMAGE);
-		}
-		break;
-
 		case ID_SHOW_SURFACE_VIEW:
 		{
 			ViewCreate(VIEW_SURFACE);
@@ -125,7 +119,6 @@ void appLogic::OnEvent(albaEventBase *alba_event)
 		break;
 
 		// Operations Events - From toolbar
- 		case OP_IMPORTER_DICOM:
 		case OP_IMPORT_PROSTHESIS_DB:
 		case OP_EXPORT_PROSTHESIS_DB:
 		case OP_CREATE_PROSTHESIS:
@@ -231,7 +224,7 @@ void appLogic::ViewCreate(int viewId)
 
 	switch (viewId)
 	{
-	case VIEW_IMAGE: viewLabel = "Image"; break;
+	case VIEW_SURFACE: viewLabel = "Surface"; break;
 	}
 
 	currentView = m_ViewManager->GetFromList(viewLabel);;
@@ -339,11 +332,11 @@ void appLogic::CreateMenu()
 	albaGUI::AddMenuItem(file_menu, MENU_FILE_SAVE, _("&Save  \tCtrl+S"), FILE_SAVE_xpm);
 	file_menu->Append(MENU_FILE_SAVEAS, _("Save &As  \tCtrl+Shift+S"));
 
-	file_menu->AppendSeparator();
+	//file_menu->AppendSeparator();
 
 	// Import menu item
 	m_ImportMenu = new wxMenu;
-	file_menu->Append(0, _("Import"), m_ImportMenu);
+	//file_menu->Append(0, _("Import"), m_ImportMenu);
 
 	// Export menu item
 	m_ExportMenu = new wxMenu;
@@ -496,7 +489,6 @@ void appLogic::CreateToolbar()
 	m_ViewToolbar->SetToolBitmapSize(wxSize(20, 20));
 
 	// Views	
-	m_ViewToolbar->AddTool(ID_SHOW_IMAGE_VIEW, albaPictureFactory::GetPictureFactory()->GetBmp("VIEW_IMAGE_ICON"), _("View Image"));
 	m_ViewToolbar->AddTool(ID_SHOW_SURFACE_VIEW, albaPictureFactory::GetPictureFactory()->GetBmp("VIEW_IMAGE_ICON"), _("View Surface"));
 	m_ViewToolbar->Realize();
 
@@ -515,7 +507,6 @@ void appLogic::CreateToolbar()
 
 	//////////////////////////////////////////////////////////////////////////
 	// Create Operations Toolbar
-
 	m_OperationToolbar = NULL;
 	m_OperationToolbar = new wxToolBar(m_Win, ID_OPERATIONS_TOOLBAR, wxPoint(0, 0), wxSize(-1, -1), wxHORIZONTAL | wxTB_FLAT | wxTB_DOCKABLE | wxTB_NODIVIDER);
 	m_OperationToolbar->SetMargins(0, 0);
@@ -523,7 +514,6 @@ void appLogic::CreateToolbar()
 	m_OperationToolbar->SetToolBitmapSize(wxSize(20, 20));
 
 	// Operations
-	//m_OperationToolbar->AddTool(OP_IMPORTER_DICOM, albaPictureFactory::GetPictureFactory()->GetBmp("IMPORT_DICOM"), _("Import DICOM"));
 	m_OperationToolbar->AddTool(OP_IMPORT_PROSTHESIS_DB, albaPictureFactory::GetPictureFactory()->GetBmp("OP_IMPORT_PROSTHESIS"), _("Import Prosthesis DB"));
 	m_OperationToolbar->AddTool(OP_EXPORT_PROSTHESIS_DB, albaPictureFactory::GetPictureFactory()->GetBmp("OP_EXPORT_PROSTHESIS"), _("Export Prosthesis DB"));
 	m_OperationToolbar->AddTool(OP_SEARCH_PROSTHESIS, albaPictureFactory::GetPictureFactory()->GetBmp("OP_SEARCH_PROSTHESIS"), _("Search Prosthesis"));
@@ -563,7 +553,7 @@ void appLogic::EnableMenuAndToolbar()
 
 	albaVME *node = m_OpManager->GetSelectedVme();
 
-	for (int opId = OP_IMPORTER_DICOM; opId < OP_LAST; opId++)
+	for (int opId = OP_IMPORT_PROSTHESIS_DB; opId < OP_LAST; opId++)
 	{
 		//m_ToolBar->EnableTool(opId, enable && node && GetOp(opId)->Accept(node));
 		m_OperationToolbar->EnableTool(opId, enable && node && GetOp(opId)->Accept(node));
@@ -579,7 +569,7 @@ void appLogic::EnableMenuAndToolbar()
 //----------------------------------------------------------------------------
 void appLogic::CreateControlPanel()
 {
-	m_SidebarStyle = albaSideBar::DOUBLE_NOTEBOOK;
+	m_SidebarStyle = albaSideBar::SINGLE_NOTEBOOK;
 	m_SideBar = new albaSideBar(m_Win, MENU_VIEW_SIDEBAR, this, m_SidebarStyle); //Default SideBar
 
 	// Create Custom SideBar
