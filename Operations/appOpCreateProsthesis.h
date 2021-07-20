@@ -103,18 +103,18 @@ public:
 		ID_ADD_COMPONENT,
 		ID_COMPONENT_GROUP_END,
 
-		ID_PRODUCER_DIALOG_OK_PRESSED,
-		ID_PRODUCER_DIALOG_TEXT,
-		ID_PRODUCER_DIALOG_IMM,
+// 		ID_PRODUCER_DIALOG_OK_PRESSED,
+// 		ID_PRODUCER_DIALOG_TEXT,
+// 		ID_PRODUCER_DIALOG_IMM,
 
-		ID_MODEL_DIALOG_OK_PRESSED,
-		ID_MODEL_DIALOG_TEXT,
-		ID_MODEL_DIALOG_TYPE,
-		ID_MODEL_DIALOG_SIDE,
-		ID_MODEL_DIALOG_IMM,
-
-		ID_COMPONENT_DIALOG_OK_PRESSED,
-		ID_COMPONENT_DIALOG_TEXT,
+// 		ID_MODEL_DIALOG_OK_PRESSED,
+// 		ID_MODEL_DIALOG_TEXT,
+// 		ID_MODEL_DIALOG_TYPE,
+// 		ID_MODEL_DIALOG_SIDE,
+// 		ID_MODEL_DIALOG_IMM,
+// 
+// 		ID_COMPONENT_DIALOG_OK_PRESSED,
+// 		ID_COMPONENT_DIALOG_TEXT,
 	};
 
 	/** Constructor. */
@@ -160,29 +160,29 @@ protected:
 	void SelectProducer();
 	void AddProducer();
 	void EditProducer();
-	void UpdateProducer();
+	void UpdateProducer(Producer producer);
 
 	void SelectModel();
 	void AddModel();
 	void EditModel();
-	void UpdateModel();
+	void UpdateModel(Model model);
 
 	void SelectComponent();
 	void AddComponent();
 	void EditComponent();
-	void UpdateComponent();
+	void UpdateComponent(Component component);
 
-	void ShowProducerDialog();
-	void HideProducerDialog();
-	void UpdateProducerDialog();
+// 	void ShowProducerDialog();
+// 	void HideProducerDialog();
+// 	void UpdateProducerDialog();
 	
-	void ShowModelDialog();
-	void HideModelDialog();
-	void UpdateModelDialog();
-
-	void ShowComponentDialog();
-	void HideComponentDialog();
-	void UpdateComponentDialog();
+// 	void ShowModelDialog();
+// 	void HideModelDialog();
+// 	void UpdateModelDialog();
+// 
+// 	void ShowComponentDialog();
+// 	void HideComponentDialog();
+// 	void UpdateComponentDialog();
 
 	std::vector<Producer> m_ProsthesisVect;
 
@@ -205,36 +205,36 @@ protected:
 	std::vector<wxString> m_ComponentNameList;
 
 	// Product Dialog
-	albaGUIDialog	*m_ProducerDialog;
-
-	wxComboBox *m_ProducerImageComboBox;
-	wxImage	*m_ProducerImage;
-	albaGUIPicButton *m_ProducerImageButton;
-
-	wxTextCtrl *m_ProducerName_textCtrl;
-	wxTextCtrl *m_ProducerSite_textCtrl;
-
-	bool m_ProducerOkButtonPressed;
-	bool m_IsProducerDialogOpened;
+// 	albaGUIDialog	*m_ProducerDialog;
+// 
+// 	wxComboBox *m_ProducerImageComboBox;
+// 	wxImage	*m_ProducerImage;
+// 	albaGUIPicButton *m_ProducerImageButton;
+// 
+// 	wxTextCtrl *m_ProducerName_textCtrl;
+// 	wxTextCtrl *m_ProducerSite_textCtrl;
+// 
+// 	bool m_ProducerOkButtonPressed;
+// 	bool m_IsProducerDialogOpened;
 
 	// Model Dialog
-	albaGUIDialog	*m_ModelDialog;
-
-	wxComboBox *m_ModelImageComboBox;
-	wxImage	*m_ModelImage;
-	albaGUIPicButton *m_ModelImageButton;
-
-	wxTextCtrl *m_ModelName_textCtrl;
-
-	bool m_ModelOkButtonPressed;
-	bool m_IsModelDialogOpened;
+// 	albaGUIDialog	*m_ModelDialog;
+// 
+// 	wxComboBox *m_ModelImageComboBox;
+// 	wxImage	*m_ModelImage;
+// 	albaGUIPicButton *m_ModelImageButton;
+// 
+// 	wxTextCtrl *m_ModelName_textCtrl;
+// 
+// 	bool m_ModelOkButtonPressed;
+// 	bool m_IsModelDialogOpened;
 
 	// Component Dialog
-	albaGUIDialog	*m_ComponentDialog;
-
-	wxTextCtrl *m_ComponentName_textCtrl;
-
-	bool m_ComponentOkButtonPressed;
-	bool m_IsComponentDialogOpened;
+// 	albaGUIDialog	*m_ComponentDialog;
+// 
+// 	wxTextCtrl *m_ComponentName_textCtrl;
+// 
+// 	bool m_ComponentOkButtonPressed;
+// 	bool m_IsComponentDialogOpened;
 };
 #endif
