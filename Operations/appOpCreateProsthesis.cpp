@@ -22,6 +22,9 @@ PURPOSE. See the above copyright notice for more information.
 #include "appOpCreateProsthesis.h"
 #include "appDecl.h"
 #include "appGUI.h"
+#include "appGUIDialogProducer.h"
+#include "appGUIDialogModel.h"
+#include "appGUIDialogComponent.h"
 
 #include "albaGUI.h"
 #include "albaGUIButton.h"
@@ -33,7 +36,6 @@ PURPOSE. See the above copyright notice for more information.
 #include "wx\image.h"
 #include "wx\window.h"
 #include "albaGUIValidator.h"
-
 
 //----------------------------------------------------------------------------
 albaCxxTypeMacro(appOpCreateProsthesis);
@@ -51,18 +53,6 @@ appOpCreateProsthesis::appOpCreateProsthesis(wxString label) :albaOp(label)
 	m_SelectedProducer = 0;
 	m_SelectedModel = 0;
 	m_SelectedComponent = 0;
-
-	m_ProducerDialog = NULL;
-	m_IsProducerDialogOpened = false;
-	m_ProducerOkButtonPressed = false;
-
-	m_ModelDialog = NULL;
-	m_IsModelDialogOpened = false;
-	m_ModelOkButtonPressed = false;
-
-	m_ComponentDialog = NULL;
-	m_IsComponentDialogOpened = false;
-	m_ComponentOkButtonPressed = false;
 }
 
 //----------------------------------------------------------------------------
@@ -73,10 +63,6 @@ appOpCreateProsthesis::~appOpCreateProsthesis()
 	m_ProducerNameList.clear();
 	m_ModelNameList.clear();
 	m_ComponentNameList.clear();
-
-	cppDEL(m_ProducerDialog);
-	cppDEL(m_ModelDialog);
-	cppDEL(m_ComponentDialog);
 }
 
 //----------------------------------------------------------------------------
@@ -275,72 +261,7 @@ void appOpCreateProsthesis::OnEvent(albaEventBase *alba_event)
 			case ID_ADD_COMPONENT:
 				AddComponent();
 				break;
-
-				// DIALOG Events
-			case ID_PRODUCER_DIALOG_OK_PRESSED:
-			{
-				HideProducerDialog();
-				m_ProducerOkButtonPressed = true;
-
-				UpdateProducer();
-			}
-			break;
-
-			case ID_PRODUCER_DIALOG_TEXT:
-				break;
-
-			case ID_PRODUCER_DIALOG_IMM:
-			{
-				albaString fileNameFullPath = albaGetDocumentsDirectory().c_str();
-				albaString wildc = "Image file (*.bmp)|*.bmp";
-				wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
-
-				if (wxFileExists(imagePath))
-				{
-					m_CurrentProducer.brandImage = imagePath;
-					UpdateProducerDialog();
-				}
-			}
-			break;
-
-			case ID_MODEL_DIALOG_OK_PRESSED:
-			{
-				HideModelDialog();
-				m_ModelOkButtonPressed = true;
-
-				UpdateModel();
-			}
-			break;
-
-			case ID_MODEL_DIALOG_TEXT:
-				break;
-
-			case ID_MODEL_DIALOG_IMM:
-			{
-				albaString fileNameFullPath = albaGetDocumentsDirectory().c_str();
-				albaString wildc = "Image file (*.bmp)|*.bmp";
-				wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
-
-				if (wxFileExists(imagePath))
-				{
-					m_CurrentModel.image = imagePath;
-					UpdateModelDialog();
-				}
-			}
-			break;
-
-			case ID_COMPONENT_DIALOG_OK_PRESSED:
-			{
-				HideComponentDialog();
-				m_ComponentOkButtonPressed = true;
-
-				UpdateComponent();
-			}
-			break;
-
-			case ID_COMPONENT_DIALOG_TEXT:
-				break;
-
+				
 			default:
 				Superclass::OnEvent(alba_event);
 				break;
@@ -476,25 +397,26 @@ void appOpCreateProsthesis::EditProducer()
 	m_CurrentProducer.name = m_ProsthesisVect[m_SelectedProducer - 1].name;
 	m_CurrentProducer.webSite = m_ProsthesisVect[m_SelectedProducer - 1].webSite;
 	m_CurrentProducer.brandImage = m_ProsthesisVect[m_SelectedProducer - 1].brandImage;
+	
+	appGUIDialogProducer pd(_("Edit Producer"));
+	pd.SetProducer(m_CurrentProducer);
+	pd.Show();
 
-	ShowProducerDialog();
+	UpdateProducer(pd.GetProducer());
 }
 //----------------------------------------------------------------------------
-void appOpCreateProsthesis::UpdateProducer()
+void appOpCreateProsthesis::UpdateProducer(Producer producer)
 {
 	//////////////////////////////////////////////////////////////////////////
-	// Update Producer
-	wxString newName = m_ProducerName_textCtrl->GetValue();
-	wxString newSite = m_ProducerSite_textCtrl->GetValue();
 
 	// Update Combobox
-	m_ProducerNameList[m_SelectedProducer] = newName;
-	m_ProducerComboBox->SetString(m_SelectedProducer, newName);
+	m_ProducerNameList[m_SelectedProducer] = producer.name;
+	m_ProducerComboBox->SetString(m_SelectedProducer, producer.name);
 
 	// Update Vector Element
-	m_ProsthesisVect[m_SelectedProducer - 1].name = newName;
-	m_ProsthesisVect[m_SelectedProducer - 1].webSite = newSite;
-	m_ProsthesisVect[m_SelectedProducer - 1].brandImage = m_CurrentProducer.brandImage;
+	m_ProsthesisVect[m_SelectedProducer - 1].name = producer.name;
+	m_ProsthesisVect[m_SelectedProducer - 1].webSite = producer.webSite;
+	m_ProsthesisVect[m_SelectedProducer - 1].brandImage = producer.brandImage;
 	m_ProsthesisVect[m_SelectedProducer - 1].isChanged = true;
 
 	UpdateGui();
@@ -554,24 +476,26 @@ void appOpCreateProsthesis::EditModel()
 	m_CurrentModel.type = m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].type;
 	m_CurrentModel.side = m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].side;
 
-	ShowModelDialog();
+	appGUIDialogModel md(_("Edit Model"));
+	md.SetModel(&m_CurrentModel);
+	md.ShowModal();
+
+	UpdateModel(md.GetModel());
 }
 //----------------------------------------------------------------------------
-void appOpCreateProsthesis::UpdateModel()
+void appOpCreateProsthesis::UpdateModel(Model model)
 {
 	//////////////////////////////////////////////////////////////////////////
-	// Update Model
-	wxString newName = m_ModelName_textCtrl->GetValue();
 
 	// Update Combobox
-	m_ModelNameList[m_SelectedModel] = newName;
-	m_ModelComboBox->SetString(m_SelectedModel, newName);
+	m_ModelNameList[m_SelectedModel] = model.name;
+	m_ModelComboBox->SetString(m_SelectedModel, model.name);
 
 	// Update Vector Element
-	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].name = newName;
-	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].image = m_CurrentModel.image;
-	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].type = m_CurrentModel.type;
-	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].side = m_CurrentModel.side;
+	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].name = model.name;
+	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].image = model.image;
+	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].type = model.type;
+	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].side = model.side;
 	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].isChanged = true;
 
 	UpdateGui();
@@ -614,402 +538,24 @@ void appOpCreateProsthesis::EditComponent()
 {
 	m_CurrentComponent.name = m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].components[m_SelectedComponent-1].name;
 
-	ShowComponentDialog();
+	appGUIDialogComponent cd(_("Edit Component"));
+	cd.SetComponent(&m_CurrentComponent);
+	cd.ShowModal();
+
+	UpdateComponent(cd.GetComponent());
 }
 //----------------------------------------------------------------------------
-void appOpCreateProsthesis::UpdateComponent()
+void appOpCreateProsthesis::UpdateComponent(Component component)
 {
 	//////////////////////////////////////////////////////////////////////////
-	// Update Component
-	wxString newName = m_ComponentName_textCtrl->GetValue();
 
 	// Update Combobox
-	m_ComponentNameList[m_SelectedComponent] = newName;
-	m_ComponentComboBox->SetString(m_SelectedComponent, newName);
+	m_ComponentNameList[m_SelectedComponent] = component.name;;
+	m_ComponentComboBox->SetString(m_SelectedComponent, component.name);
 
 	// Update Vector Element
-	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].components[m_SelectedComponent - 1].name = newName;
+	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].components[m_SelectedComponent - 1].name = component.name;;
 	m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].components[m_SelectedComponent - 1].isChanged = true;
 
 	UpdateGui();
-}
-
-/// Dialog Producer
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::ShowProducerDialog()
-{
-	wxString title = "Edit Producer";
-
-	//////////////////////////////////////////////////////////////////////////
-	if (m_ProducerDialog == NULL)
-	{
-		m_ProducerDialog = new albaGUIDialog(title, albaCLOSEWINDOW);
-
-		//////////////////////////////////////////////////////////////////////////
-
-		wxBoxSizer *mainBoxSizer = new wxBoxSizer(wxVERTICAL);
-
-		//
-		int panelWidth = 400;
-
-		wxString imagesPath = appUtils::GetConfigDirectory().c_str();
-		wxString imgPath = imagesPath + "/Wizard/Producer.bmp";
-
-		if (wxFileExists(m_CurrentProducer.brandImage))
-			imgPath = m_CurrentProducer.brandImage;
-
-		if (wxFileExists(imgPath))
-		{
-			//wxImage *previewImage;
-			wxBitmap *previewBitmap;
-
-			// Load and show the image
-			m_ProducerImage = new wxImage();
-			m_ProducerImage->LoadFile(imgPath.c_str(), wxBITMAP_TYPE_ANY);
-
-			previewBitmap = new wxBitmap(*m_ProducerImage);
-			m_ProducerImageButton = new albaGUIPicButton(m_ProducerDialog, previewBitmap, -1);
-
-			panelWidth = m_ProducerImage->GetWidth();
-
-			mainBoxSizer->Add(m_ProducerImageButton, 0, wxALL | wxALIGN_CENTER, 0);
-
-			// BUTTON - Change Producer Brand Image
-			albaGUIButton *immBtn = new albaGUIButton(m_ProducerDialog, ID_PRODUCER_DIALOG_IMM, "Change Image", wxPoint(-1, -1));
-			immBtn->SetListener(this);
-			mainBoxSizer->Add(immBtn, 0, wxALIGN_RIGHT, 0);
-			
-			delete previewBitmap;
-		}
-
-		//////////////////////////////////////////////////////////////////////////
-		// Info Sizer
-		wxBoxSizer *infoBoxSizer = new wxBoxSizer(wxVERTICAL);
-
-		// TEXT - Producer Name
-		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxVERTICAL, m_ProducerDialog, "Producer Name");
-		m_ProducerName_textCtrl = new wxTextCtrl(m_ProducerDialog, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducer.name, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
-		m_ProducerName_textCtrl->SetEditable(true);
-		m_ProducerName_textCtrl->SetMaxLength(64);
-		labelSizer1->Add(m_ProducerName_textCtrl, 0, wxALL | wxEXPAND, 0);
-		infoBoxSizer->Add(labelSizer1, 0, wxALL | wxEXPAND, 5);
-
-		// TEXT - Producer Web Site
-		wxStaticBoxSizer *labelSizer2 = new wxStaticBoxSizer(wxVERTICAL, m_ProducerDialog, "Web Site");
-		m_ProducerSite_textCtrl = new wxTextCtrl(m_ProducerDialog, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducer.webSite, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
-		m_ProducerSite_textCtrl->SetEditable(true);
-		m_ProducerSite_textCtrl->SetMaxLength(64);
-		labelSizer2->Add(m_ProducerSite_textCtrl, 0, wxALL | wxEXPAND, 0);
-		infoBoxSizer->Add(labelSizer2, 0, wxALL | wxEXPAND, 5);
-		
-		// TEXT - Empty Separator
-		infoBoxSizer->Add(new albaGUILab(m_ProducerDialog, -1, " "), 0, wxALIGN_LEFT, 5);
-
-		mainBoxSizer->Add(infoBoxSizer, 0, wxALL, 5);
-
-		// BUTTON - Ok
-		albaGUIButton *okBtn = new albaGUIButton(m_ProducerDialog, ID_PRODUCER_DIALOG_OK_PRESSED, "OK", wxPoint(-1, -1));
-		okBtn->SetListener(this);
-		mainBoxSizer->Add(okBtn, 0, wxALIGN_RIGHT, 0);
-
-		//////////////////////////////////////////////////////////////////////////
-		m_ProducerDialog->Add(mainBoxSizer, 0, wxALL, 5);
-		m_ProducerDialog->Fit();
-
-		// Show dialog
-		wxSize s = albaGetFrame()->GetSize();
-		wxPoint p = albaGetFrame()->GetPosition();
-		int posX = p.x + s.GetWidth() * .5 - m_ProducerDialog->GetSize().GetWidth() * .5;
-		int posY = p.y + s.GetHeight() * .5 - m_ProducerDialog->GetSize().GetHeight() * .5;
-
-		m_ProducerDialog->SetPosition(wxPoint(posX, posY));
-	}
-	else
-	{
-		UpdateProducerDialog();
-	}
-
-	if (m_IsProducerDialogOpened)
-		HideProducerDialog();
-
-	m_ProducerDialog->ShowModal();
-
-	m_IsProducerDialogOpened = true;
-	m_ProducerOkButtonPressed = false;
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::HideProducerDialog()
-{
-	if (m_ProducerDialog)
-		m_ProducerDialog->Hide();
-
-	m_IsProducerDialogOpened = false;
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::UpdateProducerDialog()
-{
-	if (m_ProducerDialog)
-	{
-		// Update Image
-		if (wxFileExists(m_CurrentProducer.brandImage))
-		{
-			m_ProducerImage->LoadFile(m_CurrentProducer.brandImage.c_str(), wxBITMAP_TYPE_ANY);
-			m_ProducerImageButton->SetBitmapSelected(wxBitmap(*m_ProducerImage));
-			m_ProducerImageButton->Update();
-			m_ProducerDialog->Update();
-		}
-
-		m_ProducerName_textCtrl->SetValue(m_CurrentProducer.name);
-		m_ProducerSite_textCtrl->SetValue(m_CurrentProducer.webSite);
-	}
-}
-
-/// Dialog Model
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::ShowModelDialog()
-{
-	wxString title = "Edit Model";
-
-	//////////////////////////////////////////////////////////////////////////
-	if (m_ModelDialog == NULL)
-	{
-		m_ModelDialog = new albaGUIDialog(title, albaCLOSEWINDOW);
-
-		//////////////////////////////////////////////////////////////////////////
-
-		wxBoxSizer *mainBoxSizer = new wxBoxSizer(wxVERTICAL);
-		wxBoxSizer *main2BoxSizer = new wxBoxSizer(wxHORIZONTAL);
-		wxBoxSizer *imageBoxSizer = new wxBoxSizer(wxVERTICAL);
-		//
-		int panelWidth = 400;
-		wxString imagesPath = appUtils::GetConfigDirectory().c_str();
-		wxString imgPath = imagesPath + "/Wizard/Model.bmp";
-
-		if (wxFileExists(m_CurrentModel.image))
-			imgPath = m_CurrentModel.image;
-
-		if (wxFileExists(imgPath))
-		{
-			wxBitmap *previewBitmap;
-
-			// Load and show the image
-			m_ModelImage = new wxImage();
-			m_ModelImage->LoadFile(imgPath.c_str(), wxBITMAP_TYPE_ANY);
-
-			previewBitmap = new wxBitmap(*m_ModelImage);
-			m_ModelImageButton = new albaGUIPicButton(m_ModelDialog, previewBitmap, -1);
-
-			panelWidth = m_ModelImage->GetWidth();
-
-			imageBoxSizer->Add(m_ModelImageButton, 0, wxALL | wxALIGN_LEFT, 0);
-
-			// BUTTON - Change Model Brand Image
-			albaGUIButton *immBtn = new albaGUIButton(m_ModelDialog, ID_MODEL_DIALOG_IMM, "Change Image", wxPoint(-1, -1));
-			immBtn->SetListener(this);
-			imageBoxSizer->Add(immBtn, 0, wxALIGN_RIGHT, 0);
-
-			main2BoxSizer->Add(imageBoxSizer, 0, wxALL, 0);
-
-			delete previewBitmap;
-		}
-
-		//////////////////////////////////////////////////////////////////////////
-		// Info Sizer
-		wxBoxSizer *infoBoxSizer = new wxBoxSizer(wxVERTICAL);
-		
-		// TEXT - Model Name
-		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxVERTICAL, m_ModelDialog, "Model Name");
-		m_ModelName_textCtrl = new wxTextCtrl(m_ModelDialog, ID_MODEL_DIALOG_TEXT, m_CurrentModel.name, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
-		m_ModelName_textCtrl->SetEditable(true);
-		m_ModelName_textCtrl->SetMaxLength(64);
-		labelSizer1->Add(m_ModelName_textCtrl, 0, wxALL | wxEXPAND, 0);
-		infoBoxSizer->Add(labelSizer1, 0, wxALL | wxEXPAND, 5);
-
-		wxBoxSizer *propBoxSizer = new wxBoxSizer(wxHORIZONTAL);
-
-		// RADIO - Type Model
-		wxString typeChoices[]{ "Acetabular","Femoral" };
-		wxRadioBox *typeRadioBox = new wxRadioBox(m_ModelDialog, ID_MODEL_DIALOG_TYPE, "Type", wxPoint(-1, -1), wxSize(-1, -1), 2, typeChoices);
-		typeRadioBox->SetValidator(albaGUIValidator(this, ID_MODEL_DIALOG_TYPE, typeRadioBox, &(m_CurrentModel.type)));
-		propBoxSizer->Add(typeRadioBox, 0, wxALL | wxEXPAND, 5);
-		
-		// RADIO - Side Model
-		wxString sideChoices[]{ "Left","Both","Right" };
-		wxRadioBox *sideRadioBox = new wxRadioBox(m_ModelDialog, ID_MODEL_DIALOG_SIDE, "Side", wxPoint(-1, -1), wxSize(-1, -1), 3, sideChoices);
-		sideRadioBox->SetValidator(albaGUIValidator(this, ID_MODEL_DIALOG_SIDE, sideRadioBox, &(m_CurrentModel.side)));
-		propBoxSizer->Add(sideRadioBox, 0, wxALL | wxEXPAND, 5);
-				
-		infoBoxSizer->Add(propBoxSizer, 0, wxALL | wxEXPAND, 0);
-
-		//////////////////////////////////////////////////////////////////////////
-		//////////////////////////////////////////////////////////////////////////
-		// TEST - Moved Components Gui into Dialog
-// 		wxStaticBoxSizer *labelSizer2 = new wxStaticBoxSizer(wxVERTICAL, m_ModelDialog, "Components");
-// 		
-// 		// COMBO - Components
-// 		wxString componentChoices[]{""};
-// 		wxComboBox *componentComboBox = new wxComboBox(m_ModelDialog, ID_SELECT_COMPONENT, "", wxPoint(-1, -1), wxSize(-1, -1), **componentChoices);
-// 		componentComboBox->SetValidator(albaGUIValidator(this, ID_SELECT_MODEL, componentComboBox, &m_SelectedComponent));
-// 		labelSizer2->Add(componentComboBox, 0, wxALL | wxEXPAND, 0);
-// 
-// 		wxBoxSizer *componentActionBoxSizer = new wxBoxSizer(wxHORIZONTAL);
-// 		
-// 		// BUTTON - Edit
-// 		albaGUIButton *editBtn = new albaGUIButton(m_ModelDialog, ID_EDIT_COMPONENT, "Edit", wxPoint(-1, -1));
-// 		editBtn->SetListener(this);
-// 		componentActionBoxSizer->Add(editBtn, 0, wxALIGN_RIGHT, 0);
-// 
-// 		// BUTTON - Add
-// 		albaGUIButton *addBtn = new albaGUIButton(m_ModelDialog, ID_ADD_COMPONENT, "Add", wxPoint(-1, -1));
-// 		addBtn->SetListener(this);
-// 		componentActionBoxSizer->Add(addBtn, 0, wxALIGN_RIGHT, 0);
-// 
-// 		labelSizer2->Add(componentActionBoxSizer, 0, wxALL | wxEXPAND, 0);
-// 
-// 		infoBoxSizer->Add(labelSizer2, 0, wxALL | wxEXPAND, 5);
-		//////////////////////////////////////////////////////////////////////////
-		//////////////////////////////////////////////////////////////////////////
-
-
-		// TEXT - Empty Separator
-		infoBoxSizer->Add(new albaGUILab(m_ModelDialog, -1, " "), 0, wxALIGN_LEFT, 5);
-
-		main2BoxSizer->Add(infoBoxSizer, 0, wxALL, 0);
-		mainBoxSizer->Add(main2BoxSizer, 0, wxALL, 5);
-
-		// BUTTON - Ok
-		albaGUIButton *okBtn = new albaGUIButton(m_ModelDialog, ID_MODEL_DIALOG_OK_PRESSED, "OK", wxPoint(-1, -1));
-		okBtn->SetListener(this);
-		mainBoxSizer->Add(okBtn, 0, wxALIGN_RIGHT, 0);
-
-		//////////////////////////////////////////////////////////////////////////
-		m_ModelDialog->Add(mainBoxSizer, 0, wxALL, 5);
-		m_ModelDialog->Fit();
-
-		// Show dialog
-		wxSize s = albaGetFrame()->GetSize();
-		wxPoint p = albaGetFrame()->GetPosition();
-		int posX = p.x + s.GetWidth() * .5 - m_ModelDialog->GetSize().GetWidth() * .5;
-		int posY = p.y + s.GetHeight() * .5 - m_ModelDialog->GetSize().GetHeight() * .5;
-
-		m_ModelDialog->SetPosition(wxPoint(posX, posY));
-	}
-	else
-	{
-		UpdateModelDialog();
-	}
-
-	if (m_IsModelDialogOpened)
-		HideModelDialog();
-
-	m_ModelDialog->ShowModal();
-
-	m_IsModelDialogOpened = true;
-	m_ModelOkButtonPressed = false;
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::HideModelDialog()
-{
-	if (m_ModelDialog)
-		m_ModelDialog->Hide();
-
-	m_IsModelDialogOpened = false;
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::UpdateModelDialog()
-{
-	if (m_ModelDialog)
-	{
-		// Update Image
-		if (wxFileExists(m_CurrentModel.image))
-		{
-			m_ModelImage->LoadFile(m_CurrentModel.image.c_str(), wxBITMAP_TYPE_ANY);
-			m_ModelImageButton->SetBitmapSelected(wxBitmap(*m_ModelImage));
-			m_ModelImageButton->Update();
-			m_ModelDialog->Update();
-		}
-
-		m_ModelName_textCtrl->SetValue(m_CurrentModel.name);
-	}
-}
-
-/// Dialog Component
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::ShowComponentDialog()
-{
-	wxString title = "Edit Component";
-
-	//////////////////////////////////////////////////////////////////////////
-	if (m_ComponentDialog == NULL)
-	{
-		m_ComponentDialog = new albaGUIDialog(title, albaCLOSEWINDOW);
-
-		//////////////////////////////////////////////////////////////////////////
-
-		wxBoxSizer *mainBoxSizer = new wxBoxSizer(wxVERTICAL);
-
-		int panelWidth = 400;
-
-		//////////////////////////////////////////////////////////////////////////
-		// Info Sizer
-		wxBoxSizer *infoBoxSizer = new wxBoxSizer(wxVERTICAL);
-
-		// TEXT - Component Name
-		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxVERTICAL, m_ComponentDialog, "Component Name");
-		m_ComponentName_textCtrl = new wxTextCtrl(m_ComponentDialog, ID_COMPONENT_DIALOG_TEXT, m_CurrentComponent.name, wxPoint(-1, -1), wxSize(panelWidth, 25), wxALL | wxEXPAND);
-		m_ComponentName_textCtrl->SetEditable(true);
-		m_ComponentName_textCtrl->SetMaxLength(64);
-		labelSizer1->Add(m_ComponentName_textCtrl, 0, wxALL | wxEXPAND, 0);
-		infoBoxSizer->Add(labelSizer1, 0, wxALL | wxEXPAND, 5);
-
-		// TEXT - Empty Separator
-		infoBoxSizer->Add(new albaGUILab(m_ComponentDialog, -1, " "), 0, wxALIGN_LEFT, 5);
-
-		mainBoxSizer->Add(infoBoxSizer, 0, wxALL, 5);
-
-		// BUTTON - Ok
-		albaGUIButton *okBtn = new albaGUIButton(m_ComponentDialog, ID_COMPONENT_DIALOG_OK_PRESSED, "OK", wxPoint(-1, -1));
-		okBtn->SetListener(this);
-		mainBoxSizer->Add(okBtn, 0, wxALIGN_RIGHT, 0);
-
-		//////////////////////////////////////////////////////////////////////////
-		m_ComponentDialog->Add(mainBoxSizer, 0, wxALL, 5);
-		m_ComponentDialog->Fit();
-
-		// Show dialog
-		wxSize s = albaGetFrame()->GetSize();
-		wxPoint p = albaGetFrame()->GetPosition();
-		int posX = p.x + s.GetWidth() * .5 - m_ComponentDialog->GetSize().GetWidth() * .5;
-		int posY = p.y + s.GetHeight() * .5 - m_ComponentDialog->GetSize().GetHeight() * .5;
-
-		m_ComponentDialog->SetPosition(wxPoint(posX, posY));
-	}
-	else
-	{
-		UpdateComponentDialog();
-	}
-
-	if (m_IsComponentDialogOpened)
-		HideComponentDialog();
-
-	m_ComponentDialog->ShowModal();
-
-	m_IsComponentDialogOpened = true;
-	m_ComponentOkButtonPressed = false;
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::HideComponentDialog()
-{
-	if (m_ComponentDialog)
-		m_ComponentDialog->Hide();
-
-	m_IsComponentDialogOpened = false;
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::UpdateComponentDialog()
-{
-	if (m_ComponentDialog)
-	{
-		m_ComponentName_textCtrl->SetValue(m_CurrentComponent.name);
-	}
 }

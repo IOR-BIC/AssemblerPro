@@ -17,8 +17,11 @@ PROJECT(appGui)
 
 # Set your list of sources here.
 SET(PROJECT_SRCS
-appGUI.cpp				appGUI.h
-appSideBar.cpp			appSideBar.h
+appGUI.cpp								appGUI.h
+appSideBar.cpp						appSideBar.h
+appGUIDialogProducer.cpp	appGUIDialogProducer.h
+appGUIDialogModel.cpp			appGUIDialogModel.h
+appGUIDialogComponent.cpp	appGUIDialogComponent.h
 )
 
 IF(APP_BUILD_DLL)
