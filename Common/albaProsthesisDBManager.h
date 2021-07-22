@@ -35,8 +35,13 @@ class albaGUISettingsDialog;
 class ProStorable
 {
 public:
-	virtual void Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) = 0;
+	virtual int Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) = 0;
 	virtual void Store() = 0;
+	virtual void Clear() = 0;
+
+protected:
+	bool CheckNodeElement(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node, const char *elementName);
+	albaString GetElementAttribute(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node, const char *attributeName);
 };
 
 /**
@@ -54,8 +59,9 @@ public:
 	void SetWebSite(albaString val) { m_WebSite = val; }
 	
 	// Inherited via ProStorable
-	virtual void Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
+	virtual int Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
 	virtual void Store() override;
+	virtual void Clear() override;
 
 protected:
 	albaString m_Name;
@@ -73,8 +79,10 @@ public:
 	void SetName(albaString val) { m_Name = val; }
 
 	// Inherited via ProStorable
-	virtual void Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
+	virtual int Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
 	virtual void Store() override;
+	virtual void Clear() override;
+
 protected:
 	albaString m_Name;
 };
@@ -90,8 +98,9 @@ public:
 	void SetFilename(albaString val) { m_Filename = val; }
 
 	// Inherited via ProStorable
-	virtual void Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
+	virtual int Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
 	virtual void Store() override; 
+	virtual void Clear() override;
 
 protected:
 	albaMatrix m_Matrix;
@@ -102,19 +111,20 @@ protected:
 /**
 Class Name: albaProsthesisDBManager.
 */
-class ablaProDBCompGruop : public ProStorable
+class albaProDBCompGruop : public ProStorable
 {
 public:
 	albaString GetName() const { return m_Name; }
 	void SetName(albaString val) { m_Name = val; }
 
 	// Inherited via ProStorable
-	virtual void Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
+	virtual int Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
 	virtual void Store() override;
+	virtual void Clear() override;
 
 protected:
 	albaString m_Name;
-	std::vector<albaProDBComponent> m_Components;
+	std::vector<albaProDBComponent *> m_Components;
 };
 
 
@@ -124,9 +134,10 @@ public:
 
 	enum PRO_SIDES
 	{
+		PRO_UKNOWN = -1,
 		PRO_LEFT,
 		PRO_RIGHT,
-		PRO_BOTH
+		PRO_BOTH,
 	};
 
 	albaString GetName() const { return m_Name; }
@@ -141,8 +152,11 @@ public:
 	void SetSide(albaProDBProshesis::PRO_SIDES val) { m_Side = val; }
 
 	// Inherited via ProStorable
-	virtual void Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
+	virtual int Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
 	virtual void Store() override;
+	virtual void Clear() override;
+
+	PRO_SIDES GetSideByString(albaString sideName);
 
 protected:
 	albaString m_Name;
@@ -151,7 +165,8 @@ protected:
 	albaString m_Type;
 	PRO_SIDES m_Side;
 
-	std::vector<ablaProDBCompGruop> m_Groups;
+	std::vector<albaProDBCompGruop *> m_CompGroups;
+
 };
 
 /**
@@ -168,11 +183,21 @@ public:
   ~albaProsthesisDBManager();
 
 	// Inherited via ProStorable
-	virtual void Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
+
+	int LoadDB();
+
+	virtual int Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
 	virtual void Store() override;
+
+	virtual void Clear() override;
+
 			
 private:
-	std::vector<albaProDBProducer> m_Producers;
 	albaString m_DBFilename;
+
+	std::vector<albaProDBProducer *> m_Producers;
+	std::vector<albaProDBType *> m_Types;
+	std::vector<albaProDBProshesis *>  m_Prostheses;
+
 };
 #endif

@@ -27,21 +27,53 @@
 #include <wx/tokenzr.h>
 #include "albaLogicWithManagers.h"
 #include "wx/dir.h"
+#include "mmuDOMTreeErrorReporter.h"
+#include "albaXMLElement.h"
+#include "mmuXMLDOMElement.h"
+#include "albaXMLString.h"
+#include "albaTagArray.h"
+#include <xercesc/util/XercesDefs.hpp>
+#include <xercesc/dom/DOM.hpp>
+#include <xercesc/util/XMLString.hpp>
+#include <xercesc/util/PlatformUtils.hpp>
+#include <xercesc/framework/LocalFileFormatTarget.hpp>
+#include <xercesc/framework/LocalFileInputSource.hpp>
+#include <xercesc/sax/ErrorHandler.hpp>
 
+//albaProsthesisDBManager defines
+#define PRODB_NAME "ProstesesDB"
+#define DB_VERSION "1.0"
+#define NODE_PRODUCERS "Producers"
+#define NODE_TYPES "Types"
+#define NODE_PROSTHESES "Prostheses"
+#define NODE_PRODUCER "Producer"
+#define NODE_TYPE "Type"
+#define NODE_PROSTHESIS "Prosthesis"
+#define NODE_COMPONENTS "Components"
+#define NODE_COMPONENT "Component"
+#define NODE_MATRIX "Matrix"
+#define ATTR_VERSION "Version"
+#define ATTR_NAME "Name"
+#define ATTR_IMG "IMG"
+#define ATTR_SITE "Site"
+#define ATTR_SIDE "Side"
+#define ATTR_TYPE "Type"
+#define ATTR_PRODUCER "Producer"
+#define ATTR_FILE "File"
 
 
 //----------------------------------------------------------------------------
 albaProsthesisDBManager::albaProsthesisDBManager()
-//----------------------------------------------------------------------------
 {
 	m_DBFilename = (albaGetAppDataDirectory()).c_str();
-	m_DBFilename += "\\ProsthesisDB\\";
+	m_DBFilename += "\\ProsthesesDB\\";
 
 	if(!wxDir::Exists(m_DBFilename.GetCStr()))
 		wxMkdir(m_DBFilename.GetCStr());
 
+	m_DBFilename += "ProsthesesDB.xml";
 
-	Load(NULL);
+	LoadDB();
 }
 
 //----------------------------------------------------------------------------
@@ -50,50 +82,424 @@ albaProsthesisDBManager::~albaProsthesisDBManager()
 
 }
 
-void albaProsthesisDBManager::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
+
+//----------------------------------------------------------------------------
+int albaProsthesisDBManager::LoadDB()
 {
+	if (!wxFileExists(m_DBFilename.GetCStr()))
+		return ALBA_OK;
+
+	//Open the file xml with manufacture and model information
+	try {
+		XERCES_CPP_NAMESPACE_QUALIFIER XMLPlatformUtils::Initialize();
+	}
+	catch (const XERCES_CPP_NAMESPACE_QUALIFIER XMLException& toCatch) {
+		// Do your failure processing here
+		return ALBA_ERROR;
+	}
+
+	XERCES_CPP_NAMESPACE_QUALIFIER XercesDOMParser *XMLParser = new  XERCES_CPP_NAMESPACE_QUALIFIER XercesDOMParser;
+
+	XMLParser->setValidationScheme(XERCES_CPP_NAMESPACE_QUALIFIER XercesDOMParser::Val_Auto);
+	XMLParser->setDoNamespaces(false);
+	XMLParser->setDoSchema(false);
+	XMLParser->setCreateEntityReferenceNodes(false);
+
+	mmuDOMTreeErrorReporter *errReporter = new mmuDOMTreeErrorReporter();
+	XMLParser->setErrorHandler(errReporter);
+
+	try {
+		XMLParser->parse(m_DBFilename.GetCStr());
+		int errorCount = XMLParser->getErrorCount();
+
+		if (errorCount != 0)
+		{
+			// errors while parsing...
+			albaErrorMessage("Errors while parsing XML file");
+			return ALBA_ERROR;
+		}
+
+		// extract the root element and wrap inside a albaXMLElement
+		XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc = XMLParser->getDocument();
+		XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *root = doc->getDocumentElement();
+		assert(root);
+
+		if (CheckNodeElement(root, PRODB_NAME))
+		{
+			albaString version = GetElementAttribute(root, ATTR_VERSION);
+
+			//Check the DB version
+			if (version != DB_VERSION)
+			{
+				albaLogMessage("Wrong DB Version:\n DB version:%s, Software Version:%s", version.GetCStr(), DB_VERSION);
+				return ALBA_ERROR;
+			}
+		}
+		else
+		{
+			albaLogMessage("Wrong DB check root node");
+			return ALBA_ERROR;
+		}
+
+		Clear();
+
+		Load(root);
+	}
+	catch (const  XERCES_CPP_NAMESPACE_QUALIFIER XMLException& toCatch) {
+		return ALBA_ERROR;
+	}
+	catch (const  XERCES_CPP_NAMESPACE_QUALIFIER DOMException& toCatch) {
+		return ALBA_ERROR;
+	}
+	catch (...) {
+		return ALBA_ERROR;
+	}
+
+	cppDEL(errReporter);
+	delete XMLParser;
+
+	// terminate the XML library
+	XERCES_CPP_NAMESPACE_QUALIFIER XMLPlatformUtils::Terminate();
+
+	albaLogMessage(_("DB Loaded"));
+
+	return ALBA_OK;
+}
+
+//----------------------------------------------------------------------------
+int albaProsthesisDBManager::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
+{
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMNodeList *dbChildren = node->getChildNodes();
+
+	for (unsigned int i = 0; i < dbChildren->getLength(); i++)
+	{
+		//Reading Type nodes 
+		XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *currentNode = dbChildren->item(i);
+
+
+		//PRODUCERS
+		if (CheckNodeElement(currentNode, NODE_PRODUCERS))
+		{
+			XERCES_CPP_NAMESPACE_QUALIFIER DOMNodeList *producersChildren = currentNode->getChildNodes();
+
+			for (unsigned int i = 0; i < producersChildren->getLength(); i++)
+			{
+				//Reading manufacturer nodes
+				XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *producerNode = producersChildren->item(i);
+
+				if (!CheckNodeElement(producerNode, NODE_PRODUCER))
+					continue;
+
+				albaProDBProducer *newProducer = new albaProDBProducer();
+				m_Producers.push_back(newProducer);
+				if (newProducer->Load(producerNode) == ALBA_ERROR)
+					return ALBA_ERROR;
+			}
+		}
+		//TYPES
+		else if (CheckNodeElement(currentNode, NODE_TYPES))
+		{
+			XERCES_CPP_NAMESPACE_QUALIFIER DOMNodeList *typesChildren = currentNode->getChildNodes();
+
+			for (unsigned int i = 0; i < typesChildren->getLength(); i++)
+			{
+				//Reading manufacturer nodes
+				XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *typeNode = typesChildren->item(i);
+	
+				if (!CheckNodeElement(typeNode, NODE_TYPE))
+					continue;
+	
+				albaProDBType *newType = new albaProDBType();
+				m_Types.push_back(newType);
+				if (newType->Load(typeNode) == ALBA_ERROR)
+					return ALBA_ERROR;
+			}
+		}
+		//PROSTHESES
+		else if (CheckNodeElement(currentNode, NODE_PROSTHESES))
+		{
+			XERCES_CPP_NAMESPACE_QUALIFIER DOMNodeList *prosthesesChildren = currentNode->getChildNodes();
+
+			for (unsigned int i = 0; i < prosthesesChildren->getLength(); i++)
+			{
+				//Reading manufacturer nodes
+				XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *prosthesesNode = prosthesesChildren->item(i);
+				
+				if (!CheckNodeElement(prosthesesNode, NODE_PROSTHESIS))
+					continue;
+
+				albaProDBProshesis *newProsthesis = new albaProDBProshesis();
+				m_Prostheses.push_back(newProsthesis);
+				if (newProsthesis->Load(prosthesesNode) == ALBA_ERROR)
+					return ALBA_ERROR;
+			}
+		}
+		else 
+		{
+			continue;
+		}
+	}
 }
 
 void albaProsthesisDBManager::Store()
 {
 }
 
-void ablaProDBCompGruop::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
+//----------------------------------------------------------------------------
+void albaProsthesisDBManager::Clear()
+{
+	for (int i = 0; i < m_Producers.size(); i++)
+		m_Producers[i]->Clear();
+	m_Producers.clear();
+
+	for (int i = 0; i < m_Types.size(); i++)
+		m_Types[i]->Clear();
+	m_Types.clear();
+
+	for (int i = 0; i < m_Prostheses.size(); i++)
+		m_Prostheses[i]->Clear();
+	m_Prostheses.clear();
+}
+
+//----------------------------------------------------------------------------
+int albaProDBCompGruop::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
+{
+	//<Compoents Name="Stem">
+	m_Name = GetElementAttribute(node, ATTR_NAME);
+
+	if (m_Name == "")
+	{
+		albaLogMessage("ERROR: Prosthesis name is empty");
+		return ALBA_ERROR;
+	}
+	
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMNodeList *components = node->getChildNodes();
+
+	for (unsigned int i = 0; i < components->getLength(); i++)
+	{
+		//Reading Type nodes 
+		XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *componentNode = components->item(i);
+
+
+		if (!CheckNodeElement(componentNode, NODE_COMPONENT))
+			continue;
+
+		albaProDBComponent *component = new albaProDBComponent();
+
+		m_Components.push_back(component);
+		if (component->Load(componentNode) == ALBA_ERROR)
+			return ALBA_ERROR;
+	}
+	return ALBA_OK;
+}
+
+//----------------------------------------------------------------------------
+void albaProDBCompGruop::Store()
 {
 }
 
-void ablaProDBCompGruop::Store()
+//----------------------------------------------------------------------------
+int albaProDBComponent::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 {
+	//<Component Name="S1" File="S1.cry">
+
+	m_Name = GetElementAttribute(node, ATTR_NAME);
+	m_Filename = GetElementAttribute(node, ATTR_FILE);
+
+
+	if (m_Name == "")
+	{
+		albaLogMessage("ERROR: Component name is empty");
+		return ALBA_ERROR;
+	}
+	if (m_Filename == "")
+	{
+		albaLogMessage("ERROR: Component filename is empty");
+		return ALBA_ERROR;
+	}
+
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMNodeList *components = node->getChildNodes();
+
+	for (unsigned int i = 0; i < components->getLength(); i++)
+	{
+		//Reading Type nodes 
+		XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *matrixNode = components->item(i);
+
+
+		if (!CheckNodeElement(matrixNode, NODE_MATRIX))
+			continue;
+
+		double *el = *m_Matrix.GetElements();
+
+
+		albaString mtrStr(matrixNode->getTextContent());
+		
+		int nRead=sscanf(mtrStr.GetCStr(), "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", el+0, el+1, el+2, el+3, el+4, el+5, el+6, el+7, el+8, el+9, el+10, el+11, el+12, el+13, el+14, el+15);
+
+		if (nRead != 16)
+		{
+			albaLogMessage("ERROR wrong number of element inside matrix");
+			return ALBA_ERROR;
+		}
+
+
+	}
+	return ALBA_OK;
 }
 
-void albaProDBComponent::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
-{
-}
-
+//----------------------------------------------------------------------------
 void albaProDBComponent::Store()
 {
 }
 
-void albaProDBType::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
+//----------------------------------------------------------------------------
+int albaProDBType::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 {
+	//<Type Name="Acetabular"/>
+	
+	m_Name = GetElementAttribute(node, ATTR_NAME);
+
+	if (m_Name == "")
+	{
+		albaLogMessage("ERROR: Type name is empty");
+		return ALBA_ERROR;
+	}
+	return ALBA_OK;
 }
 
+//----------------------------------------------------------------------------
 void albaProDBType::Store()
 {
 }
 
-void albaProDBProducer::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
+//----------------------------------------------------------------------------
+int albaProDBProducer::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 {
+	//<Producer Name="Producer" Img="Producer.png" Site="http://www.prosthesisProducer.com/"/>
+
+	m_Name = GetElementAttribute(node, ATTR_NAME);
+	m_ImgFileName = GetElementAttribute(node, ATTR_IMG);
+	m_WebSite = GetElementAttribute(node, ATTR_SITE);
+
+	if (m_Name == "")
+	{
+		albaLogMessage("ERROR: Producer name is empty");
+		return ALBA_ERROR;
+	}
+	return ALBA_OK;
 }
 
+//----------------------------------------------------------------------------
 void albaProDBProducer::Store()
 {
 }
 
-void albaProDBProshesis::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
+int albaProDBProshesis::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
+{
+	//<Prosthesis Name="Example" Producer="Producer" Type="Acetabular" Side="Both" Img="Example.png">
+	m_Name = GetElementAttribute(node, ATTR_NAME);
+	m_ImgFileName = GetElementAttribute(node, ATTR_IMG);
+	m_Side = GetSideByString(GetElementAttribute(node, ATTR_SIDE));
+	m_Type = GetElementAttribute(node, ATTR_TYPE);
+	m_Producer = GetElementAttribute(node, ATTR_PRODUCER);
+
+	if (m_Name == "")
+	{
+		albaLogMessage("ERROR: Prosthesis name is empty");
+		return ALBA_ERROR;
+	}
+	if (m_Side == PRO_UKNOWN)
+	{
+		albaLogMessage("ERROR: Prosthesis Side is unknown");
+		return ALBA_ERROR;
+	}
+
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMNodeList *componentGroups = node->getChildNodes();
+
+	for (unsigned int i = 0; i < componentGroups->getLength(); i++)
+	{
+		//Reading Type nodes 
+		XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *componentGroupNode = componentGroups->item(i);
+
+
+		if (!CheckNodeElement(componentGroupNode, NODE_COMPONENTS))
+			continue;
+
+		albaProDBCompGruop *componentGroup = new albaProDBCompGruop();
+
+		m_CompGroups.push_back(componentGroup);
+		if (componentGroup->Load(componentGroupNode) == ALBA_ERROR)
+			return ALBA_ERROR;
+
+	}
+	return ALBA_OK;
+}
+
+//----------------------------------------------------------------------------
+void albaProDBProshesis::Store()
 {
 }
 
-void albaProDBProshesis::Store()
+//----------------------------------------------------------------------------
+bool ProStorable::CheckNodeElement(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node, const char *elementName)
 {
+	//Reading manufacturer nodes
+	if (node->getNodeType() != XERCES_CPP_NAMESPACE_QUALIFIER DOMNode::ELEMENT_NODE)
+		return false;
+
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *nodeElement = (XERCES_CPP_NAMESPACE_QUALIFIER DOMElement*)node;
+	albaString nameElement = "";
+	nameElement = albaXMLString(nodeElement->getTagName());
+	return (nameElement == elementName);
+}
+
+//----------------------------------------------------------------------------
+albaString ProStorable::GetElementAttribute(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node, const char *attributeName)
+{
+	if (node->getNodeType() != XERCES_CPP_NAMESPACE_QUALIFIER DOMNode::ELEMENT_NODE)
+		return "";
+	return albaXMLString(((XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *)node)->getAttribute(albaXMLString(attributeName)));
+}
+
+//----------------------------------------------------------------------------
+void albaProDBProducer::Clear()
+{
+	throw std::logic_error("The method or operation is not implemented.");
+}
+
+//----------------------------------------------------------------------------
+void albaProDBType::Clear()
+{
+	throw std::logic_error("The method or operation is not implemented.");
+}
+
+//----------------------------------------------------------------------------
+void albaProDBComponent::Clear()
+{
+	throw std::logic_error("The method or operation is not implemented.");
+}
+
+//----------------------------------------------------------------------------
+void albaProDBCompGruop::Clear()
+{
+	throw std::logic_error("The method or operation is not implemented.");
+}
+
+//----------------------------------------------------------------------------
+void albaProDBProshesis::Clear()
+{
+	throw std::logic_error("The method or operation is not implemented.");
+}
+
+//----------------------------------------------------------------------------
+albaProDBProshesis::PRO_SIDES albaProDBProshesis::GetSideByString(albaString sideName)
+{
+	if (sideName == "Left")
+		return PRO_LEFT;
+	else if (sideName == "Right")
+		return PRO_RIGHT;
+	else if (sideName == "Both")
+		return PRO_BOTH;
+	else
+		return PRO_UKNOWN;
 }

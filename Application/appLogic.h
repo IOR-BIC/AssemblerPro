@@ -26,6 +26,7 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 class albaOp;
 class albaGUIApplicationSettings;
+class albaProsthesisDBManager;
 
 //----------------------------------------------------------------------------
 // Class Name: appLogic
@@ -62,6 +63,8 @@ public:
 	albaGUIApplicationSettings* GetSettings() { return m_ApplicationSettings; };
 
 	albaView* OpenView(int viewId);
+
+	albaProsthesisDBManager * GetProDBManager() const { return m_ProDBManager; }
 
 protected:
   
@@ -100,6 +103,8 @@ protected:
 	wxToolBar *m_ViewToolbar;
 	wxToolBar *m_OperationToolbar;
 	wxToolBar *m_ExtraToolbar;
+
+	albaProsthesisDBManager *m_ProDBManager;
 
 private:
 	//

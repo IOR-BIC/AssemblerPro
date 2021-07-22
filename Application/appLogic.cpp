@@ -44,6 +44,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "vtkObject.h"
 #include "vtkPointData.h"
 #include "vtkPoints.h"
+#include "albaProsthesisDBManager.h"
 
 #define IDM_WINDOWNEXT 4004
 #define IDM_WINDOWPREV 4006
@@ -76,6 +77,8 @@ void appLogic::Init(int argc, char **argv)
 		wxMkDir(albaGetAppDataDirectory().c_str());
 
 	InitAboutDialog();
+
+	m_ProDBManager = new albaProsthesisDBManager();
 	
 	// Create and Open View
 	ViewCreate(VIEW_SURFACE);
