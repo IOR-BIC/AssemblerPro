@@ -36,7 +36,7 @@ class ProStorable
 {
 public:
 	virtual int Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) = 0;
-	virtual void Store() = 0;
+	virtual void Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node) = 0;
 	virtual void Clear() = 0;
 
 protected:
@@ -60,7 +60,7 @@ public:
 	
 	// Inherited via ProStorable
 	virtual int Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
-	virtual void Store() override;
+	virtual void Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node) override;
 	virtual void Clear() override;
 
 protected:
@@ -80,7 +80,7 @@ public:
 
 	// Inherited via ProStorable
 	virtual int Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
-	virtual void Store() override;
+	virtual void Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node) override;
 	virtual void Clear() override;
 
 protected:
@@ -99,7 +99,7 @@ public:
 
 	// Inherited via ProStorable
 	virtual int Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
-	virtual void Store() override; 
+	virtual void Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node) override;
 	virtual void Clear() override;
 
 protected:
@@ -119,7 +119,7 @@ public:
 
 	// Inherited via ProStorable
 	virtual int Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
-	virtual void Store() override;
+	virtual void Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node) override;
 	virtual void Clear() override;
 
 protected:
@@ -153,10 +153,11 @@ public:
 
 	// Inherited via ProStorable
 	virtual int Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
-	virtual void Store() override;
+	virtual void Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node) override;
 	virtual void Clear() override;
 
 	PRO_SIDES GetSideByString(albaString sideName);
+	char *GetSideAsStr();
 
 protected:
 	albaString m_Name;
@@ -185,9 +186,10 @@ public:
 	// Inherited via ProStorable
 
 	int LoadDB();
+	int SaveDB();
 
 	virtual int Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
-	virtual void Store() override;
+	virtual void Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node) override;
 
 	virtual void Clear() override;
 

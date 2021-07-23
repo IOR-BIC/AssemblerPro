@@ -74,6 +74,19 @@ albaProsthesisDBManager::albaProsthesisDBManager()
 	m_DBFilename += "ProsthesesDB.xml";
 
 	LoadDB();
+	
+	//TMP TEST
+/*
+	m_DBFilename = (albaGetAppDataDirectory()).c_str();
+	m_DBFilename += "\\ProsthesesDB\\";
+
+	if (!wxDir::Exists(m_DBFilename.GetCStr()))
+		wxMkdir(m_DBFilename.GetCStr());
+
+	m_DBFilename += "ProsthesesDB2.xml";
+
+	SaveDB();
+*/
 }
 
 //----------------------------------------------------------------------------
@@ -145,12 +158,6 @@ int albaProsthesisDBManager::LoadDB()
 
 		Load(root);
 	}
-	catch (const  XERCES_CPP_NAMESPACE_QUALIFIER XMLException& toCatch) {
-		return ALBA_ERROR;
-	}
-	catch (const  XERCES_CPP_NAMESPACE_QUALIFIER DOMException& toCatch) {
-		return ALBA_ERROR;
-	}
 	catch (...) {
 		return ALBA_ERROR;
 	}
@@ -162,6 +169,69 @@ int albaProsthesisDBManager::LoadDB()
 	XERCES_CPP_NAMESPACE_QUALIFIER XMLPlatformUtils::Terminate();
 
 	albaLogMessage(_("DB Loaded"));
+
+	return ALBA_OK;
+}
+
+//----------------------------------------------------------------------------
+int albaProsthesisDBManager::SaveDB()
+{
+	//Open the file xml with manufacture and model information
+	try {
+		XERCES_CPP_NAMESPACE_QUALIFIER XMLPlatformUtils::Initialize();
+	}
+	catch (const XERCES_CPP_NAMESPACE_QUALIFIER XMLException& toCatch) {
+		// Do your failure processing here
+		return ALBA_ERROR;
+	}
+
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc;
+	XMLCh tempStr[100];
+	XERCES_CPP_NAMESPACE_QUALIFIER XMLString::transcode("LS", tempStr, 99);
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMImplementation *impl = XERCES_CPP_NAMESPACE_QUALIFIER DOMImplementationRegistry::getDOMImplementation(tempStr);
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMWriter* theSerializer = ((XERCES_CPP_NAMESPACE_QUALIFIER DOMImplementationLS*)impl)->createDOMWriter();
+	theSerializer->setNewLine(albaXMLString("\r"));
+	doc = impl->createDocument(NULL, albaXMLString(PRODB_NAME), NULL);
+
+	doc->setEncoding(albaXMLString("UTF-8"));
+	doc->setStandalone(true);
+	doc->setVersion(albaXMLString("1.0"));
+
+	// optionally you can set some features on this serializer
+	if (theSerializer->canSetFeature(XERCES_CPP_NAMESPACE_QUALIFIER XMLUni::fgDOMWRTDiscardDefaultContent, true))
+		theSerializer->setFeature(XERCES_CPP_NAMESPACE_QUALIFIER XMLUni::fgDOMWRTDiscardDefaultContent, true);
+
+	if (theSerializer->canSetFeature(XERCES_CPP_NAMESPACE_QUALIFIER XMLUni::fgDOMWRTFormatPrettyPrint, true))
+		theSerializer->setFeature(XERCES_CPP_NAMESPACE_QUALIFIER XMLUni::fgDOMWRTFormatPrettyPrint, true);
+
+	XERCES_CPP_NAMESPACE_QUALIFIER XMLFormatTarget *XMLTarget;
+	XMLTarget = new XERCES_CPP_NAMESPACE_QUALIFIER LocalFileFormatTarget(m_DBFilename.GetCStr());
+	
+	// extract root element and wrap it with an albaXMLElement object
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *root = doc->getDocumentElement();
+	assert(root);
+
+	// attach version attribute to the root node
+	root->setAttribute(albaXMLString(ATTR_VERSION), albaXMLString(DB_VERSION));
+
+	//STORE Elements to DB
+	Store(doc, root);
+
+	try {
+		// do the serialization through DOMWriter::writeNode();
+		theSerializer->writeNode(XMLTarget, *doc);
+	}
+	catch (...) {
+			return ALBA_ERROR;
+	}
+
+	theSerializer->release();
+	cppDEL(XMLTarget);
+	doc->release();
+
+	XERCES_CPP_NAMESPACE_QUALIFIER XMLPlatformUtils::Terminate();
+
+	albaLogMessage(wxString::Format("New DB has been written %s", m_DBFilename.GetCStr()));
 
 	return ALBA_OK;
 }
@@ -241,8 +311,25 @@ int albaProsthesisDBManager::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 	}
 }
 
-void albaProsthesisDBManager::Store()
+void albaProsthesisDBManager::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node)
 {
+	//Producers
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *producersNode = doc->createElement(albaXMLString(NODE_PRODUCERS));
+	node->appendChild(producersNode);
+	for (int i = 0; i < m_Producers.size(); i++)
+		m_Producers[i]->Store(doc, producersNode);
+
+	//Types
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *typesNode = doc->createElement(albaXMLString(NODE_TYPES));
+	node->appendChild(typesNode);
+	for (int i = 0; i < m_Producers.size(); i++)
+		m_Types[i]->Store(doc, typesNode);
+
+	//Prostheses
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *prosthesesNode = doc->createElement(albaXMLString(NODE_PROSTHESES));
+	node->appendChild(prosthesesNode);
+	for (int i = 0; i < m_Prostheses.size(); i++)
+		m_Prostheses[i]->Store(doc, prosthesesNode);
 }
 
 //----------------------------------------------------------------------------
@@ -294,8 +381,14 @@ int albaProDBCompGruop::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 }
 
 //----------------------------------------------------------------------------
-void albaProDBCompGruop::Store()
+void albaProDBCompGruop::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node)
 {
+	//Types
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement * groupNode = doc->createElement(albaXMLString(NODE_COMPONENTS));
+	groupNode->setAttribute(albaXMLString(ATTR_NAME), albaXMLString(m_Name));
+	node->appendChild(groupNode);
+	for (int i = 0; i < m_Components.size(); i++)
+		m_Components[i]->Store(doc, groupNode);
 }
 
 //----------------------------------------------------------------------------
@@ -348,8 +441,19 @@ int albaProDBComponent::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 }
 
 //----------------------------------------------------------------------------
-void albaProDBComponent::Store()
+void albaProDBComponent::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node)
 {
+	//Types
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement * componentNode = doc->createElement(albaXMLString(NODE_COMPONENTS));
+
+	componentNode->setAttribute(albaXMLString(ATTR_NAME), albaXMLString(m_Name));
+
+	char tmpStr[1024];
+	double *el = *m_Matrix.GetElements();
+	sprintf(tmpStr, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", el[0], el[1], el[2], el[3], el[4], el[5], el[6], el[7], el[8], el[9], el[10], el[11], el[12], el[13], el[14], el[15]);
+	componentNode->setTextContent(albaXMLString(tmpStr));
+
+	node->appendChild(componentNode);
 }
 
 //----------------------------------------------------------------------------
@@ -368,8 +472,12 @@ int albaProDBType::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 }
 
 //----------------------------------------------------------------------------
-void albaProDBType::Store()
+void albaProDBType::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node)
 {
+	//Types
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement * typeNode = doc->createElement(albaXMLString(NODE_TYPE));
+	typeNode->setAttribute(albaXMLString(ATTR_NAME), albaXMLString(m_Name));
+	node->appendChild(typeNode);
 }
 
 //----------------------------------------------------------------------------
@@ -390,8 +498,14 @@ int albaProDBProducer::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 }
 
 //----------------------------------------------------------------------------
-void albaProDBProducer::Store()
+void albaProDBProducer::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node)
 {
+	//Producers
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *producerNode = doc->createElement(albaXMLString(NODE_PRODUCER));
+	producerNode->setAttribute(albaXMLString(ATTR_NAME), albaXMLString(m_Name));
+	producerNode->setAttribute(albaXMLString(ATTR_IMG), albaXMLString(m_ImgFileName));
+	producerNode->setAttribute(albaXMLString(ATTR_SITE), albaXMLString(m_WebSite));
+	node->appendChild(producerNode);
 }
 
 int albaProDBProshesis::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
@@ -436,9 +550,21 @@ int albaProDBProshesis::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 }
 
 //----------------------------------------------------------------------------
-void albaProDBProshesis::Store()
+void albaProDBProshesis::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node)
 {
+	//Producers
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *prosthesisNode = doc->createElement(albaXMLString(NODE_PROSTHESES));
+	prosthesisNode->setAttribute(albaXMLString(ATTR_NAME), albaXMLString(m_Name));
+	prosthesisNode->setAttribute(albaXMLString(ATTR_IMG), albaXMLString(m_ImgFileName));
+	prosthesisNode->setAttribute(albaXMLString(ATTR_TYPE), albaXMLString(m_Type));
+	prosthesisNode->setAttribute(albaXMLString(ATTR_PRODUCER), albaXMLString(m_Producer));
+	prosthesisNode->setAttribute(albaXMLString(ATTR_SIDE), albaXMLString(GetSideAsStr()));
+	node->appendChild(prosthesisNode);
+	for (int i = 0; i < m_CompGroups.size(); i++)
+		m_CompGroups[i]->Store(doc, prosthesisNode);
+
 }
+
 
 //----------------------------------------------------------------------------
 bool ProStorable::CheckNodeElement(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node, const char *elementName)
@@ -502,4 +628,24 @@ albaProDBProshesis::PRO_SIDES albaProDBProshesis::GetSideByString(albaString sid
 		return PRO_BOTH;
 	else
 		return PRO_UKNOWN;
+}
+
+//----------------------------------------------------------------------------
+char * albaProDBProshesis::GetSideAsStr()
+{
+	switch (m_Side)
+	{
+		case albaProDBProshesis::PRO_LEFT:
+			return "Left";
+			break;
+		case albaProDBProshesis::PRO_RIGHT:
+			return "Right";
+			break;
+		case albaProDBProshesis::PRO_BOTH:
+			return "Both";
+			break;
+		default:
+			return "Error";
+			break;
+	}
 }
