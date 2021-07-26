@@ -35,9 +35,11 @@ public:
 	appGUIDialogModel(const wxString& title, long style = albaCLOSEWINDOW);
 	virtual ~appGUIDialogModel();
 
-  void OnEvent(albaEventBase *alba_event);
-	
-	void SetModel(Model *model) { m_CurrentModel = *model; };
+	void OnEvent(albaEventBase *alba_event);
+
+	void SelectImage();
+
+	void SetModel(Model &model) { m_CurrentModel = model; };
 	Model GetModel() { return m_CurrentModel; };
 
 	void Show();
@@ -49,7 +51,7 @@ protected:
 
 	Model m_CurrentModel;
 
-  albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
+	albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
 
 	wxComboBox *m_ModelImageComboBox;
 	wxImage	*m_ModelImage;

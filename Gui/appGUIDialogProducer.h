@@ -36,8 +36,10 @@ public:
 	virtual ~appGUIDialogProducer();
 
   void OnEvent(albaEventBase *alba_event);
-	
-	void SetProducer(Producer producer) { m_CurrentProducer = producer; };
+
+  void SelectImage();
+  
+	void SetProducer(Producer &producer) { m_CurrentProducer = producer; };
 	Producer GetProducer() { return m_CurrentProducer; };
 
 	void Show();

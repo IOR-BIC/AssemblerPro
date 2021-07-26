@@ -44,7 +44,6 @@ PURPOSE. See the above copyright notice for more information.
 #include "vtkObject.h"
 #include "vtkPointData.h"
 #include "vtkPoints.h"
-#include "albaProsthesisDBManager.h"
 
 #define IDM_WINDOWNEXT 4004
 #define IDM_WINDOWPREV 4006
@@ -56,6 +55,8 @@ appLogic::appLogic() : albaLogicWithManagers()
 
 	m_Win->Maximize();
 
+	m_ProsthesisDBManager = NULL;
+
 	// Set project file extension
 	//m_Extension = "alb";
 }
@@ -64,6 +65,8 @@ appLogic::~appLogic()
 {
 	// must be deleted after m_VMEManager
 	delete m_SideBar;
+
+	delete m_ProsthesisDBManager;
 }
 
 /// INIT
@@ -77,9 +80,9 @@ void appLogic::Init(int argc, char **argv)
 		wxMkDir(albaGetAppDataDirectory().c_str());
 
 	InitAboutDialog();
-
-	m_ProDBManager = new albaProsthesisDBManager();
 	
+	InitProsthesisDBManager();
+
 	// Create and Open View
 	ViewCreate(VIEW_SURFACE);
 }
@@ -98,6 +101,17 @@ void appLogic::InitAboutDialog()
 	wxString imageName = "AppAbout";
 	wxString imagesPath = appUtils::GetConfigDirectory().c_str();
 	m_AboutDialog->SetImagePath(imagesPath + "/" + imageName + ".bmp");
+}
+
+//----------------------------------------------------------------------------
+void appLogic::InitProsthesisDBManager()
+{
+	if (m_ProsthesisDBManager == NULL)
+		m_ProsthesisDBManager = new albaProsthesisDBManager();
+
+	wxString imagesPath = appUtils::GetConfigDirectory().c_str();
+	imagesPath += "/FakeDB.xml";
+	m_ProsthesisDBManager->LoadDBFromFile(imagesPath);
 }
 
 /// EVENTS

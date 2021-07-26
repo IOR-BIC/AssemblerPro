@@ -57,32 +57,42 @@ void appGUIDialogProducer::OnEvent(albaEventBase *alba_event)
 	switch (alba_event->GetId())
 	{
 	case ID_PRODUCER_DIALOG_TEXT:
+	{
 		m_CurrentProducer.name = m_ProducerName_textCtrl->GetValue();
 		m_CurrentProducer.webSite = m_ProducerSite_textCtrl->GetValue();
-		break;
+	}
+	break;
 
 	case ID_PRODUCER_DIALOG_IMM:
 	{
-		albaString fileNameFullPath = albaGetDocumentsDirectory().c_str();
-		albaString wildc = "Image file (*.bmp)|*.bmp";
-		wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
-
-		if (wxFileExists(imagePath))
-		{
-			m_CurrentProducer.brandImage = imagePath;
-			UpdateProducerDialog();
-		}
+		SelectImage();
 	}
-		break;
+	break;
+
 	case ID_PRODUCER_DIALOG_OK_PRESSED:
-		break;
-	case wxID_OK:
+	{
 		m_CurrentProducer.name = m_ProducerName_textCtrl->GetValue();
 		m_CurrentProducer.webSite = m_ProducerSite_textCtrl->GetValue();
-		//m_CurrentProducer.brandImage = m_Producerim_textCtrl->GetValue();
-		break;
+		this->Close();
+	}
+	break;
+
 	default:
 		albaGUIDialog::OnEvent(alba_event);
+	}
+}
+
+//----------------------------------------------------------------------------
+void appGUIDialogProducer::SelectImage()
+{
+	albaString fileNameFullPath = albaGetDocumentsDirectory().c_str();
+	albaString wildc = "Image file (*.bmp)|*.bmp";
+	wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
+
+	if (wxFileExists(imagePath))
+	{
+		m_CurrentProducer.brandImage = imagePath;
+		UpdateProducerDialog();
 	}
 }
 
@@ -165,7 +175,7 @@ void appGUIDialogProducer::CreateProducerDialog()
 		mainBoxSizer->Add(infoBoxSizer, 0, wxALL, 5);
 
 		// BUTTON - Ok
-		albaGUIButton *okBtn = new albaGUIButton(this, wxID_OK, "OK", wxPoint(-1, -1));
+		albaGUIButton *okBtn = new albaGUIButton(this, ID_PRODUCER_DIALOG_OK_PRESSED, "OK", wxPoint(-1, -1));
 		okBtn->SetListener(this);
 		mainBoxSizer->Add(okBtn, 0, wxALIGN_RIGHT, 0);
 
@@ -176,6 +186,9 @@ void appGUIDialogProducer::CreateProducerDialog()
 		// Show dialog
 		wxSize s = albaGetFrame()->GetSize();
 		wxPoint p = albaGetFrame()->GetPosition();
+
+		SetSize(430, 355);
+
 		int posX = p.x + s.GetWidth() * .5 - this->GetSize().GetWidth() * .5;
 		int posY = p.y + s.GetHeight() * .5 - this->GetSize().GetHeight() * .5;
 

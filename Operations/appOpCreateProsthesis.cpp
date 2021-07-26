@@ -22,20 +22,24 @@ PURPOSE. See the above copyright notice for more information.
 #include "appOpCreateProsthesis.h"
 #include "appDecl.h"
 #include "appGUI.h"
-#include "appGUIDialogProducer.h"
-#include "appGUIDialogModel.h"
 #include "appGUIDialogComponent.h"
+#include "appGUIDialogModel.h"
+#include "appGUIDialogProducer.h"
+#include "appLogic.h"
+#include "appUtils.h"
 
 #include "albaGUI.h"
 #include "albaGUIButton.h"
 #include "albaGUIDialog.h"
 #include "albaGUILab.h"
 #include "albaGUIPicButton.h"
+#include "albaGUIValidator.h"
+#include "albaProsthesisDBManager.h"
+#include "albaServiceClient.h"
 #include "albaVME.h"
-#include "appUtils.h"
+
 #include "wx\image.h"
 #include "wx\window.h"
-#include "albaGUIValidator.h"
 
 //----------------------------------------------------------------------------
 albaCxxTypeMacro(appOpCreateProsthesis);
@@ -45,6 +49,8 @@ appOpCreateProsthesis::appOpCreateProsthesis(wxString label) :albaOp(label)
 {
 	m_OpType = OPTYPE_OP;
 	m_Canundo = true;
+
+	m_DBManager = NULL;
 
 	m_ProducerComboBox = NULL;
 	m_ModelComboBox = NULL;
@@ -100,44 +106,59 @@ void appOpCreateProsthesis::OpRun()
 //----------------------------------------------------------------------------
 void appOpCreateProsthesis::LoadInfo()
 {
-	wxString imagesPath = appUtils::GetConfigDirectory().c_str();
+	m_DBManager = ((appLogic*)GetLogicManager())->GetProsthesisDBManager();
+
+	//////////////////////////////////////////////////////////////////////////
+	wxString dbFilePath = appUtils::GetConfigDirectory().c_str();
+
+	std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
+	std::vector<albaProDBProducer *> DBproducers = m_DBManager->GetProducers();
 
 	m_ProsthesisVect.clear();
 
-	for (int p = 0; p < 3; p++)
+	for (int p = 0; p < DBproducers.size(); p++)
 	{
 		Producer producer;
-		producer.name = wxString::Format("Producer %d", (p + 1));
-		producer.webSite = wxString::Format("www.producer_%d.com", (p + 1));
-		producer.brandImage = imagesPath + "/Wizard/Producer.bmp";
+		producer.index = p;
+		producer.name = DBproducers[p]->GetName();
+		producer.webSite = DBproducers[p]->GetWebSite();
+		producer.brandImage = DBproducers[p]->GetImgFileName();
 		producer.models.clear();
 
-		for (int m = 0; m < 4; m++)
+		for (int m = 0; m < DBprosthesis.size(); m++)
 		{
-			Model model;
-			model.name = wxString::Format("%s - Model %d", producer.name, (m + 1));
-			model.image = "";
-			model.components.clear();
-
-			for (int c = 0; c < 3; c++)
+			if (DBprosthesis[m]->GetProducer().Equals(producer.name))
 			{
-				Component  component;
-				component.name = wxString::Format("%s - Component %d", model.name, (c + 1));
+				Model model;
+				model.index = m;
+				model.name = DBprosthesis[m]->GetName();
+				model.type = DBprosthesis[m]->GetType() == "Femoral" ? FEMORAL : ACETABULAR;
+				model.image = DBprosthesis[m]->GetImgFileName();
+				model.side = DBprosthesis[m]->GetSide();
 
-				model.components.push_back(component);
+				model.components.clear();
+
+				for (int c = 0; c < 3; c++)
+				{
+					Component  component;
+					component.name = wxString::Format("%s - Component %d", model.name, (c + 1));
+
+					model.components.push_back(component);
+				}
+
+				producer.models.push_back(model);
 			}
-
-			producer.models.push_back(model);
 		}
 
 		m_ProsthesisVect.push_back(producer);
 	}
-	
+
+	// GUI
 	// Load Producers Info
 	m_ProducerNameList.clear();
 	m_ProducerNameList.push_back("");
 
-	for (int p=0; p<m_ProsthesisVect.size(); p++)
+	for (int p = 0; p < m_ProsthesisVect.size(); p++)
 	{
 		m_ProducerNameList.push_back(m_ProsthesisVect[p].name);
 	}
@@ -157,12 +178,48 @@ void appOpCreateProsthesis::SaveInfo()
 	int mChanges = 0;
 	int cChanges = 0;
 
+	m_DBManager = ((appLogic*)GetLogicManager())->GetProsthesisDBManager();
+	
+	std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
+	std::vector<albaProDBProducer *> DBproducers = m_DBManager->GetProducers();
+
+	//////////////////////////////////////////////////////////////////////////
+
+	// Update Producers
+	for (int p=0; p< m_ProsthesisVect.size(); p++)
+	{
+		if (m_ProsthesisVect[p].index < 0)
+		{
+			// Add New Producer
+			albaProDBProducer *newProducer = new albaProDBProducer();
+			newProducer->SetName(m_ProsthesisVect[p].name);
+			newProducer->SetImgFileName(m_ProsthesisVect[p].brandImage);
+			newProducer->SetWebSite(m_ProsthesisVect[p].webSite);
+
+			DBproducers.push_back(newProducer);
+		}
+	}
+
+	// Update Prosthesis
 	for (int p = 0; p < m_ProsthesisVect.size(); p++)
 	{
 		if (m_ProsthesisVect[p].isChanged)
 		{
-			// Save Producer changes
 			pChanges++;
+
+			if (m_ProsthesisVect[p].index < 0)
+			{
+				albaProDBProshesis *newProsthesis = new albaProDBProshesis();
+				DBprosthesis.push_back(newProsthesis);
+
+				m_ProsthesisVect[p].index = DBprosthesis.size() - 1;
+			}
+
+			if (m_ProsthesisVect[p].index >= 0)
+			{
+				DBprosthesis[m_ProsthesisVect[p].index]->SetProducer(m_ProsthesisVect[p].name);
+				DBprosthesis[m_ProsthesisVect[p].index]->SetImgFileName(m_ProsthesisVect[p].brandImage);
+			}
 		}
 
 		for (int m = 0; m < m_ProsthesisVect[p].models.size(); m++)
@@ -171,6 +228,11 @@ void appOpCreateProsthesis::SaveInfo()
 			{
 				// Save Model changes
 				mChanges++;
+
+				DBprosthesis[m_ProsthesisVect[p].index]->SetName(m_ProsthesisVect[p].models[m].name);
+				DBprosthesis[m_ProsthesisVect[p].index]->SetImgFileName(m_ProsthesisVect[p].models[m].image);
+				DBprosthesis[m_ProsthesisVect[p].index]->SetType(m_ProsthesisVect[p].models[m].type);
+				DBprosthesis[m_ProsthesisVect[p].index]->SetSide((albaProDBProshesis::PRO_SIDES)m_ProsthesisVect[p].models[m].side);
 			}
 
 			for (int c = 0; c < m_ProsthesisVect[p].models[m].components.size(); c++)
@@ -183,6 +245,12 @@ void appOpCreateProsthesis::SaveInfo()
 			}
 		}
 	}
+
+	//////////////////////////////////////////////////////////////////////////
+	wxString dbFilePath = appUtils::GetConfigDirectory().c_str();
+	dbFilePath += "/SavedDB.xml";
+
+	m_DBManager->SaveDBToFile(dbFilePath);
 
 	wxString message = wxString::Format("Producer: %d changes. \nModels: %d changes. \nComponents: %d changes.", pChanges, mChanges, cChanges);
 	wxMessageBox(message);
@@ -378,6 +446,7 @@ void appOpCreateProsthesis::AddProducer()
 	
 	// Add to Vector
 	Producer producer;
+	producer.index = -1;
 	producer.name = m_CurrentProducer.name;
 	producer.webSite = m_CurrentProducer.webSite;
 	producer.brandImage = m_CurrentProducer.brandImage;
@@ -394,6 +463,7 @@ void appOpCreateProsthesis::AddProducer()
 //----------------------------------------------------------------------------
 void appOpCreateProsthesis::EditProducer()
 {
+	m_CurrentProducer.index = m_ProsthesisVect[m_SelectedProducer - 1].index;
 	m_CurrentProducer.name = m_ProsthesisVect[m_SelectedProducer - 1].name;
 	m_CurrentProducer.webSite = m_ProsthesisVect[m_SelectedProducer - 1].webSite;
 	m_CurrentProducer.brandImage = m_ProsthesisVect[m_SelectedProducer - 1].brandImage;
@@ -471,13 +541,14 @@ void appOpCreateProsthesis::AddModel()
 //----------------------------------------------------------------------------
 void appOpCreateProsthesis::EditModel()
 {
+	m_CurrentModel.index = m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].index;
 	m_CurrentModel.name = m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].name;
 	m_CurrentModel.image = m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].image;
 	m_CurrentModel.type = m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].type;
 	m_CurrentModel.side = m_ProsthesisVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].side;
 
 	appGUIDialogModel md(_("Edit Model"));
-	md.SetModel(&m_CurrentModel);
+	md.SetModel(m_CurrentModel);
 	md.ShowModal();
 
 	UpdateModel(md.GetModel());

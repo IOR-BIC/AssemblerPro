@@ -20,13 +20,13 @@ PURPOSE. See the above copyright notice for more information.
 // Includes :
 //----------------------------------------------------------------------------
 #include "albaLogicWithManagers.h"
+#include "albaProsthesisDBManager.h"
 
 //----------------------------------------------------------------------------
 // Forward reference :
 //----------------------------------------------------------------------------
 class albaOp;
 class albaGUIApplicationSettings;
-class albaProsthesisDBManager;
 
 //----------------------------------------------------------------------------
 // Class Name: appLogic
@@ -62,9 +62,9 @@ public:
 
 	albaGUIApplicationSettings* GetSettings() { return m_ApplicationSettings; };
 
-	albaView* OpenView(int viewId);
+	albaProsthesisDBManager* GetProsthesisDBManager() {	return m_ProsthesisDBManager; };
 
-	albaProsthesisDBManager * GetProDBManager() const { return m_ProDBManager; }
+	albaView* OpenView(int viewId);
 
 protected:
   
@@ -98,13 +98,16 @@ protected:
 	/* Initialize About Dialog */
 	void InitAboutDialog();
 
+	/* Initialize Prosthesis DB Manager*/
+	void InitProsthesisDBManager();
+
   bool m_OpeningMSF;
 
 	wxToolBar *m_ViewToolbar;
 	wxToolBar *m_OperationToolbar;
 	wxToolBar *m_ExtraToolbar;
 
-	albaProsthesisDBManager *m_ProDBManager;
+	albaProsthesisDBManager *m_ProsthesisDBManager;
 
 private:
 	//

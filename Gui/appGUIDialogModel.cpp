@@ -61,16 +61,35 @@ void appGUIDialogModel::OnEvent(albaEventBase *alba_event)
 	case ID_MODEL_DIALOG_TEXT:
 		break;
 	case ID_MODEL_DIALOG_IMM:
+		SelectImage();
 		break;
 	case ID_MODEL_DIALOG_TYPE:
 		break;
 	case ID_MODEL_DIALOG_SIDE:
 		break;
 	case ID_MODEL_DIALOG_OK_PRESSED:
-		break;
+	{
+		m_CurrentModel.name = m_ModelName_textCtrl->GetValue();
+		this->Close();
+	}
+	break;
 
 	default:
 		albaGUIDialog::OnEvent(alba_event);
+	}
+}
+
+//----------------------------------------------------------------------------
+void appGUIDialogModel::SelectImage()
+{
+	albaString fileNameFullPath = albaGetDocumentsDirectory().c_str();
+	albaString wildc = "Image file (*.bmp)|*.bmp";
+	wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
+
+	if (wxFileExists(imagePath))
+	{
+		m_CurrentModel.image = imagePath;
+		UpdateModelDialog();
 	}
 }
 
@@ -144,13 +163,13 @@ void appGUIDialogModel::CreateModelDialog()
 		wxBoxSizer *propBoxSizer = new wxBoxSizer(wxHORIZONTAL);
 
 		// RADIO - Type Model
-		wxString typeChoices[]{ "Acetabular","Femoral" };
-		wxRadioBox *typeRadioBox = new wxRadioBox(this, ID_MODEL_DIALOG_TYPE, "Type", wxPoint(-1, -1), wxSize(-1, -1), 2, typeChoices);
+		wxString typeChoices[]{ "Acetabular","Femoral","Modular" };
+		wxRadioBox *typeRadioBox = new wxRadioBox(this, ID_MODEL_DIALOG_TYPE, "Type", wxPoint(-1, -1), wxSize(-1, -1), 3, typeChoices);
 		typeRadioBox->SetValidator(albaGUIValidator(this, ID_MODEL_DIALOG_TYPE, typeRadioBox, &(m_CurrentModel.type)));
 		propBoxSizer->Add(typeRadioBox, 0, wxALL | wxEXPAND, 5);
 
 		// RADIO - Side Model
-		wxString sideChoices[]{ "Left","Both","Right" };
+		wxString sideChoices[]{ "Left","Right","Both" };
 		wxRadioBox *sideRadioBox = new wxRadioBox(this, ID_MODEL_DIALOG_SIDE, "Side", wxPoint(-1, -1), wxSize(-1, -1), 3, sideChoices);
 		sideRadioBox->SetValidator(albaGUIValidator(this, ID_MODEL_DIALOG_SIDE, sideRadioBox, &(m_CurrentModel.side)));
 		propBoxSizer->Add(sideRadioBox, 0, wxALL | wxEXPAND, 5);
@@ -193,17 +212,21 @@ void appGUIDialogModel::CreateModelDialog()
 		mainBoxSizer->Add(main2BoxSizer, 0, wxALL, 5);
 
 		// BUTTON - Ok
-		albaGUIButton *okBtn = new albaGUIButton(this, wxID_OK, "OK", wxPoint(-1, -1));
+		albaGUIButton *okBtn = new albaGUIButton(this, ID_MODEL_DIALOG_OK_PRESSED, "OK", wxPoint(-1, -1));
 		okBtn->SetListener(this);
 		mainBoxSizer->Add(okBtn, 0, wxALIGN_RIGHT, 0);
 
 		//////////////////////////////////////////////////////////////////////////
 		//m_Gui->Add(mainBoxSizer, 0, wxALL, 5);
 		m_Gui->Fit();
+		Fit();
 
 		// Show dialog
 		wxSize s = albaGetFrame()->GetSize();
 		wxPoint p = albaGetFrame()->GetPosition();
+
+		SetSize(560, 395);
+
 		int posX = p.x + s.GetWidth() * .5 - this->GetSize().GetWidth() * .5;
 		int posY = p.y + s.GetHeight() * .5 - this->GetSize().GetHeight() * .5;
 
