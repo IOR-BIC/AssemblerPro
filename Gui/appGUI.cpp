@@ -20,11 +20,12 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 
 #include "appGUI.h"
-#include "albaGUIValidator.h"
+#include "appGUIHyperLink.h"
 
+#include "albaGUIButton.h"
+#include "albaGUIValidator.h"
 #include "albaPics.h"
 #include "albaVME.h"
-#include "albaGUIButton.h"
 
 enum APP_GUI_ID
 {
@@ -63,6 +64,18 @@ appGUI::appGUI(albaObserver *listener)
 //-------------------------------------------------------------------------
 appGUI::~appGUI()
 {
+}
+
+//----------------------------------------------------------------------------
+void appGUI::HyperLink(int id, wxString label, wxString url)
+{
+	int w_id = GetWidgetId(id);
+
+	appGUIHyperLink  *link = NULL;
+	link = new appGUIHyperLink(this, w_id, label);
+	link->SetUrl(url);
+
+	Add(link);
 }
 
 //-------------------------------------------------------------------------

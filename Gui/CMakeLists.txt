@@ -22,6 +22,7 @@ appSideBar.cpp						appSideBar.h
 appGUIDialogProducer.cpp	appGUIDialogProducer.h
 appGUIDialogModel.cpp			appGUIDialogModel.h
 appGUIDialogComponent.cpp	appGUIDialogComponent.h
+appGUIHyperLink.cpp			appGUIHyperLink.h
 )
 
 IF(APP_BUILD_DLL)

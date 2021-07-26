@@ -28,17 +28,25 @@ PURPOSE. See the above copyright notice for more information.
 class albaGUIButton;
 class albaGUILab;
 class albaGUIPicButton;
+class appGUIHyperLink;
 
 class ALBA_EXPORT appGUIDialogProducer : public albaGUIDialog
 {
 public:
-	appGUIDialogProducer(const wxString& title, long style = albaCLOSEWINDOW);
+
+	enum DIALOG_MODE
+	{
+		EDIT,
+		READ_ONLY,
+	};
+
+	appGUIDialogProducer(const wxString& title, int mode = EDIT/*0=Edit, 1=ReadOnly*/, long style = albaCLOSEWINDOW);
 	virtual ~appGUIDialogProducer();
 
-  void OnEvent(albaEventBase *alba_event);
+	void OnEvent(albaEventBase *alba_event);
 
-  void SelectImage();
-  
+	void SelectImage();
+
 	void SetProducer(Producer &producer) { m_CurrentProducer = producer; };
 	Producer GetProducer() { return m_CurrentProducer; };
 
@@ -51,7 +59,9 @@ protected:
 
 	Producer m_CurrentProducer;
 
-  albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
+	int m_Mode;
+
+	albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
 
 	wxComboBox *m_ProducerImageComboBox;
 	wxImage	*m_ProducerImage;
@@ -59,5 +69,6 @@ protected:
 
 	wxTextCtrl *m_ProducerName_textCtrl;
 	wxTextCtrl *m_ProducerSite_textCtrl;
+	appGUIHyperLink *m_ProducerSite_Link;
 };
 #endif

@@ -364,6 +364,9 @@ void appOpCreateProsthesis::CreateGui()
 	m_ComponentComboBox = m_Gui->Combo(ID_SELECT_COMPONENT, "", &m_SelectedComponent, m_ComponentNameList.size(), &m_ComponentNameList[0], "");
 	m_Gui->TwoButtons(ID_EDIT_COMPONENT, ID_ADD_COMPONENT, "Edit", "Add New");
 
+
+	//((appGUI*)m_Gui)->HyperLink(NULL, "Google", "www.google.com"); // TEST
+
 	//////////////////////////////////////////////////////////////////////////
 	m_Gui->Label("");
 	m_Gui->Divider(1);

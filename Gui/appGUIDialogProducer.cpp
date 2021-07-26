@@ -30,19 +30,28 @@ PURPOSE. See the above copyright notice for more information.
 
 #include "wx\image.h"
 #include "wx\window.h"
+#include "..\Albedo\Gui\appGUIHyperLink.h"
 
 enum PRODUCER_DIALOG_ID
 {
 	ID_PRODUCER_DIALOG_TEXT = MINID,
 	ID_PRODUCER_DIALOG_IMM,
+	ID_PRODUCER_DIALOG_LINK,
 	ID_PRODUCER_DIALOG_OK_PRESSED,
 };
 
 //----------------------------------------------------------------------------
-appGUIDialogProducer::appGUIDialogProducer(const wxString& title, long style)
-: albaGUIDialog(title, style)
+appGUIDialogProducer::appGUIDialogProducer(const wxString& title, int mode, long style)
+	: albaGUIDialog(title, style)
 {
 	m_Gui = NULL;
+	m_Mode = mode;
+
+	m_ProducerImage = NULL;
+	m_ProducerImageButton = NULL;
+	m_ProducerName_textCtrl = NULL;
+	m_ProducerSite_textCtrl = NULL;
+	m_ProducerSite_Link = NULL;
 
 	CreateProducerDialog();
 }
@@ -106,9 +115,6 @@ void appGUIDialogProducer::Show()
 //----------------------------------------------------------------------------
 void appGUIDialogProducer::CreateProducerDialog()
 {
-	wxString title = "Edit Producer";
-
-	//////////////////////////////////////////////////////////////////////////
 	if (m_Gui == NULL)
 	{
 		m_Gui = new albaGUI(this);
@@ -141,10 +147,13 @@ void appGUIDialogProducer::CreateProducerDialog()
 
 			mainBoxSizer->Add(m_ProducerImageButton, 0, wxALL | wxALIGN_CENTER, 0);
 
-			// BUTTON - Change Producer Brand Image
-			albaGUIButton *immBtn = new albaGUIButton(this, ID_PRODUCER_DIALOG_IMM, "Change Image", wxPoint(-1, -1));
-			immBtn->SetListener(this);
-			mainBoxSizer->Add(immBtn, 0, wxALIGN_RIGHT, 0);
+			if (m_Mode == EDIT)
+			{
+				// BUTTON - Change Producer Brand Image
+				albaGUIButton *immBtn = new albaGUIButton(this, ID_PRODUCER_DIALOG_IMM, "Change Image", wxPoint(-1, -1));
+				immBtn->SetListener(this);
+				mainBoxSizer->Add(immBtn, 0, wxALIGN_RIGHT, 0);
+			}
 
 			delete previewBitmap;
 		}
@@ -160,15 +169,25 @@ void appGUIDialogProducer::CreateProducerDialog()
 		m_ProducerName_textCtrl->SetMaxLength(64);
 		labelSizer1->Add(m_ProducerName_textCtrl, 0, wxALL | wxEXPAND, 0);
 		infoBoxSizer->Add(labelSizer1, 0, wxALL | wxEXPAND, 5);
-
-		// TEXT - Producer Web Site
-		wxStaticBoxSizer *labelSizer2 = new wxStaticBoxSizer(wxVERTICAL, this, "Web Site");
-		m_ProducerSite_textCtrl = new wxTextCtrl(this, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducer.webSite, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
-		m_ProducerSite_textCtrl->SetEditable(true);
-		m_ProducerSite_textCtrl->SetMaxLength(64);
-		labelSizer2->Add(m_ProducerSite_textCtrl, 0, wxALL | wxEXPAND, 0);
-		infoBoxSizer->Add(labelSizer2, 0, wxALL | wxEXPAND, 5);
-
+		
+		if (m_Mode == EDIT)
+		{
+			// TEXT - Producer Web Site
+			wxStaticBoxSizer *labelSizer2 = new wxStaticBoxSizer(wxVERTICAL, this, "Web Site");
+			m_ProducerSite_textCtrl = new wxTextCtrl(this, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducer.webSite, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
+			m_ProducerSite_textCtrl->SetEditable(true);
+			m_ProducerSite_textCtrl->SetMaxLength(64);
+			labelSizer2->Add(m_ProducerSite_textCtrl, 0, wxALL | wxEXPAND, 0);
+			infoBoxSizer->Add(labelSizer2, 0, wxALL | wxEXPAND, 5);
+		}
+		else
+		{
+			// LINK - Producer Web Site
+			m_ProducerSite_Link = new appGUIHyperLink(this, ID_PRODUCER_DIALOG_LINK, m_CurrentProducer.webSite);
+			m_ProducerSite_Link->SetUrl(m_CurrentProducer.webSite);
+			infoBoxSizer->Add(m_ProducerSite_Link, 0, wxALL | wxEXPAND, 5);
+		}
+				
 		// TEXT - Empty Separator
 		infoBoxSizer->Add(new albaGUILab(this, -1, " "), 0, wxALIGN_LEFT, 5);
 
@@ -210,12 +229,20 @@ void appGUIDialogProducer::UpdateProducerDialog()
 		if (wxFileExists(m_CurrentProducer.brandImage))
 		{
 			m_ProducerImage->LoadFile(m_CurrentProducer.brandImage.c_str(), wxBITMAP_TYPE_ANY);
-			m_ProducerImageButton->SetBitmapSelected(wxBitmap(*m_ProducerImage));
-			m_ProducerImageButton->Update();
+			if (m_ProducerImageButton) 
+			{
+				m_ProducerImageButton->SetBitmapSelected(wxBitmap(*m_ProducerImage));
+				m_ProducerImageButton->Update();
+			}
 			m_Gui->Update();
 		}
 
-		m_ProducerName_textCtrl->SetValue(m_CurrentProducer.name);
-		m_ProducerSite_textCtrl->SetValue(m_CurrentProducer.webSite);
+		if (m_ProducerName_textCtrl) m_ProducerName_textCtrl->SetValue(m_CurrentProducer.name);
+		if (m_ProducerSite_textCtrl) m_ProducerSite_textCtrl->SetValue(m_CurrentProducer.webSite);
+		if (m_ProducerSite_Link)
+		{
+			m_ProducerSite_Link->SetTitle(m_CurrentProducer.webSite);
+			m_ProducerSite_Link->SetUrl(m_CurrentProducer.webSite);
+		}
 	}
 }
