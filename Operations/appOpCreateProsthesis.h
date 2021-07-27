@@ -163,7 +163,7 @@ protected:
 
 	albaProsthesisDBManager *m_DBManager;
 
-	std::vector<Producer> m_ProsthesisVect;
+	std::vector<Producer> m_ProducersVect;
 
 	int m_SelectedProducer;
 	int m_SelectedModel;

@@ -371,7 +371,7 @@ std::vector<albaProDBProshesis *> albaProsthesisDBManager::SearchProstheses(alba
 //----------------------------------------------------------------------------
 int albaProDBCompGruop::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 {
-	//<Compoents Name="Stem">
+	//<Components Name="Stem">
 	m_Name = GetElementAttribute(node, ATTR_NAME);
 
 	if (m_Name == "")
@@ -578,7 +578,7 @@ void albaProDBProshesis::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, 
 	prosthesisNode->setAttribute(albaXMLString(ATTR_IMG), albaXMLString(m_ImgFileName));
 	prosthesisNode->setAttribute(albaXMLString(ATTR_TYPE), albaXMLString(m_Type));
 	prosthesisNode->setAttribute(albaXMLString(ATTR_PRODUCER), albaXMLString(m_Producer));
-	prosthesisNode->setAttribute(albaXMLString(ATTR_SIDE), albaXMLString(GetSideAsStr()));
+	prosthesisNode->setAttribute(albaXMLString(ATTR_SIDE), albaXMLString(GetSideAsStr(m_Side)));
 	node->appendChild(prosthesisNode);
 	for (int i = 0; i < m_CompGroups.size(); i++)
 		m_CompGroups[i]->Store(doc, prosthesisNode);
@@ -649,9 +649,9 @@ albaProDBProshesis::PRO_SIDES albaProDBProshesis::GetSideByString(albaString sid
 }
 
 //----------------------------------------------------------------------------
-char * albaProDBProshesis::GetSideAsStr()
+char * albaProDBProshesis::GetSideAsStr(PRO_SIDES side)
 {
-	switch (m_Side)
+	switch (side)
 	{
 		case albaProDBProshesis::PRO_LEFT:
 			return "Left";

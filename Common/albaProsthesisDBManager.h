@@ -157,7 +157,7 @@ public:
 	virtual void Clear() override;
 
 	static PRO_SIDES GetSideByString(albaString sideName);
-	static char *GetSideAsStr();
+	static char *GetSideAsStr(PRO_SIDES side);
 
 protected:
 	albaString m_Name;
@@ -193,11 +193,10 @@ public:
 
 	virtual void Clear() override;
 
-	std::vector<albaProDBProshesis *> SearchProsthesis(albaString producer, albaString type, albaString side);
-
-	std::vector<albaProDBProducer *> GetProducers() { return m_Producers; };
-	std::vector<albaProDBType *> GetTypes() { return m_Types; };
-	std::vector<albaProDBProshesis *> GetProstheses() { return m_Prostheses; };
+	std::vector<albaProDBProshesis *> SearchProstheses(albaString producer, albaString type, albaString side);
+	std::vector<albaProDBProducer *>& GetProducers() { return m_Producers; };
+	std::vector<albaProDBType *>& GetTypes() { return m_Types; };
+	std::vector<albaProDBProshesis *>& GetProstheses() { return m_Prostheses; };
 
 	void LoadDBFromFile(albaString DBFile) { Clear(); m_DBFilename = DBFile; LoadDB(); };
 	void SaveDBToFile(albaString DBFile) { m_DBFilename = DBFile; SaveDB(); };
