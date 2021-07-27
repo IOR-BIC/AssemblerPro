@@ -193,9 +193,9 @@ public:
 
 	virtual void Clear() override;
 
-	std::vector<albaProDBProducer *> GetProducers() { return m_Producers; };
-	std::vector<albaProDBType *> GetTypes() { return m_Types; };
-	std::vector<albaProDBProshesis *> GetProstheses() { return m_Prostheses; };
+	std::vector<albaProDBProducer *>& GetProducers() { return m_Producers; };
+	std::vector<albaProDBType *>& GetTypes() { return m_Types; };
+	std::vector<albaProDBProshesis *>& GetProstheses() { return m_Prostheses; };
 
 	void LoadDBFromFile(albaString DBFile) { Clear(); m_DBFilename = DBFile; LoadDB(); };
 	void SaveDBToFile(albaString DBFile) { m_DBFilename = DBFile; SaveDB(); };

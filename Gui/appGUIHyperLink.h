@@ -39,6 +39,7 @@ public:
   /** Function for setting the listener of events coming from another object*/
   void SetListener(albaObserver *listener) {m_Listener = listener;}
 	
+	void SetText(wxString text) { m_ValueString = text; };
 	void SetUrl(wxString url) { m_URL = url; };
 
 protected:

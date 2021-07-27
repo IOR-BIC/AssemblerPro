@@ -180,8 +180,7 @@ void appOpCreateProsthesis::SaveInfo()
 
 	m_DBManager = ((appLogic*)GetLogicManager())->GetProsthesisDBManager();
 	
-	std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
-	std::vector<albaProDBProducer *> DBproducers = m_DBManager->GetProducers();
+ 	std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -196,7 +195,7 @@ void appOpCreateProsthesis::SaveInfo()
 			newProducer->SetImgFileName(m_ProsthesisVect[p].brandImage);
 			newProducer->SetWebSite(m_ProsthesisVect[p].webSite);
 
-			DBproducers.push_back(newProducer);
+			m_DBManager->GetProducers().push_back(newProducer);
 		}
 	}
 
@@ -210,7 +209,7 @@ void appOpCreateProsthesis::SaveInfo()
 			if (m_ProsthesisVect[p].index < 0)
 			{
 				albaProDBProshesis *newProsthesis = new albaProDBProshesis();
-				DBprosthesis.push_back(newProsthesis);
+				m_DBManager->GetProstheses().push_back(newProsthesis);
 
 				m_ProsthesisVect[p].index = DBprosthesis.size() - 1;
 			}
@@ -363,9 +362,8 @@ void appOpCreateProsthesis::CreateGui()
 	m_Gui->Label("Components", true);
 	m_ComponentComboBox = m_Gui->Combo(ID_SELECT_COMPONENT, "", &m_SelectedComponent, m_ComponentNameList.size(), &m_ComponentNameList[0], "");
 	m_Gui->TwoButtons(ID_EDIT_COMPONENT, ID_ADD_COMPONENT, "Edit", "Add New");
-
-
-	//((appGUI*)m_Gui)->HyperLink(NULL, "Google", "www.google.com"); // TEST
+	
+	((appGUI*)m_Gui)->HyperLink(NULL, "Google", "www.google.com"); // TEST
 
 	//////////////////////////////////////////////////////////////////////////
 	m_Gui->Label("");

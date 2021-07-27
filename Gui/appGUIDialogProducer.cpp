@@ -80,8 +80,11 @@ void appGUIDialogProducer::OnEvent(albaEventBase *alba_event)
 
 	case ID_PRODUCER_DIALOG_OK_PRESSED:
 	{
-		m_CurrentProducer.name = m_ProducerName_textCtrl->GetValue();
-		m_CurrentProducer.webSite = m_ProducerSite_textCtrl->GetValue();
+		if (m_Mode == EDIT)
+		{
+			m_CurrentProducer.name = m_ProducerName_textCtrl->GetValue();
+			m_CurrentProducer.webSite = m_ProducerSite_textCtrl->GetValue();
+		}
 		this->Close();
 	}
 	break;
@@ -241,8 +244,11 @@ void appGUIDialogProducer::UpdateProducerDialog()
 		if (m_ProducerSite_textCtrl) m_ProducerSite_textCtrl->SetValue(m_CurrentProducer.webSite);
 		if (m_ProducerSite_Link)
 		{
-			m_ProducerSite_Link->SetTitle(m_CurrentProducer.webSite);
-			m_ProducerSite_Link->SetUrl(m_CurrentProducer.webSite);
+			if (m_CurrentProducer.webSite != "")
+			{
+				m_ProducerSite_Link->SetText(m_CurrentProducer.webSite);
+				m_ProducerSite_Link->SetUrl(m_CurrentProducer.webSite);
+			}
 		}
 	}
 }
