@@ -1,12 +1,12 @@
 /*=========================================================================
-Program:   Albedo
-Module:    appGUIHyperLink.cpp
+Program:   AssemblerPro
+Module:     appGUIHyperLink.cpp
 Language:  C++
-Date:      $Date: 2019-01-01 12:00:00 $
+Date:      $Date: 2021-01-01 12:00:00 $
 Version:   $Revision: 1.0.0.0 $
 Authors:   Nicola Vanella
 ==========================================================================
-Copyright (c) BIC-IOR 2019 (https://github.com/IOR-BIC)
+Copyright (c) BIC-IOR 2021 (https://github.com/IOR-BIC)
 
 This software is distributed WITHOUT ANY WARRANTY; without even
 the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR

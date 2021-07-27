@@ -30,7 +30,7 @@ PURPOSE. See the above copyright notice for more information.
 
 #include "wx\image.h"
 #include "wx\window.h"
-#include "..\Albedo\Gui\appGUIHyperLink.h"
+#include "appGUIHyperLink.h"
 
 enum PRODUCER_DIALOG_ID
 {
