@@ -156,8 +156,8 @@ public:
 	virtual void Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node) override;
 	virtual void Clear() override;
 
-	PRO_SIDES GetSideByString(albaString sideName);
-	char *GetSideAsStr();
+	static PRO_SIDES GetSideByString(albaString sideName);
+	static char *GetSideAsStr();
 
 protected:
 	albaString m_Name;
@@ -192,6 +192,8 @@ public:
 	virtual void Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node) override;
 
 	virtual void Clear() override;
+
+	std::vector<albaProDBProshesis *> SearchProsthesis(albaString producer, albaString type, albaString side);
 
 	std::vector<albaProDBProducer *> GetProducers() { return m_Producers; };
 	std::vector<albaProDBType *> GetTypes() { return m_Types; };

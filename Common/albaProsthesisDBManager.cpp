@@ -54,7 +54,7 @@
 #define NODE_MATRIX "Matrix"
 #define ATTR_VERSION "Version"
 #define ATTR_NAME "Name"
-#define ATTR_IMG "IMG"
+#define ATTR_IMG "Img"
 #define ATTR_SITE "Site"
 #define ATTR_SIDE "Side"
 #define ATTR_TYPE "Type"
@@ -322,7 +322,7 @@ void albaProsthesisDBManager::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *
 	//Types
 	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *typesNode = doc->createElement(albaXMLString(NODE_TYPES));
 	node->appendChild(typesNode);
-	for (int i = 0; i < m_Producers.size(); i++)
+	for (int i = 0; i < m_Types.size(); i++)
 		m_Types[i]->Store(doc, typesNode);
 
 	//Prostheses
@@ -346,6 +346,26 @@ void albaProsthesisDBManager::Clear()
 	for (int i = 0; i < m_Prostheses.size(); i++)
 		m_Prostheses[i]->Clear();
 	m_Prostheses.clear();
+}
+
+//----------------------------------------------------------------------------
+std::vector<albaProDBProshesis *> albaProsthesisDBManager::SearchProstheses(albaString producer, albaString type, albaString side)
+{
+	std::vector<albaProDBProshesis *> proList;
+	for (int i = 0; i < m_Prostheses.size(); i++)
+	{
+		albaProDBProshesis *prosthesis = m_Prostheses[i];
+		if (!producer.IsEmpty() && producer != prosthesis->GetProducer())
+			continue;
+		if (!type.IsEmpty() && type != prosthesis->GetType())
+			continue;
+		if (!side.IsEmpty() && albaProDBProshesis::GetSideByString(side) != prosthesis->GetSide())
+			continue;
+		
+		proList.push_back(prosthesis);
+	}
+
+	return proList;
 }
 
 //----------------------------------------------------------------------------
@@ -553,7 +573,7 @@ int albaProDBProshesis::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 void albaProDBProshesis::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node)
 {
 	//Producers
-	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *prosthesisNode = doc->createElement(albaXMLString(NODE_PROSTHESES));
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *prosthesisNode = doc->createElement(albaXMLString(NODE_PROSTHESIS));
 	prosthesisNode->setAttribute(albaXMLString(ATTR_NAME), albaXMLString(m_Name));
 	prosthesisNode->setAttribute(albaXMLString(ATTR_IMG), albaXMLString(m_ImgFileName));
 	prosthesisNode->setAttribute(albaXMLString(ATTR_TYPE), albaXMLString(m_Type));
@@ -590,31 +610,29 @@ albaString ProStorable::GetElementAttribute(XERCES_CPP_NAMESPACE_QUALIFIER DOMNo
 //----------------------------------------------------------------------------
 void albaProDBProducer::Clear()
 {
-	throw std::logic_error("The method or operation is not implemented.");
+	
 }
 
 //----------------------------------------------------------------------------
 void albaProDBType::Clear()
 {
-	throw std::logic_error("The method or operation is not implemented.");
+	
 }
 
 //----------------------------------------------------------------------------
 void albaProDBComponent::Clear()
 {
-	throw std::logic_error("The method or operation is not implemented.");
+	
 }
 
 //----------------------------------------------------------------------------
 void albaProDBCompGruop::Clear()
 {
-	throw std::logic_error("The method or operation is not implemented.");
 }
 
 //----------------------------------------------------------------------------
 void albaProDBProshesis::Clear()
 {
-	throw std::logic_error("The method or operation is not implemented.");
 }
 
 //----------------------------------------------------------------------------
