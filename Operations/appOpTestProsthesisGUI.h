@@ -1,6 +1,6 @@
 /*=========================================================================
 Program:   AssemblerPro
-Module:    appOpCreateProsthesis.h
+Module:    appOpTestProsthesisGUI.h
 Language:  C++
 Date:      $Date: 2021-01-01 12:00:00 $
 Version:   $Revision: 1.0.0.0 $
@@ -13,8 +13,8 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE. See the above copyright notice for more information.
 =========================================================================*/
 
-#ifndef __appOpCreateProsthesis_H__
-#define __appOpCreateProsthesis_H__
+#ifndef __appOpTestProsthesisGUI_H__
+#define __appOpTestProsthesisGUI_H__
 
 //----------------------------------------------------------------------------
 // Include :
@@ -28,36 +28,39 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 class albaProsthesisDBManager;
 class albaProDBProshesis;
-
-struct Prosthesis
-{
-	wxString name;
-	wxString image;
-	wxString producer;
-
-	int type = 0;
-	int side = 0;
-
-	bool isChanged = false;
-
-	std::vector<wxString> componentGroup;
-};
-
+class albaProDBProducer;
+class appGUIDialogComponent;
+class appGUIDialogProsthesisSelection;
 //----------------------------------------------------------------------------
-// Class Name: appOpCreateProsthesis
+// Class Name: appOpTestProsthesisGUI
 //----------------------------------------------------------------------------
-class APP_OPERATIONS_EXPORT appOpCreateProsthesis : public albaOp
+class APP_OPERATIONS_EXPORT appOpTestProsthesisGUI : public albaOp
 {
 public:
-	
+
+	//Widgets ID's	
+	enum OP_TEST_PROSTHESIS_ID
+	{
+		ID_PROSTHESIS_GROUP_START,
+		ID_PROSTHESIS_NAME,
+		ID_PROSTHESIS_CHANGE,
+		ID_PROSTHESIS_EDIT,
+		ID_GROUP_SHOW,
+		ID_COMPONENT_SELECT,
+		ID_COMPONENT_ADD,
+		ID_COMPONENT_DEL,
+		ID_COMPONENT_EDIT,
+		ID_PROSTHESIS_GROUP_END,
+	};
+
 	/** Constructor. */
-	appOpCreateProsthesis(wxString label = "Create Prosthesis DB");
+	appOpTestProsthesisGUI(wxString label = "Test Prosthesis GUI");
 
 	/** Destructor. */
-	~appOpCreateProsthesis();
+	~appOpTestProsthesisGUI();
 
 	/** RTTI macro. */
-	albaTypeMacro(appOpCreateProsthesis, albaOp);
+	albaTypeMacro(appOpTestProsthesisGUI, albaOp);
 
 	/** Return a copy of the operation */
 	/*virtual*/ albaOp* Copy();
@@ -70,17 +73,31 @@ public:
 
 	/** Builds operation's interface. */
 	/*virtual*/ void OpRun();
-	
+
+	void LoadInfo();
+	void SaveInfo();
+
+	/** Execute the operation. */
+	/*virtual*/ void OpDo();
+
+	/** Receive events coming from the user interface.*/
+	void OnEvent(albaEventBase *alba_event);
+
 protected:
 
 	/** This method is called at the end of the operation and result contain the wxOK or wxCANCEL. */
 	/*virtual*/ void OpStop(int result);	
+
+	/** Create the Operation GUI */
+	virtual void CreateGui();
+
+	void UpdateGui();
+
+	bool m_EditMode;
 	
-	void AddProsthesis();
-	void UpdateProsthesis(Prosthesis prosthesis);
-
-	void SaveProsthesis();
-
-	Prosthesis m_CurrentProsthesis;
+	albaProsthesisDBManager *m_DBManager;
+	wxString m_ProsthesisName;
+	int m_NumComponentGroups;
+	int m_Show;
 };
 #endif

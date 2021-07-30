@@ -1,6 +1,6 @@
 /*=========================================================================
 Program:   AssemblerPro
-Module:    appGUIDialogProducer.cpp
+Module:    appGUIDialogProsthesisSelection.cpp
 Language:  C++
 Date:      $Date: 2021-01-01 12:00:00 $
 Version:   $Revision: 1.0.0.0 $
@@ -19,16 +19,18 @@ PURPOSE. See the above copyright notice for more information.
 // This force to include Window, wxWidgets and VTK exactly in this order.
 //----------------------------------------------------------------------------
 
-#include "appGUIDialogProducer.h"
+#include "appGUIDialogProsthesisSelection.h"
 #include "appUtils.h"
 
 #include "albaDecl.h"
 #include "albaGUIButton.h"
+#include "appGUIHyperLink.h"
 #include "albaGUILab.h"
 #include "albaGUIPicButton.h"
 #include "albaGUIValidator.h"
 
 #include "wx\image.h"
+#include "wx\statline.h"
 #include "wx\window.h"
 
 enum PRODUCER_DIALOG_ID
@@ -40,7 +42,7 @@ enum PRODUCER_DIALOG_ID
 };
 
 //----------------------------------------------------------------------------
-appGUIDialogProducer::appGUIDialogProducer(const wxString& title, long style)
+appGUIDialogProsthesisSelection::appGUIDialogProsthesisSelection(const wxString& title, long style)
 	: albaGUIDialog(title, style)
 {
 	m_Gui = NULL;
@@ -51,24 +53,26 @@ appGUIDialogProducer::appGUIDialogProducer(const wxString& title, long style)
 	m_ProducerImageButton = NULL;
 
 	m_ProducerName_textCtrl = NULL;
-	m_ProducerSite_textCtrl = NULL;
+	
+	m_CurrentProducer.name = "Producer";
+	m_CurrentProducer.webSite = "www.producer.com";
+	m_CurrentProducer.image = "producer.bmp";
 
-	CreateProducerDialog();
+	CreateDialog();
 }
 //----------------------------------------------------------------------------
-appGUIDialogProducer::~appGUIDialogProducer()
+appGUIDialogProsthesisSelection::~appGUIDialogProsthesisSelection()
 {
 }
 
 //----------------------------------------------------------------------------
-void appGUIDialogProducer::OnEvent(albaEventBase *alba_event)
+void appGUIDialogProsthesisSelection::OnEvent(albaEventBase *alba_event)
 {
 	switch (alba_event->GetId())
 	{
 	case ID_PRODUCER_DIALOG_TEXT:
 	{
 		m_CurrentProducer.name = m_ProducerName_textCtrl->GetValue();
-		m_CurrentProducer.webSite = m_ProducerSite_textCtrl->GetValue();
 		m_CurrentProducer.isChanged = true;
 	}
 	break;
@@ -82,7 +86,6 @@ void appGUIDialogProducer::OnEvent(albaEventBase *alba_event)
 	case ID_PRODUCER_DIALOG_OK_PRESSED:
 	{
 		m_CurrentProducer.name = m_ProducerName_textCtrl->GetValue();
-		m_CurrentProducer.webSite = m_ProducerSite_textCtrl->GetValue();
 		this->Close();
 	}
 	break;
@@ -93,7 +96,7 @@ void appGUIDialogProducer::OnEvent(albaEventBase *alba_event)
 }
 
 //----------------------------------------------------------------------------
-void appGUIDialogProducer::SelectImage()
+void appGUIDialogProsthesisSelection::SelectImage()
 {
 	albaString fileNameFullPath = albaGetDocumentsDirectory().c_str();
 	albaString wildc = "Image file (*.bmp)|*.bmp";
@@ -104,19 +107,19 @@ void appGUIDialogProducer::SelectImage()
 		m_CurrentProducer.image = imagePath;
 		m_CurrentProducer.isChanged = true;
 
-		UpdateProducerDialog();
+		UpdateDialog();
 	}
 }
 
 //----------------------------------------------------------------------------
-void appGUIDialogProducer::Show()
+void appGUIDialogProsthesisSelection::Show()
 {
-	CreateProducerDialog();
+	CreateDialog();
 	ShowModal();
 }
 
 //----------------------------------------------------------------------------
-void appGUIDialogProducer::CreateProducerDialog()
+void appGUIDialogProsthesisSelection::CreateDialog()
 {
 	if (m_Gui == NULL)
 	{
@@ -155,11 +158,6 @@ void appGUIDialogProducer::CreateProducerDialog()
 
 			m_MainBoxSizer->Add(m_ImageSizer, 0, wxALL | wxALIGN_CENTER, 0);
 
-			// BUTTON - Change Producer Brand Image
-			albaGUIButton *immBtn = new albaGUIButton(this, ID_PRODUCER_DIALOG_IMM, "Change Image", wxPoint(-1, -1));
-			immBtn->SetListener(this);
-			m_MainBoxSizer->Add(immBtn, 0, wxALIGN_RIGHT, 0);
-
 			delete previewBitmap;
 			delete previewImage;
 		}
@@ -169,27 +167,30 @@ void appGUIDialogProducer::CreateProducerDialog()
 		wxBoxSizer *infoBoxSizer = new wxBoxSizer(wxVERTICAL);
 
 		// TEXT - Producer Name
-		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxVERTICAL, this, "Producer Name");
-		m_ProducerName_textCtrl = new wxTextCtrl(this, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducer.name, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
-		m_ProducerName_textCtrl->SetEditable(true);
+		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxHORIZONTAL, this, "Producer");
+		m_ProducerName_textCtrl = new wxTextCtrl(this, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducer.name, wxPoint(-1, -1), wxSize(300, 20), wxALL | wxEXPAND);
+		m_ProducerName_textCtrl->SetEditable(false);
+		m_ProducerName_textCtrl->Enable(false);
 		m_ProducerName_textCtrl->SetMaxLength(64);
 		labelSizer1->Add(m_ProducerName_textCtrl, 0, wxALL | wxEXPAND, 0);
 
+		labelSizer1->Add(new albaGUILab(this, -1, "   "));
+
+		// LINK - Producer Web Site
+		appGUIHyperLink *link = new appGUIHyperLink(this, NULL, m_CurrentProducer.webSite);
+		link->SetUrl(m_CurrentProducer.webSite);
+		labelSizer1->Add(link, 0, wxALL | wxEXPAND, 0);
+
 		infoBoxSizer->Add(labelSizer1, 0, wxALL | wxEXPAND, 5);
 
-		// TEXT - Producer Web Site
-		wxStaticBoxSizer *labelSizer2 = new wxStaticBoxSizer(wxVERTICAL, this, "Web Site");
-		m_ProducerSite_textCtrl = new wxTextCtrl(this, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducer.webSite, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
-		m_ProducerSite_textCtrl->SetEditable(true);
-		m_ProducerSite_textCtrl->SetMaxLength(64);
-		labelSizer2->Add(m_ProducerSite_textCtrl, 0, wxALL | wxEXPAND, 0);
-
-		infoBoxSizer->Add(labelSizer2, 0, wxALL | wxEXPAND, 5);
-
+		//////////////////////////////////////////////////////////////////////////
 		// TEXT - Empty Separator
 		infoBoxSizer->Add(new albaGUILab(this, -1, " "), 0, wxALIGN_LEFT, 5);
 
 		m_MainBoxSizer->Add(infoBoxSizer, 0, wxALL, 5);
+
+		// LINE
+		m_MainBoxSizer->Add(new wxStaticLine(this, -1, wxPoint(-1, -1), wxSize(430, 1)), 0, wxALL, 5);
 
 		// BUTTON - Ok
 		albaGUIButton *okBtn = new albaGUIButton(this, ID_PRODUCER_DIALOG_OK_PRESSED, "OK", wxPoint(-1, -1));
@@ -215,11 +216,11 @@ void appGUIDialogProducer::CreateProducerDialog()
 		Add(m_MainBoxSizer, 0);
 	}
 
-	UpdateProducerDialog();
+	UpdateDialog();
 }
 
 //----------------------------------------------------------------------------
-void appGUIDialogProducer::UpdateProducerDialog()
+void appGUIDialogProsthesisSelection::UpdateDialog()
 {
 	if (m_Gui)
 	{
@@ -261,6 +262,5 @@ void appGUIDialogProducer::UpdateProducerDialog()
 		}
 
 		m_ProducerName_textCtrl->SetValue(m_CurrentProducer.name);
-		m_ProducerSite_textCtrl->SetValue(m_CurrentProducer.webSite);
 	}
 }

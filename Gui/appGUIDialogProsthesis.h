@@ -1,6 +1,6 @@
 /*=========================================================================
 Program:   AssemblerPro
-Module:    appGUIDialogComponent.h
+Module:    appGUIDialogProsthesis.h
 Language:  C++
 Date:      $Date: 2021-01-01 12:00:00 $
 Version:   $Revision: 1.0.0.0 $
@@ -13,8 +13,8 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE. See the above copyright notice for more information.
 =========================================================================*/
 
-#ifndef __appGUIDialogComponent_H__
-#define __appGUIDialogComponent_H__
+#ifndef __appGUIDialogProsthesis_H__
+#define __appGUIDialogProsthesis_H__
 
 //----------------------------------------------------------------------------
 // Include:
@@ -29,33 +29,52 @@ class albaGUIButton;
 class albaGUILab;
 class albaGUIPicButton;
 
-struct Component
-{
-	wxString name;
-};
-
-class ALBA_EXPORT appGUIDialogComponent : public albaGUIDialog
+class ALBA_EXPORT appGUIDialogProsthesis : public albaGUIDialog
 {
 public:
-	appGUIDialogComponent(const wxString& title, long style = albaCLOSEWINDOW);
-	virtual ~appGUIDialogComponent();
+	appGUIDialogProsthesis(const wxString& title, long style = albaCLOSEWINDOW);
+	virtual ~appGUIDialogProsthesis();
 
-  void OnEvent(albaEventBase *alba_event);
-	
-	void SetComponent(Component *component) { m_CurrentComponent = *component; };
-	Component GetComponent() { return m_CurrentComponent; };
+	void OnEvent(albaEventBase *alba_event);
+
+	void SetProsthesis(Prosthesis &model);;
+	Prosthesis GetProsthesis() { return m_CurrentProsthesis; };
 
 	void Show();
 
 protected:
 
-	void CreateComponentDialog();
-	void UpdateComponentDialog();
+	void CreateDialog();
+	void UpdateDialog();
 
-	Component m_CurrentComponent;
+	void EditComponentGroup();
+	void AddComponentGroup();
+	void RemoveComponentGroup();
 
-  albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
+	void SelectImage();
 
-	wxTextCtrl *m_ComponentName_textCtrl;
+	Prosthesis m_CurrentProsthesis;
+
+	albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
+
+	wxBoxSizer *m_MainBoxSizer;
+	wxBoxSizer *m_ImageSizer;
+
+	wxComboBox *m_ImageComboBox;
+	wxImage	*m_Image;
+	albaGUIPicButton *m_ImageButton;
+	wxString m_ImagePath;
+
+	wxTextCtrl *m_Name_textCtrl;
+
+	std::vector<wxString> m_ProducerNameList;
+	int m_SelectedProducer;
+	int m_SelectedType;
+	int m_SelectedSide;
+
+	wxComboBox *m_ComponentGroupCombo;
+	std::vector<wxString> m_ComponentNameList;
+	int m_SelectedComponentGroup;
+
 };
 #endif

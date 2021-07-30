@@ -93,7 +93,7 @@ void appGUIDialogComponent::CreateComponentDialog()
 		wxBoxSizer *infoBoxSizer = new wxBoxSizer(wxVERTICAL);
 
 		// TEXT - Component Name
-		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxVERTICAL, this, "Component Name");
+		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxVERTICAL, this, "Name");
 		m_ComponentName_textCtrl = new wxTextCtrl(this, ID_COMPONENT_DIALOG_TEXT, m_CurrentComponent.name, wxPoint(-1, -1), wxSize(panelWidth, 25), wxALL | wxEXPAND);
 		m_ComponentName_textCtrl->SetEditable(true);
 		m_ComponentName_textCtrl->SetMaxLength(64);

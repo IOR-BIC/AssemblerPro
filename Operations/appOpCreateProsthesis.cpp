@@ -23,7 +23,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "appDecl.h"
 #include "appGUI.h"
 #include "appGUIDialogComponent.h"
-#include "appGUIDialogModel.h"
+#include "appGUIDialogProsthesis.h"
 #include "appGUIDialogProducer.h"
 #include "appLogic.h"
 #include "appUtils.h"
@@ -49,26 +49,11 @@ appOpCreateProsthesis::appOpCreateProsthesis(wxString label) :albaOp(label)
 {
 	m_OpType = OPTYPE_OP;
 	m_Canundo = true;
-
-	m_DBManager = NULL;
-
-	m_ProducerComboBox = NULL;
-	m_ModelComboBox = NULL;
-	m_ComponentComboBox = NULL;
-
-	m_SelectedProducer = 0;
-	m_SelectedModel = 0;
-	m_SelectedComponent = 0;
 }
 
 //----------------------------------------------------------------------------
 appOpCreateProsthesis::~appOpCreateProsthesis()
 {
-	m_ProducersVect.clear();
-
-	m_ProducerNameList.clear();
-	m_ModelNameList.clear();
-	m_ComponentNameList.clear();
 }
 
 //----------------------------------------------------------------------------
@@ -94,540 +79,87 @@ albaOp* appOpCreateProsthesis::Copy()
 //----------------------------------------------------------------------------
 void appOpCreateProsthesis::OpRun()
 {
-	LoadInfo();
-	
-	if (!m_TestMode)
-	{
-		CreateGui();
-	}
-}
+	AddProsthesis();
 
-/// Load/Save Data
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::LoadInfo()
-{
-	m_DBManager = ((appLogic*)GetLogicManager())->GetProsthesisDBManager();
+	if (m_CurrentProsthesis.isChanged)
+		SaveProsthesis();
 
-	//////////////////////////////////////////////////////////////////////////
-	wxString dbFilePath = appUtils::GetConfigDirectory().c_str();
-
-	std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
-	std::vector<albaProDBProducer *> DBproducers = m_DBManager->GetProducers();
-
-	m_ProducersVect.clear();
-
-	for (int p = 0; p < DBproducers.size(); p++)
-	{
-		Producer producer;
-		producer.index = p;
-		producer.name = DBproducers[p]->GetName();
-		producer.webSite = DBproducers[p]->GetWebSite();
-		producer.brandImage = DBproducers[p]->GetImgFileName();
-		producer.models.clear();
-
-		for (int m = 0; m < DBprosthesis.size(); m++)
-		{
-			if (DBprosthesis[m]->GetProducer().Equals(producer.name))
-			{
-				Model model;
-				model.index = m;
-				model.name = DBprosthesis[m]->GetName();
-				model.type = DBprosthesis[m]->GetType() == "Femoral" ? FEMORAL : ACETABULAR;
-				model.image = DBprosthesis[m]->GetImgFileName();
-				model.side = DBprosthesis[m]->GetSide();
-
-				model.components.clear();
-
-				for (int c = 0; c < 3; c++)
-				{
-					Component  component;
-					component.name = wxString::Format("%s - Component %d", model.name, (c + 1));
-
-					model.components.push_back(component);
-				}
-
-				producer.models.push_back(model);
-			}
-		}
-
-		m_ProducersVect.push_back(producer);
-	}
-
-	// GUI
-	// Load Producers Info
-	m_ProducerNameList.clear();
-	m_ProducerNameList.push_back("");
-
-	for (int p = 0; p < m_ProducersVect.size(); p++)
-	{
-		m_ProducerNameList.push_back(m_ProducersVect[p].name);
-	}
-
-	// Load Models Info
-	m_ModelNameList.clear();
-	m_ModelNameList.push_back("");
-
-	// Load Components Info
-	m_ComponentNameList.clear();
-	m_ComponentNameList.push_back("");
+	OpStop(OP_RUN_OK);
 }
 //----------------------------------------------------------------------------
-void appOpCreateProsthesis::SaveInfo()
+void appOpCreateProsthesis::OpStop(int result)
 {
-	int pChanges = 0;
-	int mChanges = 0;
-	int cChanges = 0;
+	albaEventMacro(albaEvent(this, result));
+}
 
-	m_DBManager = ((appLogic*)GetLogicManager())->GetProsthesisDBManager();
-	
- 	std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
+//////////////////////////////////////////////////////////////////////////
+/// Prosthesis Management
+//----------------------------------------------------------------------------
+void appOpCreateProsthesis::AddProsthesis()
+{
+	// Create New Prosthesis
+	m_CurrentProsthesis.name = "newProsthesis";
+	m_CurrentProsthesis.producer = "";
+	m_CurrentProsthesis.image = "";
+	m_CurrentProsthesis.type = 0; // = ACETABULAR
+	m_CurrentProsthesis.side = 0; // = LEFT
+	m_CurrentProsthesis.isChanged = false;
 
-	//////////////////////////////////////////////////////////////////////////
+	appGUIDialogProsthesis md(_("Add Prosthesis"));
+	md.SetProsthesis(m_CurrentProsthesis);
+	md.ShowModal();
 
-	// Update Producers
-	for (int p=0; p< m_ProducersVect.size(); p++)
+	UpdateProsthesis(md.GetProsthesis());
+}
+//----------------------------------------------------------------------------
+void appOpCreateProsthesis::UpdateProsthesis(Prosthesis prosthesis)
+{
+	// Update Vector Element
+	m_CurrentProsthesis.name = prosthesis.name;
+	m_CurrentProsthesis.image = prosthesis.image;
+	m_CurrentProsthesis.producer = prosthesis.producer;
+	m_CurrentProsthesis.type = prosthesis.type;
+	m_CurrentProsthesis.side = prosthesis.side;
+	m_CurrentProsthesis.isChanged = prosthesis.isChanged;
+
+// 	for (int c = 0; c < m_CurrentProsthesis.components.size(); c++)
+// 	{
+// 		m_CurrentProsthesis.components
+// 	}
+}
+//----------------------------------------------------------------------------
+void appOpCreateProsthesis::SaveProsthesis()
+{
+	albaProDBProshesis *newProsthesis = new albaProDBProshesis();
+
+	newProsthesis->SetName(m_CurrentProsthesis.name);
+	newProsthesis->SetImgFileName(m_CurrentProsthesis.image);
+	newProsthesis->SetProducer(m_CurrentProsthesis.producer);
+	newProsthesis->SetType(m_CurrentProsthesis.type);
+	newProsthesis->SetSide((albaProDBProshesis::PRO_SIDES)m_CurrentProsthesis.side);
+
+	// Components Group
+	// 	newProsthesis->m_CompGroups.clear();
+
+	for (int c = 0; c < m_CurrentProsthesis.componentGroup.size(); c++)
 	{
-		if (m_ProducersVect[p].index < 0)
-		{
-			// Add New Producer
-			albaProDBProducer *newProducer = new albaProDBProducer();
-			newProducer->SetName(m_ProducersVect[p].name);
-			newProducer->SetImgFileName(m_ProducersVect[p].brandImage);
-			newProducer->SetWebSite(m_ProducersVect[p].webSite);
+		// albaProDBComponent *newComponent = new albaProDBComponent();
 
-			m_DBManager->GetProducers().push_back(newProducer);
-		}
+		// newComponent->SetName(m_CurrentProsthesis.components[c].name);
+
+		// newProsthesis->m_CompGroups.push_back(newComponent);
 	}
 
-	// Update Prosthesis
-	for (int p = 0; p < m_ProducersVect.size(); p++)
-	{
-		if (m_ProducersVect[p].isChanged)
-		{
-			pChanges++;
-
-			if (m_ProducersVect[p].index < 0)
-			{
-				albaProDBProshesis *newProsthesis = new albaProDBProshesis();
-				m_DBManager->GetProstheses().push_back(newProsthesis);
-
-				m_ProducersVect[p].index = DBprosthesis.size() - 1;
-			}
-
-			if (m_ProducersVect[p].index >= 0)
-			{
-				DBprosthesis[m_ProducersVect[p].index]->SetProducer(m_ProducersVect[p].name);
-				DBprosthesis[m_ProducersVect[p].index]->SetImgFileName(m_ProducersVect[p].brandImage);
-			}
-		}
-
-		for (int m = 0; m < m_ProducersVect[p].models.size(); m++)
-		{
-			if (m_ProducersVect[p].models[m].isChanged)
-			{
-				// Save Model changes
-				mChanges++;
-
-				DBprosthesis[m_ProducersVect[p].index]->SetName(m_ProducersVect[p].models[m].name);
-				DBprosthesis[m_ProducersVect[p].index]->SetImgFileName(m_ProducersVect[p].models[m].image);
-				DBprosthesis[m_ProducersVect[p].index]->SetType(m_ProducersVect[p].models[m].type);
-				DBprosthesis[m_ProducersVect[p].index]->SetSide((albaProDBProshesis::PRO_SIDES)m_ProducersVect[p].models[m].side);
-			}
-
-			for (int c = 0; c < m_ProducersVect[p].models[m].components.size(); c++)
-			{
-				if (m_ProducersVect[p].models[m].components[c].isChanged)
-				{
-					// Save Component changes
-					cChanges++;
-				}
-			}
-		}
-	}
+	// Add New Prosthesis to DB
+	albaProsthesisDBManager *DBManager = ((appLogic*)GetLogicManager())->GetProsthesisDBManager();
+	DBManager->GetProstheses().push_back(newProsthesis);
 
 	//////////////////////////////////////////////////////////////////////////
 	wxString dbFilePath = appUtils::GetConfigDirectory().c_str();
 	dbFilePath += "/SavedDB.xml";
 
-	m_DBManager->SaveDBToFile(dbFilePath);
+	DBManager->SaveDBToFile(dbFilePath);
 
-	wxString message = wxString::Format("Producer: %d changes. \nModels: %d changes. \nComponents: %d changes.", pChanges, mChanges, cChanges);
+	wxString message = wxString::Format("Added New Prosthesis!");
 	wxMessageBox(message);
-}
-
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::OpStop(int result)
-{
-	if (!m_TestMode)
-	{
-		HideGui();
-	}
-
-	if (result == OP_RUN_OK)
-	{
-		SaveInfo();
-	}
-
-	albaEventMacro(albaEvent(this, result));
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::OpDo()
-{
-}
-
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::OnEvent(albaEventBase *alba_event)
-{
-	if (albaEvent *e = albaEvent::SafeDownCast(alba_event))
-	{
-		//if (e->GetSender() == m_Gui)
-		{
-			switch (e->GetId())
-			{
-				// GUI Events
-			case wxOK:
-				OpStop(OP_RUN_OK);
-				break;
-
-			case wxCANCEL:
-				OpStop(OP_RUN_CANCEL);
-				break;
-
-			case ID_SELECT_PRODUCER:
-				SelectProducer();
-				break;
-
-			case ID_EDIT_PRODUCER:
-				EditProducer();
-				break;
-
-			case ID_ADD_PRODUCER:
-				AddProducer();
-				break;
-
-			case ID_SELECT_MODEL:
-				SelectModel();
-				break;
-
-			case ID_EDIT_MODEL:
-				EditModel();
-				break;
-
-			case ID_ADD_MODEL:
-				AddModel();
-				break;
-
-			case ID_SELECT_COMPONENT:
-				SelectComponent();
-				break;
-
-			case ID_EDIT_COMPONENT:
-				EditComponent();
-				break;
-
-			case ID_ADD_COMPONENT:
-				AddComponent();
-				break;
-				
-			default:
-				Superclass::OnEvent(alba_event);
-				break;
-			}
-		}
-		// 		else
-		// 		{
-		// 			Superclass::OnEvent(alba_event);
-		// 		}
-	}
-}
-
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::CreateGui()
-{
-	// Interface:
-	m_Gui = new appGUI(this);
-
-	//////////////////////////////////////////////////////////////////////////
-	m_Gui->Label("Producer", true);
-	m_ProducerComboBox = m_Gui->Combo(ID_SELECT_PRODUCER, "", &m_SelectedProducer, m_ProducerNameList.size(), &m_ProducerNameList[0], "");
-	m_Gui->TwoButtons(ID_EDIT_PRODUCER, ID_ADD_PRODUCER, "Edit", "Add New");
-	m_Gui->Divider(1);
-
-	//////////////////////////////////////////////////////////////////////////
-	m_Gui->Label("Model", true);
-	m_ModelComboBox = m_Gui->Combo(ID_SELECT_MODEL, "", &m_SelectedModel, m_ModelNameList.size(), &m_ModelNameList[0], "");
-	m_Gui->TwoButtons(ID_EDIT_MODEL, ID_ADD_MODEL, "Edit", "Add New");
-	
-	//////////////////////////////////////////////////////////////////////////
-	m_Gui->Label("Components", true);
-	m_ComponentComboBox = m_Gui->Combo(ID_SELECT_COMPONENT, "", &m_SelectedComponent, m_ComponentNameList.size(), &m_ComponentNameList[0], "");
-	m_Gui->TwoButtons(ID_EDIT_COMPONENT, ID_ADD_COMPONENT, "Edit", "Add New");
-	
-	((appGUI*)m_Gui)->HyperLink(NULL, "Google", "www.google.com"); // TEST
-
-	//////////////////////////////////////////////////////////////////////////
-	m_Gui->Label("");
-	m_Gui->Divider(1);
-	m_Gui->OkCancel();
-	m_Gui->Label("");
-	
-	UpdateGui();
-	ShowGui();
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::UpdateGui()
-{
-	if (m_Gui)
-	{
-		// Enable Producer Gui
-		m_Gui->Enable(ID_EDIT_PRODUCER, m_SelectedProducer > 0);
-
-		// Enable Model Gui
-		for (int i = ID_MODEL_GROUP_START; i < ID_MODEL_GROUP_END; i++)
-		{
-			bool enable = m_SelectedProducer > 0;
-
-			if(i==ID_EDIT_MODEL) 
-				enable = enable && m_SelectedModel > 0;
-
-			m_Gui->Enable(i, enable);
-		}
-
-		// Enable Component Gui
-		for (int i = ID_COMPONENT_GROUP_START; i < ID_COMPONENT_GROUP_END; i++)
-		{
-			bool enable = m_SelectedModel > 0;
-
-			if (i == ID_EDIT_COMPONENT)
-				enable = enable && m_SelectedComponent > 0;
-
-			m_Gui->Enable(i, enable);
-		}
-
-		m_Gui->Update();
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-/// Prosthesis Management
-
-// Producer
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::SelectProducer()
-{
-	m_SelectedModel = 0; // Reset Model Selection
-	m_SelectedComponent = 0; // Reset Component Selection
-
-	m_ModelNameList.clear();
-	m_ModelNameList.push_back("");
-
-	m_ModelComboBox->Clear();
-	m_ModelComboBox->Append("");
-
-	if (m_SelectedProducer > 0)
-		for (int m = 0; m < m_ProducersVect[m_SelectedProducer - 1].models.size(); m++)
-		{
-			m_ModelNameList.push_back(m_ProducersVect[m_SelectedProducer - 1].models[m].name);
-			m_ModelComboBox->Append(m_ProducersVect[m_SelectedProducer - 1].models[m].name);
-		}
-
-	UpdateGui();
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::AddProducer()
-{
-	// Create New Producer
-	m_CurrentProducer.name = wxString::Format("new Producer %d", m_ProducerNameList.size());
-	m_CurrentProducer.webSite = "www." + m_CurrentProducer.name + ".com";
-	m_CurrentProducer.brandImage = "";
-
-	// Add to Combobox
-	m_ProducerNameList.push_back(m_CurrentProducer.name);
-	m_ProducerComboBox->Append(m_CurrentProducer.name);
-	
-	// Add to Vector
-	Producer producer;
-	producer.index = -1;
-	producer.name = m_CurrentProducer.name;
-	producer.webSite = m_CurrentProducer.webSite;
-	producer.brandImage = m_CurrentProducer.brandImage;
-	m_ProducersVect.push_back(producer);
-
-	// Select
-	m_SelectedProducer = m_ProducerNameList.size() - 1;
-	m_ProducerComboBox->Select(m_SelectedProducer);
-
-	SelectProducer();
-
-	EditProducer();
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::EditProducer()
-{
-	m_CurrentProducer.index = m_ProducersVect[m_SelectedProducer - 1].index;
-	m_CurrentProducer.name = m_ProducersVect[m_SelectedProducer - 1].name;
-	m_CurrentProducer.webSite = m_ProducersVect[m_SelectedProducer - 1].webSite;
-	m_CurrentProducer.brandImage = m_ProducersVect[m_SelectedProducer - 1].brandImage;
-	
-	appGUIDialogProducer pd(_("Edit Producer"));
-	pd.SetProducer(m_CurrentProducer);
-	pd.Show();
-
-	UpdateProducer(pd.GetProducer());
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::UpdateProducer(Producer producer)
-{
-	//////////////////////////////////////////////////////////////////////////
-
-	// Update Combobox
-	m_ProducerNameList[m_SelectedProducer] = producer.name;
-	m_ProducerComboBox->SetString(m_SelectedProducer, producer.name);
-
-	// Update Vector Element
-	m_ProducersVect[m_SelectedProducer - 1].name = producer.name;
-	m_ProducersVect[m_SelectedProducer - 1].webSite = producer.webSite;
-	m_ProducersVect[m_SelectedProducer - 1].brandImage = producer.brandImage;
-	m_ProducersVect[m_SelectedProducer - 1].isChanged = true;
-
-	UpdateGui();
-}
-
-// Model
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::SelectModel()
-{
-	m_SelectedComponent = 0; // Reset Component Selection
-	
-	m_ComponentNameList.clear();
-	m_ComponentNameList.push_back("");
-
-	m_ComponentComboBox->Clear();
-	m_ComponentComboBox->Append("");
-
-	if (m_SelectedProducer > 0 && m_SelectedModel > 0)
-		for (int c = 0; c < m_ProducersVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].components.size(); c++)
-		{
-			m_ComponentNameList.push_back(m_ProducersVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].components[c].name);
-			m_ComponentComboBox->Append(m_ProducersVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].components[c].name);
-		}
-
-	UpdateGui();
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::AddModel()
-{
-	// Create New Model
-	m_CurrentModel.name = wxString::Format("%s - new Model %d", m_ProducerNameList[m_SelectedProducer], m_ModelNameList.size());
-	m_CurrentModel.image = "";
-
-	// Add to Combobox
-	m_ModelNameList.push_back(m_CurrentModel.name);
-	m_ModelComboBox->Append(m_CurrentModel.name);
-
-	// Add to Vector
-	Model model;
-	model.name = m_CurrentModel.name;
-	model.image = m_CurrentModel.name;
-	m_ProducersVect[m_SelectedProducer - 1].models.push_back(model);
-
-	// Select
-	m_SelectedModel = m_ModelNameList.size() - 1;
-	m_ModelComboBox->Select(m_SelectedModel);
-
-	SelectModel();
-
-	EditModel();
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::EditModel()
-{
-	m_CurrentModel.index = m_ProducersVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].index;
-	m_CurrentModel.name = m_ProducersVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].name;
-	m_CurrentModel.image = m_ProducersVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].image;
-	m_CurrentModel.type = m_ProducersVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].type;
-	m_CurrentModel.side = m_ProducersVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].side;
-
-	appGUIDialogModel md(_("Edit Model"));
-	md.SetModel(m_CurrentModel);
-	md.ShowModal();
-
-	UpdateModel(md.GetModel());
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::UpdateModel(Model model)
-{
-	//////////////////////////////////////////////////////////////////////////
-
-	// Update Combobox
-	m_ModelNameList[m_SelectedModel] = model.name;
-	m_ModelComboBox->SetString(m_SelectedModel, model.name);
-
-	// Update Vector Element
-	m_ProducersVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].name = model.name;
-	m_ProducersVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].image = model.image;
-	m_ProducersVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].type = model.type;
-	m_ProducersVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].side = model.side;
-	m_ProducersVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].isChanged = true;
-
-	UpdateGui();
-}
-
-// Component
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::SelectComponent()
-{
-	// TODO Load Component Info
-	
-	UpdateGui();
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::AddComponent()
-{
-	// Create New Component
-	m_CurrentComponent.name = wxString::Format("%s - new Component %d", m_ModelNameList[m_SelectedModel], m_ComponentNameList.size());
-
-	// Add to Combobox
-	m_ComponentNameList.push_back(m_CurrentComponent.name);
-	m_ComponentComboBox->Append(m_CurrentComponent.name);
-
-	// Add to Vector
-	Component component;
-	component.name = m_CurrentComponent.name;
-
-	m_ProducersVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].components.push_back(component);
-
-	// Select
-	m_SelectedComponent = m_ComponentNameList.size() - 1;
-	m_ComponentComboBox->Select(m_SelectedComponent);
-
-	SelectComponent();
-
-	EditComponent();
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::EditComponent()
-{
-	m_CurrentComponent.name = m_ProducersVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].components[m_SelectedComponent-1].name;
-
-	appGUIDialogComponent cd(_("Edit Component"));
-	cd.SetComponent(&m_CurrentComponent);
-	cd.ShowModal();
-
-	UpdateComponent(cd.GetComponent());
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::UpdateComponent(Component component)
-{
-	//////////////////////////////////////////////////////////////////////////
-
-	// Update Combobox
-	m_ComponentNameList[m_SelectedComponent] = component.name;;
-	m_ComponentComboBox->SetString(m_SelectedComponent, component.name);
-
-	// Update Vector Element
-	m_ProducersVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].components[m_SelectedComponent - 1].name = component.name;;
-	m_ProducersVect[m_SelectedProducer - 1].models[m_SelectedModel - 1].components[m_SelectedComponent - 1].isChanged = true;
-
-	UpdateGui();
 }

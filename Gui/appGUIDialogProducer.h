@@ -20,7 +20,7 @@ PURPOSE. See the above copyright notice for more information.
 // Include:
 //----------------------------------------------------------------------------
 #include "albaGUIDialog.h"
-#include "appOpCreateProsthesis.h"
+#include "appOpManageProducer.h"
 
 //----------------------------------------------------------------------------
 // forward declarations
@@ -34,13 +34,7 @@ class ALBA_EXPORT appGUIDialogProducer : public albaGUIDialog
 {
 public:
 
-	enum DIALOG_MODE
-	{
-		EDIT,
-		READ_ONLY,
-	};
-
-	appGUIDialogProducer(const wxString& title, int mode = EDIT/*0=Edit, 1=ReadOnly*/, long style = albaCLOSEWINDOW);
+	appGUIDialogProducer(const wxString& title, long style = albaCLOSEWINDOW);
 	virtual ~appGUIDialogProducer();
 
 	void OnEvent(albaEventBase *alba_event);
@@ -59,16 +53,13 @@ protected:
 
 	Producer m_CurrentProducer;
 
-	int m_Mode;
-
 	albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
-
-	wxComboBox *m_ProducerImageComboBox;
-	wxImage	*m_ProducerImage;
+	
+	wxBoxSizer *m_MainBoxSizer;
+	wxBoxSizer *m_ImageSizer;
 	albaGUIPicButton *m_ProducerImageButton;
 
 	wxTextCtrl *m_ProducerName_textCtrl;
 	wxTextCtrl *m_ProducerSite_textCtrl;
-	appGUIHyperLink *m_ProducerSite_Link;
 };
 #endif

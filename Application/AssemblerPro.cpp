@@ -29,7 +29,9 @@ PURPOSE. See the above copyright notice for more information.
 #include "appOpEmpty.h"
 #include "appOpExportProsthesisDB.h"
 #include "appOpImportProsthesisDB.h"
+#include "appOpManageProducer.h"
 #include "appOpSearchProsthesis.h"
+#include "appOpTestProsthesisGUI.h"
 
 #include "appUtils.h"
 
@@ -107,10 +109,16 @@ bool AssemblerPro::OnInit()
 	// Empty Op
 	//m_Logic->Plug(new appOpEmpty("Empty"), "");
 
-	// Create Prosthesis Op
-	m_Logic->Plug(new appOpCreateProsthesis("Create Prosthesis DB"), "");
+	// Manage Prosthesis Producer Op
+	m_Logic->Plug(new appOpManageProducer("Manage Prosthesis Producer"), "");
 
 	// Create Prosthesis Op
+	m_Logic->Plug(new appOpCreateProsthesis("Create Prosthesis"), "");
+
+	// Test Prosthesis GUI Op
+	m_Logic->Plug(new appOpTestProsthesisGUI("Test Prosthesis GUI"), "");
+
+	// Search Prosthesis Op
 	m_Logic->Plug(new appOpSearchProsthesis("Search Prosthesis"), "");
 
 	//////////////////////////////////////////////////////////////////////////
@@ -204,10 +212,14 @@ void AssemblerPro::InitializeIcons()
 	albaADDPIC(OP_IMPORT_PROSTHESIS);
 #include "pic/OP_EXPORT_PROSTHESIS.xpm"
 	albaADDPIC(OP_EXPORT_PROSTHESIS);
+#include "pic/OP_PROSTHESIS.xpm"
+	albaADDPIC(OP_PROSTHESIS);
 #include "pic/OP_CREATE_PROSTHESIS.xpm"
 	albaADDPIC(OP_CREATE_PROSTHESIS);
 #include "pic/OP_SEARCH_PROSTHESIS.xpm"
 	albaADDPIC(OP_SEARCH_PROSTHESIS);
+#include "pic/OP_MANAGE_PRODUCER.xpm"
+	albaADDPIC(OP_MANAGE_PRODUCER);
 }
 
 //--------------------------------------------------------------------------------

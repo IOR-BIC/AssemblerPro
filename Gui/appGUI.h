@@ -28,12 +28,12 @@ PURPOSE. See the above copyright notice for more information.
 // Forward references :
 //----------------------------------------------------------------------------
 class albaEventBase;
+class albaGUIValidator;
 class albaInteractorCompositorMouse;
-class appInteractorGenericMouse;
-class appInteractionVolume;
 class appGUIComponent;
 class appGUITransformMouse;
-class albaGUIValidator;
+class appInteractionVolume;
+class appInteractorGenericMouse;
 
 //----------------------------------------------------------------------------
 // Class Name: appGUI
@@ -47,12 +47,6 @@ public:
 
 	void OnDClickList(wxCommandEvent& event);
 
-	/* Create HintBox*/
-	void HintBox(int id, wxString label, wxString title, bool showIcon);
-
-	void Button2(int id, albaString label, albaString button_text, albaString tooltip = "", double labelW = 0.5);
-
-	void TaskButton(int id, wxString label, bool status);
 	/*Create HyperLink*/
 	void HyperLink(int id, wxString label, wxString url);
 
@@ -61,23 +55,6 @@ public:
 
 	/** Integer entry widget. */
 	void TwoIntegers(int id, albaString label, int *var1, int *var2, int min = MININT, int max = MAXINT, albaString tooltip = "", bool labelAlwaysEnable = false, double customSizer = 1.0);
-
-
-	/**/
-	void Radio2(int id, wxString label, int *var, int numchoices = 0, const wxString choices[] = NULL, int dim = 1, wxString tooltip = "", int style = wxRA_SPECIFY_COLS);
-	void RadioButton2(int id, wxString label, int selected = true, wxString tooltip = "");
-	void MultipleRadioButtons(int numButtons, int numColumns, std::vector<int> &ids, std::vector<const char*> &labelsRows, std::vector<const char*> &labelsColumns, int *var);
-	void RadioButtonGrid(int numRows, int numColumns, std::vector<int> &ids, std::vector<const char*> &labelsRows, std::vector<const char*> &labelsColumns, int *var);
-
-	void MultipleRadioButtons(int numButtons, int numColumns, std::vector<int> &ids, std::vector<const char*> &labelsColumns, int *var, wxString label = "");
-	void MultipleRadioButtons2(int numButtons, std::vector<int> &ids, int *var, wxString label = "", wxColour *bg_colour = NULL);
-	void MultipleLabel(int numColumns, std::vector<const char*> &labels, bool bold = false);
-
-	void Calendar(int day = -1, int month = -1, int year = -1, int dayOfWeek = -1);
-
-	void Clock(int *hour = NULL, int *min = NULL, int *sec = NULL);
-	void Clock(int id, wxString label, int var[3]);
-	void Clock(int id, albaString *var);
 
 private:
 	DECLARE_EVENT_TABLE()

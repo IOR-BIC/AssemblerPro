@@ -1,6 +1,6 @@
 /*=========================================================================
 Program:   AssemblerPro
-Module:    appOpCreateProsthesis.h
+Module:    appOpManageProducer.h
 Language:  C++
 Date:      $Date: 2021-01-01 12:00:00 $
 Version:   $Revision: 1.0.0.0 $
@@ -13,8 +13,8 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE. See the above copyright notice for more information.
 =========================================================================*/
 
-#ifndef __appOpCreateProsthesis_H__
-#define __appOpCreateProsthesis_H__
+#ifndef __appOpManageProducer_H__
+#define __appOpManageProducer_H__
 
 //----------------------------------------------------------------------------
 // Include :
@@ -27,37 +27,43 @@ PURPOSE. See the above copyright notice for more information.
 // Forward references :
 //----------------------------------------------------------------------------
 class albaProsthesisDBManager;
-class albaProDBProshesis;
+class albaProDBProducer;
 
-struct Prosthesis
+struct Producer
 {
+	int index;
 	wxString name;
+	wxString webSite;
 	wxString image;
-	wxString producer;
-
-	int type = 0;
-	int side = 0;
 
 	bool isChanged = false;
-
-	std::vector<wxString> componentGroup;
 };
 
 //----------------------------------------------------------------------------
-// Class Name: appOpCreateProsthesis
+// Class Name: appOpManageProducer
 //----------------------------------------------------------------------------
-class APP_OPERATIONS_EXPORT appOpCreateProsthesis : public albaOp
+class APP_OPERATIONS_EXPORT appOpManageProducer : public albaOp
 {
 public:
-	
+
+	//Widgets ID's	
+	enum OP_CREATE_PROSTHESIS_ID
+	{
+		ID_PRODUCER_GROUP_START = MINID,
+		ID_SELECT_PRODUCER,
+		ID_EDIT_PRODUCER,
+		ID_ADD_PRODUCER,
+		ID_PRODUCER_GROUP_END,
+	};
+
 	/** Constructor. */
-	appOpCreateProsthesis(wxString label = "Create Prosthesis DB");
+	appOpManageProducer(wxString label = "Manage Prosthesis Producer");
 
 	/** Destructor. */
-	~appOpCreateProsthesis();
+	~appOpManageProducer();
 
 	/** RTTI macro. */
-	albaTypeMacro(appOpCreateProsthesis, albaOp);
+	albaTypeMacro(appOpManageProducer, albaOp);
 
 	/** Return a copy of the operation */
 	/*virtual*/ albaOp* Copy();
@@ -70,17 +76,41 @@ public:
 
 	/** Builds operation's interface. */
 	/*virtual*/ void OpRun();
-	
+
+	void LoadInfo();
+	void SaveInfo();
+
+	/** Execute the operation. */
+	/*virtual*/ void OpDo();
+
+	/** Receive events coming from the user interface.*/
+	void OnEvent(albaEventBase *alba_event);
+
 protected:
 
 	/** This method is called at the end of the operation and result contain the wxOK or wxCANCEL. */
 	/*virtual*/ void OpStop(int result);	
-	
-	void AddProsthesis();
-	void UpdateProsthesis(Prosthesis prosthesis);
 
-	void SaveProsthesis();
+	/** Create the Operation GUI */
+	virtual void CreateGui();
 
-	Prosthesis m_CurrentProsthesis;
+	void UpdateGui();
+
+	void SelectProducer();
+	void AddProducer();
+	void EditProducer();
+	void UpdateProducer(Producer producer);
+
+	albaProsthesisDBManager *m_DBManager;
+
+	std::vector<Producer> m_ProducersVect;
+
+	int m_SelectedProducer;
+
+	Producer m_CurrentProducer;
+
+	// Gui Widgets
+	wxComboBox *m_ProducerComboBox;
+	std::vector<wxString> m_ProducerNameList;
 };
 #endif

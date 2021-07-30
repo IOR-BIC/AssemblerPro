@@ -21,6 +21,7 @@ PURPOSE. See the above copyright notice for more information.
 
 #include "appGUI.h"
 #include "appGUIHyperLink.h"
+#include "appGUISeparator.h"
 
 #include "albaGUIButton.h"
 #include "albaGUIValidator.h"
@@ -66,6 +67,12 @@ appGUI::~appGUI()
 {
 }
 
+//-------------------------------------------------------------------------
+void appGUI::OnDClickList(wxCommandEvent& event)
+{
+	albaEventMacro(albaEvent(this, ID_LIST_DOUBLE_CLICK));
+}
+
 //----------------------------------------------------------------------------
 void appGUI::HyperLink(int id, wxString label, wxString url)
 {
@@ -78,10 +85,10 @@ void appGUI::HyperLink(int id, wxString label, wxString url)
 	Add(link);
 }
 
-//-------------------------------------------------------------------------
-void appGUI::OnDClickList(wxCommandEvent& event)
+//----------------------------------------------------------------------------
+void appGUI::Separator(long style, const wxSize& size /*= wxDefaultSize*/)
 {
-	albaEventMacro(albaEvent(this, ID_LIST_DOUBLE_CLICK));
+	Add(new appGUISeparator(this, style, size));
 }
 
 //-------------------------------------------------------------------------

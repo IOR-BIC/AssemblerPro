@@ -1,6 +1,6 @@
 /*=========================================================================
 Program:   AssemblerPro
-Module:    appGUIDialogModel.h
+Module:    appGUISeparator.h
 Language:  C++
 Date:      $Date: 2021-01-01 12:00:00 $
 Version:   $Revision: 1.0.0.0 $
@@ -13,50 +13,26 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE. See the above copyright notice for more information.
 =========================================================================*/
 
-#ifndef __appGUIDialogModel_H__
-#define __appGUIDialogModel_H__
+#ifndef __appGUISeparator_H__
+#define __appGUISeparator_H__
 
 //----------------------------------------------------------------------------
 // Include:
 //----------------------------------------------------------------------------
-#include "albaGUIDialog.h"
-#include "appOpCreateProsthesis.h"
 
 //----------------------------------------------------------------------------
-// forward declarations
+// Class Name: appGUISeparator :
+// appGUISeparator is a Label that notify user-click using the normal wxEvents.
 //----------------------------------------------------------------------------
-class albaGUIButton;
-class albaGUILab;
-class albaGUIPicButton;
-
-class ALBA_EXPORT appGUIDialogModel : public albaGUIDialog
+class appGUISeparator : public wxBoxSizer
 {
+
 public:
-	appGUIDialogModel(const wxString& title, long style = albaCLOSEWINDOW);
-	virtual ~appGUIDialogModel();
 
-	void OnEvent(albaEventBase *alba_event);
+	//Constructor
+  appGUISeparator(wxWindow *parent, long style = 0, const wxSize& size = wxDefaultSize);
 
-	void SelectImage();
+protected:  
 
-	void SetModel(Model &model) { m_CurrentModel = model; };
-	Model GetModel() { return m_CurrentModel; };
-
-	void Show();
-
-protected:
-
-	void CreateModelDialog();
-	void UpdateModelDialog();
-
-	Model m_CurrentModel;
-
-	albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
-
-	wxComboBox *m_ModelImageComboBox;
-	wxImage	*m_ModelImage;
-	albaGUIPicButton *m_ModelImageButton;
-
-	wxTextCtrl *m_ModelName_textCtrl;
 };
-#endif
+#endif // __appGUISeparator_H__

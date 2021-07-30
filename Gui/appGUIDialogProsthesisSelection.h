@@ -1,6 +1,6 @@
 /*=========================================================================
 Program:   AssemblerPro
-Module:    appGUIDialogComponent.h
+Module:    appGUIDialogProsthesisSelection.h
 Language:  C++
 Date:      $Date: 2021-01-01 12:00:00 $
 Version:   $Revision: 1.0.0.0 $
@@ -13,13 +13,14 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE. See the above copyright notice for more information.
 =========================================================================*/
 
-#ifndef __appGUIDialogComponent_H__
-#define __appGUIDialogComponent_H__
+#ifndef __appGUIDialogProsthesisSelection_H__
+#define __appGUIDialogProsthesisSelection_H__
 
 //----------------------------------------------------------------------------
 // Include:
 //----------------------------------------------------------------------------
 #include "albaGUIDialog.h"
+#include "appOpManageProducer.h"
 #include "appOpCreateProsthesis.h"
 
 //----------------------------------------------------------------------------
@@ -28,34 +29,35 @@ PURPOSE. See the above copyright notice for more information.
 class albaGUIButton;
 class albaGUILab;
 class albaGUIPicButton;
+class appGUIHyperLink;
 
-struct Component
-{
-	wxString name;
-};
-
-class ALBA_EXPORT appGUIDialogComponent : public albaGUIDialog
+class ALBA_EXPORT appGUIDialogProsthesisSelection : public albaGUIDialog
 {
 public:
-	appGUIDialogComponent(const wxString& title, long style = albaCLOSEWINDOW);
-	virtual ~appGUIDialogComponent();
 
-  void OnEvent(albaEventBase *alba_event);
-	
-	void SetComponent(Component *component) { m_CurrentComponent = *component; };
-	Component GetComponent() { return m_CurrentComponent; };
+	appGUIDialogProsthesisSelection(const wxString& title, long style = albaCLOSEWINDOW);
+	virtual ~appGUIDialogProsthesisSelection();
+
+	void OnEvent(albaEventBase *alba_event);
+
+	void SelectImage();
 
 	void Show();
 
 protected:
 
-	void CreateComponentDialog();
-	void UpdateComponentDialog();
+	void CreateDialog();
+	void UpdateDialog();
 
-	Component m_CurrentComponent;
+	Producer m_CurrentProducer;
+	Prosthesis m_CurrentProsthesis;
 
-  albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
+	albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
+	
+	wxBoxSizer *m_MainBoxSizer;
+	wxBoxSizer *m_ImageSizer;
+	albaGUIPicButton *m_ProducerImageButton;
 
-	wxTextCtrl *m_ComponentName_textCtrl;
+	wxTextCtrl *m_ProducerName_textCtrl;
 };
 #endif
