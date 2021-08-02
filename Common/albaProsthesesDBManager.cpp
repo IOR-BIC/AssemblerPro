@@ -23,7 +23,7 @@
 //----------------------------------------------------------------------------
 
 #include "albaDecl.h"
-#include "albaProsthesisDBManager.h"
+#include "albaProsthesesDBManager.h"
 #include <wx/tokenzr.h>
 #include "albaLogicWithManagers.h"
 #include "wx/dir.h"
@@ -39,6 +39,12 @@
 #include <xercesc/framework/LocalFileFormatTarget.hpp>
 #include <xercesc/framework/LocalFileInputSource.hpp>
 #include <xercesc/sax/ErrorHandler.hpp>
+#include "albaCrypt.h"
+#include "vtkPolyDataReader.h"
+#include "vtkDataSetWriter.h"
+#include "vtkPolyData.h"
+#include "vtkALBASmartPointer.h"
+#include "albaCrypt.h"
 
 //albaProsthesisDBManager defines
 #define PRODB_NAME "ProstesesDB"
@@ -63,41 +69,30 @@
 
 
 //----------------------------------------------------------------------------
-albaProsthesisDBManager::albaProsthesisDBManager()
+albaProsthesesDBManager::albaProsthesesDBManager()
 {
-	m_DBFilename = (albaGetAppDataDirectory()).c_str();
-	m_DBFilename += "\\ProsthesesDB\\";
+	m_DBDir = (albaGetAppDataDirectory()).c_str();
+	m_DBDir += "\\ProsthesesDB\\";
 
-	if(!wxDir::Exists(m_DBFilename.GetCStr()))
-		wxMkdir(m_DBFilename.GetCStr());
+	if(!wxDir::Exists(m_DBDir.GetCStr()))
+		wxMkdir(m_DBDir.GetCStr());
 
-	m_DBFilename += "ProsthesesDB.xml";
+	m_DBFilename = m_DBDir + "ProsthesesDB.xml";
+
+	m_PassPhrase = "fattinonfostepervivercomebruti";
 
 	LoadDB();
-	
-	//TMP TEST
-/*
-	m_DBFilename = (albaGetAppDataDirectory()).c_str();
-	m_DBFilename += "\\ProsthesesDB\\";
-
-	if (!wxDir::Exists(m_DBFilename.GetCStr()))
-		wxMkdir(m_DBFilename.GetCStr());
-
-	m_DBFilename += "ProsthesesDB2.xml";
-
-	SaveDB();
-*/
 }
 
 //----------------------------------------------------------------------------
-albaProsthesisDBManager::~albaProsthesisDBManager()
+albaProsthesesDBManager::~albaProsthesesDBManager()
 {
 
 }
 
 
 //----------------------------------------------------------------------------
-int albaProsthesisDBManager::LoadDB()
+int albaProsthesesDBManager::LoadDB()
 {
 	if (!wxFileExists(m_DBFilename.GetCStr()))
 		return ALBA_OK;
@@ -174,7 +169,7 @@ int albaProsthesisDBManager::LoadDB()
 }
 
 //----------------------------------------------------------------------------
-int albaProsthesisDBManager::SaveDB()
+int albaProsthesesDBManager::SaveDB()
 {
 	//Open the file xml with manufacture and model information
 	try {
@@ -237,7 +232,7 @@ int albaProsthesisDBManager::SaveDB()
 }
 
 //----------------------------------------------------------------------------
-int albaProsthesisDBManager::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
+int albaProsthesesDBManager::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 {
 	XERCES_CPP_NAMESPACE_QUALIFIER DOMNodeList *dbChildren = node->getChildNodes();
 
@@ -311,7 +306,7 @@ int albaProsthesisDBManager::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 	}
 }
 
-void albaProsthesisDBManager::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node)
+void albaProsthesesDBManager::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node)
 {
 	//Producers
 	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *producersNode = doc->createElement(albaXMLString(NODE_PRODUCERS));
@@ -333,7 +328,7 @@ void albaProsthesisDBManager::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *
 }
 
 //----------------------------------------------------------------------------
-void albaProsthesisDBManager::Clear()
+void albaProsthesesDBManager::Clear()
 {
 	for (int i = 0; i < m_Producers.size(); i++)
 		m_Producers[i]->Clear();
@@ -349,7 +344,57 @@ void albaProsthesisDBManager::Clear()
 }
 
 //----------------------------------------------------------------------------
-std::vector<albaProDBProshesis *> albaProsthesisDBManager::SearchProstheses(albaString producer, albaString type, albaString side)
+void albaProsthesesDBManager::AddComponentFile(albaString fileName)
+{
+	for (int i = 0; i < m_ComponentsFiles.size(); i++)
+		if (fileName == m_ComponentsFiles[i])
+		{
+			m_CompFilesNum[i]++;
+			return;
+		}
+
+	m_ComponentsFiles.push_back(fileName);
+	m_CompFilesNum.push_back(1);
+}
+
+//----------------------------------------------------------------------------
+void albaProsthesesDBManager::RemoveComponentFile(albaString fileName)
+{
+	for (int i = 0; i < m_ComponentsFiles.size(); i++)
+		if (fileName == m_ComponentsFiles[i])
+		{
+			m_CompFilesNum[i]--;
+
+			if (m_CompFilesNum[i] == 0)
+			{
+				albaString fullFileName = GetDBDir();
+				fullFileName+=fileName;
+
+				wxRemoveFile(fullFileName.GetCStr());
+
+				m_ComponentsFiles.erase(m_ComponentsFiles.begin() + i);
+				m_CompFilesNum.erase(m_CompFilesNum.begin() + i);
+			}
+
+			return;
+		}
+
+}
+
+//----------------------------------------------------------------------------
+int albaProsthesesDBManager::GetComponentFileCount(albaString fileName)
+{
+	for (int i = 0; i < m_ComponentsFiles.size(); i++)
+		if (fileName == m_ComponentsFiles[i])
+		{
+			return m_CompFilesNum[i];
+		}
+
+	return 0;
+}
+
+//----------------------------------------------------------------------------
+std::vector<albaProDBProshesis *> albaProsthesesDBManager::SearchProstheses(albaString producer, albaString type, albaString side)
 {
 	std::vector<albaProDBProshesis *> proList;
 	for (int i = 0; i < m_Prostheses.size(); i++)
@@ -410,6 +455,73 @@ void albaProDBCompGruop::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, 
 	for (int i = 0; i < m_Components.size(); i++)
 		m_Components[i]->Store(doc, groupNode);
 }
+
+//----------------------------------------------------------------------------
+vtkPolyData * albaProDBComponent::GetVTKData()
+{
+	albaProsthesesDBManager *dbManager=GetLogicManager()->GetProsthesesDBManager();
+
+	albaString fileData = dbManager->GetDBDir();
+	fileData+=m_Filename;
+
+	std::string fileMemory;
+	albaDecryptFileInMemory(fileData, fileMemory, dbManager->GetPassPhrase());
+	if (fileMemory.empty())
+	{
+		albaLogMessage("Decryption Error! On file:%s", fileData.GetCStr());
+		wxMessageBox(_("Decryption Error!"));
+		return NULL;
+	}
+
+	vtkALBASmartPointer<vtkPolyDataReader> reader;
+	reader->SetFileName(fileData.GetCStr());
+	reader->ReadFromInputStringOn();
+	reader->SetInputString(fileMemory.c_str(), fileMemory.size());
+	reader->Update();
+
+
+	return reader->GetOutput();
+
+}
+
+//----------------------------------------------------------------------------
+void albaProDBComponent::SetVTKData(vtkPolyData *vtkData)
+{
+	//TODO save the vtkfile, use sha256 to create an hash, if the hash does not already exist create the correspondent cry, delete the vtk file.
+	//Check if is possible to do everything on memory. 
+
+	albaProsthesesDBManager * prosthesesDBManager = GetLogicManager()->GetProsthesesDBManager();
+	
+	
+	if (m_Filename != NULL)
+		prosthesesDBManager->RemoveComponentFile(m_Filename);
+	
+	vtkALBASmartPointer<vtkDataSetWriter> writer;
+	writer->SetInput(vtkData);
+	writer->SetFileTypeToBinary();
+	writer->SetHeader("# ALBA Prosthesis component data file \n");
+
+	writer->WriteToOutputStringOn();
+	writer->Write();
+	char* outStr = writer->GetOutputString();
+	int outStrLen = writer->GetOutputStringLength();
+
+	std::string sha256Str;
+
+	albaCalculateteSHA256(outStr, outStrLen, sha256Str);
+
+	sha256Str += ".cry";
+
+	//File already exists nothing to do
+	if (prosthesesDBManager->GetComponentFileCount(sha256Str.c_str()) > 0)
+		return;
+
+	albaString fileName = prosthesesDBManager->GetDBDir() + sha256Str.c_str();
+
+	albaEncryptFileFromMemory(outStr, outStrLen, fileName, prosthesesDBManager->GetPassPhrase());
+
+}
+	
 
 //----------------------------------------------------------------------------
 int albaProDBComponent::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)

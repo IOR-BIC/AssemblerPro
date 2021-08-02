@@ -27,7 +27,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "appUtils.h"
 
 #include "albaGUI.h"
-#include "albaProsthesisDBManager.h"
+#include "albaProsthesesDBManager.h"
 #include "albaServiceClient.h"
 #include "albaVME.h"
 
@@ -88,7 +88,7 @@ void appOpManageProducer::OpRun()
 //----------------------------------------------------------------------------
 void appOpManageProducer::LoadInfo()
 {
-	m_DBManager = ((appLogic*)GetLogicManager())->GetProsthesisDBManager();
+	m_DBManager = ((appLogic*)GetLogicManager())->GetProsthesesDBManager();
 
 	//////////////////////////////////////////////////////////////////////////
 	wxString dbFilePath = appUtils::GetConfigDirectory().c_str();
@@ -117,7 +117,7 @@ void appOpManageProducer::SaveInfo()
 {
 	int pChanges = 0;
 
-	m_DBManager = ((appLogic*)GetLogicManager())->GetProsthesisDBManager();
+	m_DBManager = GetLogicManager()->GetProsthesesDBManager();
 
 	std::vector<albaProDBProducer *> DBproducers = m_DBManager->GetProducers();
 
@@ -149,10 +149,10 @@ void appOpManageProducer::SaveInfo()
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	wxString dbFilePath = appUtils::GetConfigDirectory().c_str();
-	dbFilePath += "/SavedDB.xml";
-
-	m_DBManager->SaveDBToFile(dbFilePath);
+// 	wxString dbFilePath = appUtils::GetConfigDirectory().c_str();
+// 	dbFilePath += "/SavedDB.xml";
+// 
+// 	m_DBManager->SaveDBToFile(dbFilePath);
 
 	wxString message = wxString::Format("Producer: %d changes.", pChanges);
 	wxMessageBox(message);

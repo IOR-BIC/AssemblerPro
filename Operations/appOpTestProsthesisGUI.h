@@ -26,7 +26,7 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 // Forward references :
 //----------------------------------------------------------------------------
-class albaProsthesisDBManager;
+class albaProsthesesDBManager;
 class albaProDBProshesis;
 class albaProDBProducer;
 class appGUIDialogComponent;
@@ -95,7 +95,7 @@ protected:
 
 	bool m_EditMode;
 	
-	albaProsthesisDBManager *m_DBManager;
+	albaProsthesesDBManager *m_DBManager;
 	wxString m_ProsthesisName;
 	int m_NumComponentGroups;
 	int m_Show;

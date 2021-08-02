@@ -65,7 +65,7 @@ appGUIDialogProsthesis::appGUIDialogProsthesis(const wxString& title, long style
 	m_Name_textCtrl = NULL;
 
 	// Load Producers Info
-	std::vector<albaProDBProducer *> DBproducers = ((appLogic*)GetLogicManager())->GetProsthesisDBManager()->GetProducers();
+	std::vector<albaProDBProducer *> DBproducers = ((appLogic*)GetLogicManager())->GetProsthesesDBManager()->GetProducers();
 
 	m_ProducerNameList.clear();
 	m_SelectedProducer = 0;

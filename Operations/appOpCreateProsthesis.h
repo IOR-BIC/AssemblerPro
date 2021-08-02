@@ -26,7 +26,7 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 // Forward references :
 //----------------------------------------------------------------------------
-class albaProsthesisDBManager;
+class albaProsthesesDBManager;
 class albaProDBProshesis;
 
 struct Prosthesis

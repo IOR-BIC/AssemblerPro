@@ -34,7 +34,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "albaGUILab.h"
 #include "albaGUIPicButton.h"
 #include "albaGUIValidator.h"
-#include "albaProsthesisDBManager.h"
+#include "albaProsthesesDBManager.h"
 #include "albaServiceClient.h"
 #include "albaVME.h"
 
@@ -151,14 +151,11 @@ void appOpCreateProsthesis::SaveProsthesis()
 	}
 
 	// Add New Prosthesis to DB
-	albaProsthesisDBManager *DBManager = ((appLogic*)GetLogicManager())->GetProsthesisDBManager();
+	albaProsthesesDBManager *DBManager = ((appLogic*)GetLogicManager())->GetProsthesesDBManager();
 	DBManager->GetProstheses().push_back(newProsthesis);
 
 	//////////////////////////////////////////////////////////////////////////
-	wxString dbFilePath = appUtils::GetConfigDirectory().c_str();
-	dbFilePath += "/SavedDB.xml";
-
-	DBManager->SaveDBToFile(dbFilePath);
+	DBManager->SaveDB();
 
 	wxString message = wxString::Format("Added New Prosthesis!");
 	wxMessageBox(message);

@@ -26,7 +26,7 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 // Forward references :
 //----------------------------------------------------------------------------
-class albaProsthesisDBManager;
+class albaProsthesesDBManager;
 class albaProDBProducer;
 
 struct Producer
@@ -101,7 +101,7 @@ protected:
 	void EditProducer();
 	void UpdateProducer(Producer producer);
 
-	albaProsthesisDBManager *m_DBManager;
+	albaProsthesesDBManager *m_DBManager;
 
 	std::vector<Producer> m_ProducersVect;
 

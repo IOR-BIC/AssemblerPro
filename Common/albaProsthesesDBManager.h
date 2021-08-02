@@ -24,6 +24,7 @@
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/dom/DOM.hpp>
 #include <set>
+#include "albaServiceClient.h"
 #include "albaMatrix.h"
 
 //----------------------------------------------------------------------------
@@ -31,6 +32,7 @@
 //----------------------------------------------------------------------------
 class albaWizardWaitOp;
 class albaGUISettingsDialog;
+class vtkPolyData;
 
 class ProStorable
 {
@@ -87,13 +89,15 @@ protected:
 	albaString m_Name;
 };
 
-class albaProDBComponent : public ProStorable
+class albaProDBComponent : public ProStorable, public albaServiceClient
 {
 public:
 	albaMatrix GetMatrix() const { return m_Matrix; }
 	void SetMatrix(albaMatrix val) { m_Matrix = val; }
 	albaString GetName() const { return m_Name; }
 	void SetName(albaString val) { m_Name = val; }
+	vtkPolyData *GetVTKData();
+	void SetVTKData(vtkPolyData *vtkData);
 	albaString GetFilename() const { return m_Filename; }
 	void SetFilename(albaString val) { m_Filename = val; }
 
@@ -171,17 +175,17 @@ protected:
 };
 
 /**
-  Class Name: albaProsthesisDBManager.
+  Class Name: albaProsthesesDBManager.
 */
-class ALBA_EXPORT albaProsthesisDBManager : public ProStorable
+class ALBA_EXPORT albaProsthesesDBManager : public ProStorable
 {
 public:
 
   /** Default constructor */
-  albaProsthesisDBManager();
+  albaProsthesesDBManager();
 
   /** Default destructor */
-  ~albaProsthesisDBManager();
+  ~albaProsthesesDBManager();
 
 	// Inherited via ProStorable
 
@@ -193,20 +197,40 @@ public:
 
 	virtual void Clear() override;
 
+	void AddComponentFile(albaString fileName);
+
+	//This function decrease the count for stored files and delete the file if there will be no components that uses it
+	void RemoveComponentFile(albaString fileName);
+
+	/** returns the number of components that uses the file, zero if there are no components */
+	int GetComponentFileCount(albaString fileName);
+
 	std::vector<albaProDBProshesis *> SearchProstheses(albaString producer, albaString type, albaString side);
 	std::vector<albaProDBProducer *>& GetProducers() { return m_Producers; };
 	std::vector<albaProDBType *>& GetTypes() { return m_Types; };
 	std::vector<albaProDBProshesis *>& GetProstheses() { return m_Prostheses; };
 
-	void LoadDBFromFile(albaString DBFile) { Clear(); m_DBFilename = DBFile; LoadDB(); };
-	void SaveDBToFile(albaString DBFile) { m_DBFilename = DBFile; SaveDB(); };
 
+
+// 	void LoadDBFromFile(albaString DBFile) { Clear(); m_DBFilename = DBFile; LoadDB(); };
+// 	void SaveDBToFile(albaString DBFile) { m_DBFilename = DBFile; SaveDB(); };
+// 
+	albaString GetDBDir() const { return m_DBDir; }
+	void SetDBDir(albaString val) { m_DBDir = val; }
+	albaString GetPassPhrase() const { return m_PassPhrase; }
+	void SetPassPhrase(albaString val) { m_PassPhrase = val; }
 private:
+	albaString m_DBDir;
 	albaString m_DBFilename;
+	albaString m_PassPhrase;
 
 	std::vector<albaProDBProducer *> m_Producers;
 	std::vector<albaProDBType *> m_Types;
 	std::vector<albaProDBProshesis *>  m_Prostheses;
+
+	std::vector<albaString> m_ComponentsFiles;
+	std::vector<int> m_CompFilesNum;
+
 
 };
 #endif

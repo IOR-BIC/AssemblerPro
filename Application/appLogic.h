@@ -20,7 +20,7 @@ PURPOSE. See the above copyright notice for more information.
 // Includes :
 //----------------------------------------------------------------------------
 #include "albaLogicWithManagers.h"
-#include "albaProsthesisDBManager.h"
+#include "albaProsthesesDBManager.h"
 
 //----------------------------------------------------------------------------
 // Forward reference :
@@ -62,7 +62,7 @@ public:
 
 	albaGUIApplicationSettings* GetSettings() { return m_ApplicationSettings; };
 
-	albaProsthesisDBManager* GetProsthesisDBManager() {	return m_ProsthesisDBManager; };
+	albaProsthesesDBManager* GetProsthesesDBManager() {	return m_ProsthesisDBManager; };
 
 	albaView* OpenView(int viewId);
 
@@ -107,7 +107,7 @@ protected:
 	wxToolBar *m_OperationToolbar;
 	wxToolBar *m_ExtraToolbar;
 
-	albaProsthesisDBManager *m_ProsthesisDBManager;
+	albaProsthesesDBManager *m_ProsthesisDBManager;
 
 private:
 	//

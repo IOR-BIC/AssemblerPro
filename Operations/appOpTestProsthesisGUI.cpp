@@ -32,7 +32,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "albaGUILab.h"
 #include "albaGUIPicButton.h"
 #include "albaGUIValidator.h"
-#include "albaProsthesisDBManager.h"
+#include "albaProsthesesDBManager.h"
 #include "albaServiceClient.h"
 #include "albaVME.h"
 
@@ -96,7 +96,7 @@ void appOpTestProsthesisGUI::OpRun()
 //----------------------------------------------------------------------------
 void appOpTestProsthesisGUI::LoadInfo()
 {
-	m_DBManager = ((appLogic*)GetLogicManager())->GetProsthesisDBManager();
+	m_DBManager = GetLogicManager()->GetProsthesesDBManager();
 
 	//////////////////////////////////////////////////////////////////////////
 	wxString dbFilePath = appUtils::GetConfigDirectory().c_str();

@@ -107,11 +107,13 @@ void appLogic::InitAboutDialog()
 void appLogic::InitProsthesisDBManager()
 {
 	if (m_ProsthesisDBManager == NULL)
-		m_ProsthesisDBManager = new albaProsthesisDBManager();
+		m_ProsthesisDBManager = new albaProsthesesDBManager();
+
+	m_ProsthesisDBManager->SetPassPhrase("d-FUgg&9ogWB,3?UiPb~'sQY@%AsQ");
 
 	wxString imagesPath = appUtils::GetConfigDirectory().c_str();
-	imagesPath += "/FakeDB.xml";
-	m_ProsthesisDBManager->LoadDBFromFile(imagesPath);
+// 	imagesPath += "/FakeDB.xml";
+// 	m_ProsthesisDBManager->LoadDBFromFile(imagesPath);
 }
 
 /// EVENTS
