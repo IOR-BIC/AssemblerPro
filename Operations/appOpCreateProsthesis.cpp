@@ -79,10 +79,20 @@ albaOp* appOpCreateProsthesis::Copy()
 //----------------------------------------------------------------------------
 void appOpCreateProsthesis::OpRun()
 {
-	AddProsthesis();
+	std::vector<albaProDBProducer *> DBproducers = ((appLogic*)GetLogicManager())->GetProsthesesDBManager()->GetProducers();
 
-	if (m_CurrentProsthesis.isChanged)
-		SaveProsthesis();
+	if (DBproducers.size() > 0)
+	{
+		AddProsthesis();
+
+		if (m_CurrentProsthesis.isChanged)
+			SaveProsthesis();
+	}
+	else
+	{
+		wxString message = wxString::Format("No producer found!");
+		wxMessageBox(message);
+	}
 
 	OpStop(OP_RUN_OK);
 }

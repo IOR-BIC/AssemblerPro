@@ -41,6 +41,7 @@ enum PROSTHESIS_DIALOG_ID
 	ID_DIALOG_PRODUCER,
 	ID_DIALOG_PRODUCER_EDIT,
 	ID_DIALOG_PRODUCER_ADD,
+	ID_DIALOG_PRODUCER_REM,
 	ID_DIALOG_TYPE,
 	ID_DIALOG_SIDE,
 	ID_DIALOG_IMM,
@@ -302,16 +303,22 @@ void appGUIDialogProsthesis::CreateDialog()
 		wxBoxSizer *producerBtnSizer = new wxBoxSizer(wxHORIZONTAL);
 
 		// BUTTON - Producer Edit
-		albaGUIButton *producerEditBtn = new albaGUIButton(this, ID_DIALOG_PRODUCER_EDIT, "Edit", wxPoint(-1, -1), wxSize(-1, -1));
+		albaGUIButton *producerEditBtn = new albaGUIButton(this, ID_DIALOG_PRODUCER_EDIT, "Edit", wxPoint(-1, -1), wxSize(80, 23));
 		producerEditBtn->SetListener(this);
 		producerEditBtn->Enable(false);
 		producerBtnSizer->Add(producerEditBtn, 0, wxALIGN_RIGHT, 5);
 
 		// BUTTON - Producer Add
-		albaGUIButton *producerAddBtn = new albaGUIButton(this, ID_DIALOG_PRODUCER_ADD, "Add New", wxPoint(-1, -1), wxSize(-1, -1));
+		albaGUIButton *producerAddBtn = new albaGUIButton(this, ID_DIALOG_PRODUCER_ADD, "+", wxPoint(-1, -1), wxSize(50, 23));
 		producerAddBtn->SetListener(this);
 		producerAddBtn->Enable(false);
 		producerBtnSizer->Add(producerAddBtn, 0, wxALIGN_RIGHT, 5);
+
+		// BUTTON - Producer Rem
+		albaGUIButton *producerRemBtn = new albaGUIButton(this, ID_DIALOG_PRODUCER_REM, "-", wxPoint(-1, -1), wxSize(50, 23));
+		producerRemBtn->SetListener(this);
+		producerRemBtn->Enable(false);
+		producerBtnSizer->Add(producerRemBtn, 0, wxALIGN_RIGHT, 5);
 
 		producerBoxSizer->Add(producerBtnSizer, 0, wxALL | wxEXPAND);
 

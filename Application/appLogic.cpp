@@ -114,6 +114,8 @@ void appLogic::InitProsthesisDBManager()
 	wxString imagesPath = appUtils::GetConfigDirectory().c_str();
 // 	imagesPath += "/FakeDB.xml";
 // 	m_ProsthesisDBManager->LoadDBFromFile(imagesPath);
+
+	//m_ProsthesisDBManager->Clear();
 }
 
 /// EVENTS

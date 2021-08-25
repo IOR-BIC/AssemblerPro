@@ -27,6 +27,8 @@ PURPOSE. See the above copyright notice for more information.
 // Forward references :
 //----------------------------------------------------------------------------
 class albaGUICheckListBox;
+class albaProsthesesDBManager;
+class albaProDBProducer;
 
 //----------------------------------------------------------------------------
 // Class Name: appOpSearchProsthesis
@@ -34,6 +36,13 @@ class albaGUICheckListBox;
 class APP_OPERATIONS_EXPORT appOpSearchProsthesis : public albaOp
 {
 public:
+
+	//Widgets ID's	
+	enum OP_TEST_PROSTHESIS_ID
+	{
+		ID_SEARCH_PROSTHESIS,
+	};
+
 	/** Constructor. */
 	appOpSearchProsthesis(wxString label = "Search Prosthesis");
 
@@ -68,7 +77,14 @@ protected:
 
 	/** Create the Operation GUI */
 	virtual void CreateGui();
+	void UpdateGui();
+
+	void Find();
 
 	wxString m_SearchString;
+
+	albaProsthesesDBManager *m_DBManager;
+
+	wxListBox *m_ResultsListBox;
 };
 #endif
