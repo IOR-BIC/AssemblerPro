@@ -22,10 +22,14 @@ PURPOSE. See the above copyright notice for more information.
 #include "appOpSearchProsthesis.h"
 #include "appDecl.h"
 #include "appGUI.h"
+#include "appLogic.h"
 
 #include "albaGUI.h"
 #include "albaGUICheckListBox.h"
 #include "albaVME.h"
+#include "albaServiceClient.h"
+#include "albaProsthesesDBManager.h"
+#include "wx/ctrlsub.h"
 
 //----------------------------------------------------------------------------
 albaCxxTypeMacro(appOpSearchProsthesis);
@@ -36,7 +40,7 @@ appOpSearchProsthesis::appOpSearchProsthesis(wxString label) :albaOp(label)
 	m_OpType = OPTYPE_OP;
 	m_Canundo = true;
 
-	m_SearchString = "1";
+	m_SearchString = "";
 }
 
 //----------------------------------------------------------------------------
@@ -67,6 +71,8 @@ albaOp* appOpSearchProsthesis::Copy()
 //----------------------------------------------------------------------------
 void appOpSearchProsthesis::OpRun()
 {
+	m_DBManager = ((appLogic*)GetLogicManager())->GetProsthesesDBManager();
+
 	if (!m_TestMode)
 	{
 		CreateGui();
@@ -99,6 +105,10 @@ void appOpSearchProsthesis::OnEvent(albaEventBase *alba_event)
 		{
 			switch (e->GetId())
 			{
+			case ID_SEARCH_PROSTHESIS:
+				Find();
+				break;
+
 			case wxOK:
 				OpStop(OP_RUN_OK);
 				break;
@@ -125,23 +135,19 @@ void appOpSearchProsthesis::CreateGui()
 	// Interface:
 	m_Gui = new appGUI(this);
 
-	m_Gui->String(NULL, "Find", &m_SearchString);
+	m_Gui->String(ID_SEARCH_PROSTHESIS, "Find", &m_SearchString, "", false, false, true);
 
 	m_Gui->Divider(1);
 
 	albaGUICheckListBox *m_SearchFilterCheckBox = m_Gui->CheckList(NULL, "Filters");
-	m_SearchFilterCheckBox->AddItem(NULL, "Producer", false);
-	m_SearchFilterCheckBox->AddItem(NULL, "Model", false);
-	m_SearchFilterCheckBox->AddItem(NULL, "Component", false);
+	m_SearchFilterCheckBox->AddItem(NULL, "Producer", true);
+	m_SearchFilterCheckBox->AddItem(NULL, "Type", false);
+	m_SearchFilterCheckBox->AddItem(NULL, "Side", false);
 
 	m_Gui->Divider(1);
 
 	m_Gui->Label("Results", true);
-	wxListBox *m_ResultsListBox = m_Gui->ListBox(NULL, "");
-	m_ResultsListBox->Append("Prod 1 - Mod 1");
-	m_ResultsListBox->Append("Prod 2 - Mod 1");
-	m_ResultsListBox->Append("Prod 2 - Mod 14");
-	m_ResultsListBox->Append("Prod 3 - Mod 12");
+	m_ResultsListBox = m_Gui->ListBox(NULL, "");
 
 	//////////////////////////////////////////////////////////////////////////
 	m_Gui->Label("");
@@ -150,4 +156,33 @@ void appOpSearchProsthesis::CreateGui()
 	m_Gui->Label("");
 
 	ShowGui();
+}
+//----------------------------------------------------------------------------
+void appOpSearchProsthesis::UpdateGui()
+{
+	if (m_Gui)
+	{
+		m_Gui->Update();
+	}
+}
+
+//----------------------------------------------------------------------------
+void appOpSearchProsthesis::Find()
+{
+	albaString type = "";
+	albaString side = "";
+
+	std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->SearchProstheses(m_SearchString, type, side);
+
+	m_ResultsListBox->Clear();
+
+	for (int i = 0; i < DBprosthesis.size(); i++)
+	{
+		wxString pros = DBprosthesis[i]->GetProducer();
+		pros += " - " + DBprosthesis[i]->GetName();
+
+		m_ResultsListBox->Append(pros);
+	}
+
+	UpdateGui();
 }

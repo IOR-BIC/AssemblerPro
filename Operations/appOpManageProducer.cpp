@@ -89,7 +89,6 @@ void appOpManageProducer::OpRun()
 void appOpManageProducer::LoadInfo()
 {
 	m_DBManager = ((appLogic*)GetLogicManager())->GetProsthesesDBManager();
-
 	//////////////////////////////////////////////////////////////////////////
 	wxString dbFilePath = appUtils::GetConfigDirectory().c_str();
 
@@ -111,6 +110,9 @@ void appOpManageProducer::LoadInfo()
 
 		m_ProducerNameList.push_back(m_ProducersVect[p].name);
 	}
+
+	if (DBproducers.size() == 0)
+		AddProducer();
 }
 //----------------------------------------------------------------------------
 void appOpManageProducer::SaveInfo()
@@ -271,7 +273,8 @@ void appOpManageProducer::AddProducer()
 
 	// Add to Combobox
 	m_ProducerNameList.push_back(m_CurrentProducer.name);
-	m_ProducerComboBox->Append(m_CurrentProducer.name);
+	if(m_ProducerComboBox)
+		m_ProducerComboBox->Append(m_CurrentProducer.name);
 	
 	// Add to Vector
 	Producer producer;
@@ -283,6 +286,8 @@ void appOpManageProducer::AddProducer()
 
 	// Select
 	m_SelectedProducer = m_ProducerNameList.size() - 1;
+
+	if (m_ProducerComboBox)
 	m_ProducerComboBox->Select(m_SelectedProducer);
 
 	SelectProducer();
@@ -310,7 +315,9 @@ void appOpManageProducer::UpdateProducer(Producer producer)
 
 	// Update Combobox
 	m_ProducerNameList[m_SelectedProducer] = producer.name;
-	m_ProducerComboBox->SetString(m_SelectedProducer, producer.name);
+
+	if (m_ProducerComboBox)
+		m_ProducerComboBox->SetString(m_SelectedProducer, producer.name);
 
 	// Update Vector Element
 	m_ProducersVect[m_SelectedProducer].name = producer.name;
