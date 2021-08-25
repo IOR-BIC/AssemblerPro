@@ -331,15 +331,24 @@ void albaProsthesesDBManager::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *
 void albaProsthesesDBManager::Clear()
 {
 	for (int i = 0; i < m_Producers.size(); i++)
+	{
 		m_Producers[i]->Clear();
+		delete m_Producers[i];
+	}
 	m_Producers.clear();
 
 	for (int i = 0; i < m_Types.size(); i++)
+	{
 		m_Types[i]->Clear();
+		delete m_Types[i];
+	}
 	m_Types.clear();
 
 	for (int i = 0; i < m_Prostheses.size(); i++)
+	{
 		m_Prostheses[i]->Clear();
+		delete m_Prostheses[i];
+	}
 	m_Prostheses.clear();
 }
 
@@ -722,29 +731,44 @@ albaString ProStorable::GetElementAttribute(XERCES_CPP_NAMESPACE_QUALIFIER DOMNo
 //----------------------------------------------------------------------------
 void albaProDBProducer::Clear()
 {
-	
+	//nothing to do
 }
 
 //----------------------------------------------------------------------------
 void albaProDBType::Clear()
 {
-	
+	//nothing to do
 }
 
 //----------------------------------------------------------------------------
 void albaProDBComponent::Clear()
 {
-	
+	//nothing to do
 }
 
 //----------------------------------------------------------------------------
 void albaProDBCompGruop::Clear()
 {
+	for (int i = 0; i < m_Components.size(); i++)
+	{
+		m_Components[i]->Clear();
+		delete m_Components[i];
+	}
+
+	m_Components.clear();
 }
 
 //----------------------------------------------------------------------------
 void albaProDBProshesis::Clear()
 {
+
+	for (int i = 0; i < m_CompGroups.size(); i++)
+	{
+		m_CompGroups[i]->Clear();
+		delete m_CompGroups[i];
+	}
+
+	m_CompGroups.clear();
 }
 
 //----------------------------------------------------------------------------
