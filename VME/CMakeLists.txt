@@ -17,7 +17,9 @@ PROJECT(appVME)
 
 # Set your list of sources here.
 SET(PROJECT_SRCS
-appEmptyVME.cpp	appEmptyVME.h
+#appEmptyVME.cpp	appEmptyVME.h
+appVMEProsthesisEdit.cpp appVMEProsthesisEdit.h
+albaVMEProsthesis.cpp albaVMEProsthesis.h
 )
 
 SET(PROJECT_LIBS ${PROJECT_LIBS})

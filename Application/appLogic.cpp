@@ -111,6 +111,8 @@ void appLogic::InitProsthesisDBManager()
 
 	m_ProsthesisDBManager->SetPassPhrase("d-FUgg&9ogWB,3?UiPb~'sQY@%AsQ");
 
+	m_ProsthesisDBManager->LoadDB();
+
 	wxString imagesPath = appUtils::GetConfigDirectory().c_str();
 // 	imagesPath += "/FakeDB.xml";
 // 	m_ProsthesisDBManager->LoadDBFromFile(imagesPath);
