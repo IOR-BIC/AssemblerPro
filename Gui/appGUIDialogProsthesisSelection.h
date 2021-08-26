@@ -20,7 +20,6 @@ PURPOSE. See the above copyright notice for more information.
 // Include:
 //----------------------------------------------------------------------------
 #include "albaGUIDialog.h"
-#include "appOpManageProducer.h"
 #include "appOpCreateProsthesis.h"
 
 //----------------------------------------------------------------------------
@@ -49,8 +48,8 @@ protected:
 	void CreateDialog();
 	void UpdateDialog();
 
-	Producer m_CurrentProducer;
-	Prosthesis m_CurrentProsthesis;
+	AuxProducer m_CurrentProducer;
+	AuxProsthesis m_CurrentProsthesis;
 
 	albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
 	

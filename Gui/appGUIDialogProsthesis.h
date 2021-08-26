@@ -20,7 +20,7 @@ PURPOSE. See the above copyright notice for more information.
 // Include:
 //----------------------------------------------------------------------------
 #include "albaGUIDialog.h"
-#include "appOpCreateProsthesis.h"
+#include "appDecl.h"
 
 //----------------------------------------------------------------------------
 // forward declarations
@@ -32,28 +32,41 @@ class albaGUIPicButton;
 class ALBA_EXPORT appGUIDialogProsthesis : public albaGUIDialog
 {
 public:
+	
 	appGUIDialogProsthesis(const wxString& title, long style = albaCLOSEWINDOW);
 	virtual ~appGUIDialogProsthesis();
-
+	
 	void OnEvent(albaEventBase *alba_event);
 
-	void SetProsthesis(Prosthesis &model);;
-	Prosthesis GetProsthesis() { return m_CurrentProsthesis; };
+	void SetProsthesis(AuxProsthesis &model);;
+	AuxProsthesis GetProsthesis() { return m_CurrentProsthesis; };
 
 	void Show();
 
 protected:
 
+	void Init();
+
 	void CreateDialog();
 	void UpdateDialog();
 
-	void EditComponentGroup();
-	void AddComponentGroup();
-	void RemoveComponentGroup();
+	void EditProducer();
+	void AddProducer();
+	void RemoveProducer();
+
+	void UpdateProducer(AuxProducer producer);
+
+	void EditType();
+	void AddType();
+	void RemoveType();
 
 	void SelectImage();
 
-	Prosthesis m_CurrentProsthesis;
+	AuxProducer   m_CurrentProducer;
+	AuxProsthesis m_CurrentProsthesis;
+
+	albaProsthesesDBManager *m_DBManager;
+	std::vector<AuxProducer> m_ProducersVect;
 
 	albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
 
@@ -65,16 +78,16 @@ protected:
 	albaGUIPicButton *m_ImageButton;
 	wxString m_ImagePath;
 
-	wxTextCtrl *m_Name_textCtrl;
+	wxTextCtrl *m_NameTextCtrl;
+	wxComboBox *m_ProducerComboBox;
+	wxComboBox *m_TypeComboBox;
 
 	std::vector<wxString> m_ProducerNameList;
+	std::vector<wxString> m_TypeNameList;
+
 	int m_SelectedProducer;
 	int m_SelectedType;
 	int m_SelectedSide;
-
-	wxComboBox *m_ComponentGroupCombo;
-	std::vector<wxString> m_ComponentNameList;
-	int m_SelectedComponentGroup;
 
 };
 #endif

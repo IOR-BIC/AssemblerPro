@@ -20,7 +20,7 @@ PURPOSE. See the above copyright notice for more information.
 // Include:
 //----------------------------------------------------------------------------
 #include "albaGUIDialog.h"
-#include "appOpManageProducer.h"
+#include "appDecl.h"
 
 //----------------------------------------------------------------------------
 // forward declarations
@@ -41,8 +41,8 @@ public:
 
 	void SelectImage();
 
-	void SetProducer(Producer &producer) { m_CurrentProducer = producer; };
-	Producer GetProducer() { return m_CurrentProducer; };
+	void SetProducer(AuxProducer &producer) { m_CurrentProducer = producer; };
+	AuxProducer GetProducer() { return m_CurrentProducer; };
 
 	void Show();
 
@@ -51,7 +51,7 @@ protected:
 	void CreateProducerDialog();
 	void UpdateProducerDialog();
 
-	Producer m_CurrentProducer;
+	AuxProducer m_CurrentProducer;
 
 	albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
 	

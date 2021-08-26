@@ -28,20 +28,7 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 class albaProsthesesDBManager;
 class albaProDBProshesis;
-
-struct Prosthesis
-{
-	wxString name;
-	wxString image;
-	wxString producer;
-
-	int type = 0;
-	int side = 0;
-
-	bool isChanged = false;
-
-	std::vector<wxString> componentGroup;
-};
+class appGUIDialogProsthesis;
 
 //----------------------------------------------------------------------------
 // Class Name: appOpCreateProsthesis
@@ -77,10 +64,9 @@ protected:
 	/*virtual*/ void OpStop(int result);	
 	
 	void AddProsthesis();
-	void UpdateProsthesis(Prosthesis prosthesis);
-
+	void UpdateProsthesis(AuxProsthesis prosthesis);
 	void SaveProsthesis();
 
-	Prosthesis m_CurrentProsthesis;
+	AuxProsthesis m_CurrentProsthesis;
 };
 #endif

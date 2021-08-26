@@ -33,7 +33,6 @@ enum APP_MENU_ID
 {
 	OP_IMPORT_PROSTHESIS_DB = MENU_VIEW_USER_FIRST,
 	OP_EXPORT_PROSTHESIS_DB,
-	OP_MANAGE_PRODUCER,
 	OP_CREATE_PROSTHESIS,
 	OP_TEST_PROSTHESIS_GUI,
 	OP_SEARCH_PROSTHESIS,
@@ -51,4 +50,27 @@ enum APP_VIEW_ID
 	VIEW_SURFACE = VIEW_START,
 };
 
+struct AuxProsthesis
+{
+	wxString name;
+	wxString image;
+	wxString producer;
+
+	wxString type;
+	int side = 0;
+
+	bool isChanged = false;
+
+	std::vector<wxString> componentGroup;
+};
+
+struct AuxProducer
+{
+	int index;
+	wxString name;
+	wxString webSite;
+	wxString image;
+
+	bool isChanged = false;
+};
 #endif

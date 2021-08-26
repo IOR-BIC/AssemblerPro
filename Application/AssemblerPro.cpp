@@ -29,7 +29,6 @@ PURPOSE. See the above copyright notice for more information.
 #include "appOpEmpty.h"
 #include "appOpExportProsthesisDB.h"
 #include "appOpImportProsthesisDB.h"
-#include "appOpManageProducer.h"
 #include "appOpSearchProsthesis.h"
 #include "appOpTestProsthesisGUI.h"
 
@@ -108,9 +107,6 @@ bool AssemblerPro::OnInit()
 
 	// Empty Op
 	//m_Logic->Plug(new appOpEmpty("Empty"), "");
-
-	// Manage Prosthesis Producer Op
-	m_Logic->Plug(new appOpManageProducer("Manage Prosthesis Producer"), "");
 
 	// Create Prosthesis Op
 	m_Logic->Plug(new appOpCreateProsthesis("Create Prosthesis"), "");
@@ -218,8 +214,6 @@ void AssemblerPro::InitializeIcons()
 	albaADDPIC(OP_CREATE_PROSTHESIS);
 #include "pic/OP_SEARCH_PROSTHESIS.xpm"
 	albaADDPIC(OP_SEARCH_PROSTHESIS);
-#include "pic/OP_MANAGE_PRODUCER.xpm"
-	albaADDPIC(OP_MANAGE_PRODUCER);
 }
 
 //--------------------------------------------------------------------------------
