@@ -98,8 +98,6 @@ public:
 	void SetName(albaString val) { m_Name = val; }
 	vtkPolyData *GetVTKData();
 	void SetVTKData(vtkPolyData *vtkData);
-	albaString GetFilename() const { return m_Filename; }
-	void SetFilename(albaString val) { m_Filename = val; }
 
 	// Inherited via ProStorable
 	virtual int Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;

@@ -80,8 +80,6 @@ albaProsthesesDBManager::albaProsthesesDBManager()
 	m_DBFilename = m_DBDir + "ProsthesesDB.xml";
 
 	m_PassPhrase = "fattinonfostepervivercomebruti";
-
-	LoadDB();
 }
 
 //----------------------------------------------------------------------------
@@ -521,14 +519,16 @@ void albaProDBComponent::SetVTKData(vtkPolyData *vtkData)
 
 	sha256Str += ".cry";
 
+	m_Filename = sha256Str.c_str(); 
+	prosthesesDBManager->AddComponentFile(m_Filename);
+
 	//File already exists nothing to do
-	if (prosthesesDBManager->GetComponentFileCount(sha256Str.c_str()) > 0)
+	if (prosthesesDBManager->GetComponentFileCount(m_Filename) > 1)
 		return;
 
-	albaString fileName = prosthesesDBManager->GetDBDir() + sha256Str.c_str();
+	albaString fullFilename = prosthesesDBManager->GetDBDir() + sha256Str.c_str();
 
-	albaEncryptFileFromMemory(outStr, outStrLen, fileName, prosthesesDBManager->GetPassPhrase());
-
+	albaEncryptFileFromMemory(outStr, outStrLen, fullFilename, prosthesesDBManager->GetPassPhrase());
 }
 	
 
@@ -551,6 +551,8 @@ int albaProDBComponent::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 		albaLogMessage("ERROR: Component filename is empty");
 		return ALBA_ERROR;
 	}
+
+	GetLogicManager()->GetProsthesesDBManager()->AddComponentFile(m_Filename);
 
 	XERCES_CPP_NAMESPACE_QUALIFIER DOMNodeList *components = node->getChildNodes();
 
