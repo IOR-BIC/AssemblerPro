@@ -20,7 +20,7 @@ PURPOSE. See the above copyright notice for more information.
 // Include:
 //----------------------------------------------------------------------------
 #include "albaGUIDialog.h"
-#include "appDecl.h"
+#include "albaProsthesesDBManager.h"
 
 //----------------------------------------------------------------------------
 // forward declarations
@@ -28,6 +28,8 @@ PURPOSE. See the above copyright notice for more information.
 class albaGUIButton;
 class albaGUILab;
 class albaGUIPicButton;
+class albaProsthesesDBManager;
+class albaProDBType;
 
 class ALBA_EXPORT appGUIDialogProsthesis : public albaGUIDialog
 {
@@ -38,10 +40,12 @@ public:
 	
 	void OnEvent(albaEventBase *alba_event);
 
-	void SetProsthesis(AuxProsthesis &model);;
-	AuxProsthesis GetProsthesis() { return m_CurrentProsthesis; };
+	void SetProsthesis(albaProDBProshesis *prosthesis);;
+	albaProDBProshesis* GetProsthesis() { return m_CurrentProsthesis; };
 
 	void Show();
+
+	bool OkClosed() { return m_IsChanged; };
 
 protected:
 
@@ -54,19 +58,23 @@ protected:
 	void AddProducer();
 	void RemoveProducer();
 
-	void UpdateProducer(AuxProducer producer);
-
 	void EditType();
 	void AddType();
 	void RemoveType();
 
 	void SelectImage();
 
-	AuxProducer   m_CurrentProducer;
-	AuxProsthesis m_CurrentProsthesis;
-
 	albaProsthesesDBManager *m_DBManager;
-	std::vector<AuxProducer> m_ProducersVect;
+
+	albaProDBProducer  *m_CurrentProducer;
+	albaProDBProshesis *m_CurrentProsthesis;
+
+	wxString m_ProsthesisName;
+	wxString m_ProsthesisProducerName;
+	wxString m_ProsthesisImageName;
+	wxString m_ProsthesisType;
+	albaProDBProshesis::PRO_SIDES m_ProsthesisSide;
+	bool m_IsChanged;
 
 	albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
 

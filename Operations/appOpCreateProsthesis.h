@@ -20,8 +20,8 @@ PURPOSE. See the above copyright notice for more information.
 // Include :
 //----------------------------------------------------------------------------
 #include "appOperationsDefines.h"
-#include "appDecl.h"
 #include "albaOp.h"
+#include "albaProsthesesDBManager.h"
 
 //----------------------------------------------------------------------------
 // Forward references :
@@ -38,7 +38,7 @@ class APP_OPERATIONS_EXPORT appOpCreateProsthesis : public albaOp
 public:
 	
 	/** Constructor. */
-	appOpCreateProsthesis(wxString label = "Create Prosthesis DB");
+	appOpCreateProsthesis(wxString label = "Create New Prosthesis");
 
 	/** Destructor. */
 	~appOpCreateProsthesis();
@@ -62,11 +62,8 @@ protected:
 
 	/** This method is called at the end of the operation and result contain the wxOK or wxCANCEL. */
 	/*virtual*/ void OpStop(int result);	
-	
-	void AddProsthesis();
-	void UpdateProsthesis(AuxProsthesis prosthesis);
-	void SaveProsthesis();
 
-	AuxProsthesis m_CurrentProsthesis;
+	albaProsthesesDBManager *m_DBManager;
+	albaProDBProshesis *m_CurrentProsthesis;
 };
 #endif

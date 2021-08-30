@@ -20,7 +20,7 @@ PURPOSE. See the above copyright notice for more information.
 // Include:
 //----------------------------------------------------------------------------
 #include "albaGUIDialog.h"
-#include "appDecl.h"
+#include "albaProsthesesDBManager.h"
 
 //----------------------------------------------------------------------------
 // forward declarations
@@ -39,19 +39,27 @@ public:
 
 	void OnEvent(albaEventBase *alba_event);
 
-	void SelectImage();
-
-	void SetProducer(AuxProducer &producer) { m_CurrentProducer = producer; };
-	AuxProducer GetProducer() { return m_CurrentProducer; };
+	void SetProducer(albaProDBProducer &producer);
+	albaProDBProducer* GetProducer() { return m_CurrentProducer; };
 
 	void Show();
 
+	bool OkClosed() { return m_IsChanged; };
+
 protected:
+
+	void SelectImage();
 
 	void CreateProducerDialog();
 	void UpdateProducerDialog();
 
-	AuxProducer m_CurrentProducer;
+	albaProDBProducer *m_CurrentProducer;
+
+	wxString m_ProducerName;
+	wxString m_ProducerWebSite;
+	wxString m_ProducerImageName;
+	wxString m_ProducerImageFullName;
+	bool m_IsChanged;
 
 	albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
 	

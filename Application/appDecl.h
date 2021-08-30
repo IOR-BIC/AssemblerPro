@@ -49,28 +49,4 @@ enum APP_VIEW_ID
 {
 	VIEW_SURFACE = VIEW_START,
 };
-
-struct AuxProsthesis
-{
-	wxString name;
-	wxString image;
-	wxString producer;
-
-	wxString type;
-	int side = 0;
-
-	bool isChanged = false;
-
-	std::vector<wxString> componentGroup;
-};
-
-struct AuxProducer
-{
-	int index;
-	wxString name;
-	wxString webSite;
-	wxString image;
-
-	bool isChanged = false;
-};
 #endif

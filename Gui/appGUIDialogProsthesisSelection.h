@@ -21,6 +21,7 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 #include "albaGUIDialog.h"
 #include "appOpCreateProsthesis.h"
+#include "albaProsthesesDBManager.h"
 
 //----------------------------------------------------------------------------
 // forward declarations
@@ -48,8 +49,8 @@ protected:
 	void CreateDialog();
 	void UpdateDialog();
 
-	AuxProducer m_CurrentProducer;
-	AuxProsthesis m_CurrentProsthesis;
+	albaProDBProducer m_CurrentProducer;
+	albaProDBProshesis m_CurrentProsthesis;
 
 	albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
 	
