@@ -21,25 +21,12 @@ PURPOSE. See the above copyright notice for more information.
 
 #include "appOpCreateProsthesis.h"
 #include "appDecl.h"
-#include "appGUI.h"
-#include "appGUIDialogComponent.h"
 #include "appGUIDialogProsthesis.h"
-#include "appGUIDialogProducer.h"
 #include "appLogic.h"
-#include "appUtils.h"
 
 #include "albaGUI.h"
-#include "albaGUIButton.h"
-#include "albaGUIDialog.h"
-#include "albaGUILab.h"
-#include "albaGUIPicButton.h"
-#include "albaGUIValidator.h"
 #include "albaProsthesesDBManager.h"
 #include "albaServiceClient.h"
-#include "albaVME.h"
-
-#include "wx\image.h"
-#include "wx\window.h"
 
 //----------------------------------------------------------------------------
 albaCxxTypeMacro(appOpCreateProsthesis);
@@ -49,6 +36,8 @@ appOpCreateProsthesis::appOpCreateProsthesis(wxString label) :albaOp(label)
 {
 	m_OpType = OPTYPE_OP;
 	m_Canundo = true;
+
+	m_CurrentProsthesis = NULL;
 }
 
 //----------------------------------------------------------------------------
@@ -79,19 +68,34 @@ albaOp* appOpCreateProsthesis::Copy()
 //----------------------------------------------------------------------------
 void appOpCreateProsthesis::OpRun()
 {
-	std::vector<albaProDBProducer *> DBproducers = ((appLogic*)GetLogicManager())->GetProsthesesDBManager()->GetProducers();
+	m_DBManager = ((appLogic*)GetLogicManager())->GetProsthesesDBManager();
 
-	if (DBproducers.size() > 0)
+	// Create New Prosthesis
+	m_CurrentProsthesis = new albaProDBProshesis();
+	m_CurrentProsthesis->SetName("newProsthesis");
+	m_CurrentProsthesis->SetProducer("");
+	m_CurrentProsthesis->SetImgFileName("");
+	m_CurrentProsthesis->SetType("");
+	m_CurrentProsthesis->SetSide(albaProDBProshesis::PRO_LEFT);
+
+	// Show dialog
+	appGUIDialogProsthesis md(_("Add Prosthesis"));
+	md.SetProsthesis(m_CurrentProsthesis);
+	md.ShowModal();
+
+	if (md.OkClosed())
 	{
-		AddProsthesis();
+		// Add New Prosthesis to DB
+		m_DBManager->GetProstheses().push_back(m_CurrentProsthesis);
+		m_DBManager->SaveDB();
 
-		if (m_CurrentProsthesis.isChanged)
-			SaveProsthesis();
+		wxString message = wxString::Format("Added New Prosthesis!");
+		wxMessageBox(message);
 	}
 	else
 	{
-		wxString message = wxString::Format("No producer found!");
-		wxMessageBox(message);
+		// Reload DB
+		m_DBManager->LoadDB();
 	}
 
 	OpStop(OP_RUN_OK);
@@ -100,73 +104,4 @@ void appOpCreateProsthesis::OpRun()
 void appOpCreateProsthesis::OpStop(int result)
 {
 	albaEventMacro(albaEvent(this, result));
-}
-
-//////////////////////////////////////////////////////////////////////////
-/// Prosthesis Management
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::AddProsthesis()
-{
-	// Create New Prosthesis
-	m_CurrentProsthesis.name = "newProsthesis";
-	m_CurrentProsthesis.producer = "";
-	m_CurrentProsthesis.image = "";
-	m_CurrentProsthesis.type = 0; // = ACETABULAR
-	m_CurrentProsthesis.side = 0; // = LEFT
-	m_CurrentProsthesis.isChanged = false;
-
-	appGUIDialogProsthesis md(_("Add Prosthesis"));
-	md.SetProsthesis(m_CurrentProsthesis);
-	md.ShowModal();
-
-	UpdateProsthesis(md.GetProsthesis());
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::UpdateProsthesis(Prosthesis prosthesis)
-{
-	// Update Vector Element
-	m_CurrentProsthesis.name = prosthesis.name;
-	m_CurrentProsthesis.image = prosthesis.image;
-	m_CurrentProsthesis.producer = prosthesis.producer;
-	m_CurrentProsthesis.type = prosthesis.type;
-	m_CurrentProsthesis.side = prosthesis.side;
-	m_CurrentProsthesis.isChanged = prosthesis.isChanged;
-
-// 	for (int c = 0; c < m_CurrentProsthesis.components.size(); c++)
-// 	{
-// 		m_CurrentProsthesis.components
-// 	}
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::SaveProsthesis()
-{
-	albaProDBProshesis *newProsthesis = new albaProDBProshesis();
-
-	newProsthesis->SetName(m_CurrentProsthesis.name);
-	newProsthesis->SetImgFileName(m_CurrentProsthesis.image);
-	newProsthesis->SetProducer(m_CurrentProsthesis.producer);
-	newProsthesis->SetType(m_CurrentProsthesis.type);
-	newProsthesis->SetSide((albaProDBProshesis::PRO_SIDES)m_CurrentProsthesis.side);
-
-	// Components Group
-	// 	newProsthesis->m_CompGroups.clear();
-
-	for (int c = 0; c < m_CurrentProsthesis.componentGroup.size(); c++)
-	{
-		// albaProDBComponent *newComponent = new albaProDBComponent();
-
-		// newComponent->SetName(m_CurrentProsthesis.components[c].name);
-
-		// newProsthesis->m_CompGroups.push_back(newComponent);
-	}
-
-	// Add New Prosthesis to DB
-	albaProsthesesDBManager *DBManager = ((appLogic*)GetLogicManager())->GetProsthesesDBManager();
-	DBManager->GetProstheses().push_back(newProsthesis);
-
-	//////////////////////////////////////////////////////////////////////////
-	DBManager->SaveDB();
-
-	wxString message = wxString::Format("Added New Prosthesis!");
-	wxMessageBox(message);
 }

@@ -144,7 +144,6 @@ void appLogic::OnEvent(albaEventBase *alba_event)
 		// Operations Events - From toolbar
 		case OP_IMPORT_PROSTHESIS_DB:
 		case OP_EXPORT_PROSTHESIS_DB:
-		case OP_MANAGE_PRODUCER:
 		case OP_CREATE_PROSTHESIS:
 		case OP_TEST_PROSTHESIS_GUI:
 		case OP_SEARCH_PROSTHESIS:
@@ -541,7 +540,6 @@ void appLogic::CreateToolbar()
 	// Operations
 	m_OperationToolbar->AddTool(OP_IMPORT_PROSTHESIS_DB, albaPictureFactory::GetPictureFactory()->GetBmp("OP_IMPORT_PROSTHESIS"), _("Import Prosthesis DB"));
 	m_OperationToolbar->AddTool(OP_EXPORT_PROSTHESIS_DB, albaPictureFactory::GetPictureFactory()->GetBmp("OP_EXPORT_PROSTHESIS"), _("Export Prosthesis DB"));
-	m_OperationToolbar->AddTool(OP_MANAGE_PRODUCER, albaPictureFactory::GetPictureFactory()->GetBmp("OP_MANAGE_PRODUCER"), _("Manage Producer"));
 	m_OperationToolbar->AddTool(OP_CREATE_PROSTHESIS, albaPictureFactory::GetPictureFactory()->GetBmp("OP_CREATE_PROSTHESIS"), _("Create Prosthesis"));
 	m_OperationToolbar->AddTool(OP_TEST_PROSTHESIS_GUI, albaPictureFactory::GetPictureFactory()->GetBmp("OP_PROSTHESIS"), _("Test Prosthesis GUI"));
 	m_OperationToolbar->AddTool(OP_SEARCH_PROSTHESIS, albaPictureFactory::GetPictureFactory()->GetBmp("OP_SEARCH_PROSTHESIS"), _("Search Prosthesis"));

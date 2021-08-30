@@ -44,14 +44,18 @@ appGUIDialogProducer::appGUIDialogProducer(const wxString& title, long style)
 	: albaGUIDialog(title, style)
 {
 	m_Gui = NULL;
-
 	m_MainBoxSizer = NULL;
-
 	m_ImageSizer = NULL;
-	m_ProducerImageButton = NULL;
 
 	m_ProducerName_textCtrl = NULL;
 	m_ProducerSite_textCtrl = NULL;
+	m_ProducerImageButton = NULL;
+
+	m_ProducerName = "";
+	m_ProducerWebSite = "";
+	m_ProducerImageName = "";
+	m_ProducerImageFullName = "";
+	m_IsChanged = false;
 
 	CreateProducerDialog();
 }
@@ -67,9 +71,9 @@ void appGUIDialogProducer::OnEvent(albaEventBase *alba_event)
 	{
 	case ID_PRODUCER_DIALOG_TEXT:
 	{
-		m_CurrentProducer.name = m_ProducerName_textCtrl->GetValue();
-		m_CurrentProducer.webSite = m_ProducerSite_textCtrl->GetValue();
-		m_CurrentProducer.isChanged = true;
+		m_ProducerName = m_ProducerName_textCtrl->GetValue();
+		m_ProducerWebSite = m_ProducerSite_textCtrl->GetValue();
+		m_IsChanged = true;
 	}
 	break;
 
@@ -81,8 +85,11 @@ void appGUIDialogProducer::OnEvent(albaEventBase *alba_event)
 
 	case ID_PRODUCER_DIALOG_OK_PRESSED:
 	{
-		m_CurrentProducer.name = m_ProducerName_textCtrl->GetValue();
-		m_CurrentProducer.webSite = m_ProducerSite_textCtrl->GetValue();
+		m_CurrentProducer->SetName(m_ProducerName);
+		m_CurrentProducer->SetWebSite(m_ProducerWebSite);
+		m_CurrentProducer->SetImgFileName(m_ProducerImageFullName); // TO FIX
+		m_IsChanged = true;
+
 		this->Close();
 	}
 	break;
@@ -93,49 +100,29 @@ void appGUIDialogProducer::OnEvent(albaEventBase *alba_event)
 }
 
 //----------------------------------------------------------------------------
-void appGUIDialogProducer::SelectImage()
-{
-	albaString fileNameFullPath = albaGetDocumentsDirectory().c_str();
-	albaString wildc = "Image file (*.bmp)|*.bmp";
-	wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
-
-	if (wxFileExists(imagePath))
-	{		
-		m_CurrentProducer.image = imagePath;
-		m_CurrentProducer.isChanged = true;
-
-		UpdateProducerDialog();
-	}
-}
-
-//----------------------------------------------------------------------------
 void appGUIDialogProducer::Show()
 {
 	CreateProducerDialog();
 	ShowModal();
 }
-
 //----------------------------------------------------------------------------
 void appGUIDialogProducer::CreateProducerDialog()
 {
 	if (m_Gui == NULL)
 	{
+		int panelWidth = 400;
+
 		m_Gui = new albaGUI(this);
 		//////////////////////////////////////////////////////////////////////////
 
 		m_MainBoxSizer = new wxBoxSizer(wxVERTICAL);
-
-		//
-		int panelWidth = 400;
-
+		
 		wxString imagesPath = appUtils::GetConfigDirectory().c_str();
-		wxString imgPath = imagesPath + "/Wizard/Producer.bmp";
+		wxString imgPath = imagesPath + "/Wizard/Producer.bmp"; // Default
 
-		if (wxFileExists(m_CurrentProducer.image))
+		if (wxFileExists(m_ProducerImageFullName))
 		{
-			imgPath = m_CurrentProducer.image;
-// 			imgPath += imagesPath + "\\Config\\" + m_CurrentProducer.brandImage;
-// 			imgPath += ".bmp";
+			imgPath = m_ProducerImageFullName;
 		}
 
 		if (wxFileExists(imgPath))
@@ -170,7 +157,7 @@ void appGUIDialogProducer::CreateProducerDialog()
 
 		// TEXT - Producer Name
 		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxVERTICAL, this, "Producer Name");
-		m_ProducerName_textCtrl = new wxTextCtrl(this, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducer.name, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
+		m_ProducerName_textCtrl = new wxTextCtrl(this, ID_PRODUCER_DIALOG_TEXT, *m_ProducerName, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
 		m_ProducerName_textCtrl->SetEditable(true);
 		m_ProducerName_textCtrl->SetMaxLength(64);
 		labelSizer1->Add(m_ProducerName_textCtrl, 0, wxALL | wxEXPAND, 0);
@@ -179,7 +166,7 @@ void appGUIDialogProducer::CreateProducerDialog()
 
 		// TEXT - Producer Web Site
 		wxStaticBoxSizer *labelSizer2 = new wxStaticBoxSizer(wxVERTICAL, this, "Web Site");
-		m_ProducerSite_textCtrl = new wxTextCtrl(this, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducer.webSite, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
+		m_ProducerSite_textCtrl = new wxTextCtrl(this, ID_PRODUCER_DIALOG_TEXT, *m_ProducerWebSite, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
 		m_ProducerSite_textCtrl->SetEditable(true);
 		m_ProducerSite_textCtrl->SetMaxLength(64);
 		labelSizer2->Add(m_ProducerSite_textCtrl, 0, wxALL | wxEXPAND, 0);
@@ -217,17 +204,12 @@ void appGUIDialogProducer::CreateProducerDialog()
 
 	UpdateProducerDialog();
 }
-
 //----------------------------------------------------------------------------
 void appGUIDialogProducer::UpdateProducerDialog()
 {
 	if (m_Gui)
 	{
-		// wxString imagePath = appUtils::GetConfigDirectory().c_str();
-		// imagePath += "\\Config\\" + m_CurrentProducer.brandImage;
-		// imagePath += ".bmp";
-
-		wxString imagePath = m_CurrentProducer.image;
+		wxString imagePath = m_ProducerImageFullName;
 
 		// Update Image
 		if (wxFileExists(imagePath))
@@ -243,10 +225,6 @@ void appGUIDialogProducer::UpdateProducerDialog()
 			previewImage->LoadFile(imagePath.c_str(), wxBITMAP_TYPE_ANY);
 
 			wxBitmap *previewBitmap;
-
-			// if (flipImage)
-			// previewBitmap = new wxBitmap(previewImage->Mirror(true));
-			// else
 			previewBitmap = new wxBitmap(previewImage);
 
 			m_ProducerImageButton = new albaGUIPicButton(this, previewBitmap, -1);
@@ -260,7 +238,35 @@ void appGUIDialogProducer::UpdateProducerDialog()
 			delete previewImage;
 		}
 
-		m_ProducerName_textCtrl->SetValue(m_CurrentProducer.name);
-		m_ProducerSite_textCtrl->SetValue(m_CurrentProducer.webSite);
+		m_ProducerName_textCtrl->SetValue(m_ProducerName);
+		m_ProducerSite_textCtrl->SetValue(m_ProducerWebSite);
+	}
+}
+
+//----------------------------------------------------------------------------
+void appGUIDialogProducer::SetProducer(albaProDBProducer &producer)
+{
+	m_CurrentProducer = &producer;
+
+	m_ProducerName = m_CurrentProducer->GetName();
+	m_ProducerWebSite = m_CurrentProducer->GetWebSite();
+	m_ProducerImageName = m_CurrentProducer->GetImgFileName();
+	m_ProducerImageFullName = m_CurrentProducer->GetImgFileName();
+	m_IsChanged = false;
+}
+//----------------------------------------------------------------------------
+void appGUIDialogProducer::SelectImage()
+{
+	albaString fileNameFullPath = albaGetDocumentsDirectory().c_str();
+	albaString wildc = "Image file (*.bmp)|*.bmp";
+	wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
+
+	if (wxFileExists(imagePath))
+	{
+		m_ProducerImageName = imagePath;
+		m_ProducerImageFullName = imagePath; // TO FIX
+		m_IsChanged = true;
+
+		UpdateProducerDialog();
 	}
 }

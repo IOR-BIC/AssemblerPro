@@ -20,28 +20,15 @@ PURPOSE. See the above copyright notice for more information.
 // Include :
 //----------------------------------------------------------------------------
 #include "appOperationsDefines.h"
-#include "appDecl.h"
 #include "albaOp.h"
+#include "albaProsthesesDBManager.h"
 
 //----------------------------------------------------------------------------
 // Forward references :
 //----------------------------------------------------------------------------
 class albaProsthesesDBManager;
 class albaProDBProshesis;
-
-struct Prosthesis
-{
-	wxString name;
-	wxString image;
-	wxString producer;
-
-	int type = 0;
-	int side = 0;
-
-	bool isChanged = false;
-
-	std::vector<wxString> componentGroup;
-};
+class appGUIDialogProsthesis;
 
 //----------------------------------------------------------------------------
 // Class Name: appOpCreateProsthesis
@@ -51,7 +38,7 @@ class APP_OPERATIONS_EXPORT appOpCreateProsthesis : public albaOp
 public:
 	
 	/** Constructor. */
-	appOpCreateProsthesis(wxString label = "Create Prosthesis DB");
+	appOpCreateProsthesis(wxString label = "Create New Prosthesis");
 
 	/** Destructor. */
 	~appOpCreateProsthesis();
@@ -75,12 +62,8 @@ protected:
 
 	/** This method is called at the end of the operation and result contain the wxOK or wxCANCEL. */
 	/*virtual*/ void OpStop(int result);	
-	
-	void AddProsthesis();
-	void UpdateProsthesis(Prosthesis prosthesis);
 
-	void SaveProsthesis();
-
-	Prosthesis m_CurrentProsthesis;
+	albaProsthesesDBManager *m_DBManager;
+	albaProDBProshesis *m_CurrentProsthesis;
 };
 #endif

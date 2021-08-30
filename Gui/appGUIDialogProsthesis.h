@@ -20,7 +20,7 @@ PURPOSE. See the above copyright notice for more information.
 // Include:
 //----------------------------------------------------------------------------
 #include "albaGUIDialog.h"
-#include "appOpCreateProsthesis.h"
+#include "albaProsthesesDBManager.h"
 
 //----------------------------------------------------------------------------
 // forward declarations
@@ -28,32 +28,53 @@ PURPOSE. See the above copyright notice for more information.
 class albaGUIButton;
 class albaGUILab;
 class albaGUIPicButton;
+class albaProsthesesDBManager;
+class albaProDBType;
 
 class ALBA_EXPORT appGUIDialogProsthesis : public albaGUIDialog
 {
 public:
+	
 	appGUIDialogProsthesis(const wxString& title, long style = albaCLOSEWINDOW);
 	virtual ~appGUIDialogProsthesis();
-
+	
 	void OnEvent(albaEventBase *alba_event);
 
-	void SetProsthesis(Prosthesis &model);;
-	Prosthesis GetProsthesis() { return m_CurrentProsthesis; };
+	void SetProsthesis(albaProDBProshesis *prosthesis);;
+	albaProDBProshesis* GetProsthesis() { return m_CurrentProsthesis; };
 
 	void Show();
 
+	bool OkClosed() { return m_IsChanged; };
+
 protected:
+
+	void Init();
 
 	void CreateDialog();
 	void UpdateDialog();
 
-	void EditComponentGroup();
-	void AddComponentGroup();
-	void RemoveComponentGroup();
+	void EditProducer();
+	void AddProducer();
+	void RemoveProducer();
+
+	void EditType();
+	void AddType();
+	void RemoveType();
 
 	void SelectImage();
 
-	Prosthesis m_CurrentProsthesis;
+	albaProsthesesDBManager *m_DBManager;
+
+	albaProDBProducer  *m_CurrentProducer;
+	albaProDBProshesis *m_CurrentProsthesis;
+
+	wxString m_ProsthesisName;
+	wxString m_ProsthesisProducerName;
+	wxString m_ProsthesisImageName;
+	wxString m_ProsthesisType;
+	albaProDBProshesis::PRO_SIDES m_ProsthesisSide;
+	bool m_IsChanged;
 
 	albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
 
@@ -65,16 +86,16 @@ protected:
 	albaGUIPicButton *m_ImageButton;
 	wxString m_ImagePath;
 
-	wxTextCtrl *m_Name_textCtrl;
+	wxTextCtrl *m_NameTextCtrl;
+	wxComboBox *m_ProducerComboBox;
+	wxComboBox *m_TypeComboBox;
 
 	std::vector<wxString> m_ProducerNameList;
+	std::vector<wxString> m_TypeNameList;
+
 	int m_SelectedProducer;
 	int m_SelectedType;
 	int m_SelectedSide;
-
-	wxComboBox *m_ComponentGroupCombo;
-	std::vector<wxString> m_ComponentNameList;
-	int m_SelectedComponentGroup;
 
 };
 #endif

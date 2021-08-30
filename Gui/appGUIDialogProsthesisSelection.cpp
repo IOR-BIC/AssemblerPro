@@ -54,9 +54,9 @@ appGUIDialogProsthesisSelection::appGUIDialogProsthesisSelection(const wxString&
 
 	m_ProducerName_textCtrl = NULL;
 	
-	m_CurrentProducer.name = "Producer";
-	m_CurrentProducer.webSite = "www.producer.com";
-	m_CurrentProducer.image = "producer.bmp";
+	m_CurrentProducer.SetName("Producer");
+	m_CurrentProducer.SetWebSite("www.producer.com");
+	m_CurrentProducer.SetImgFileName("producer.bmp");
 
 	CreateDialog();
 }
@@ -72,8 +72,7 @@ void appGUIDialogProsthesisSelection::OnEvent(albaEventBase *alba_event)
 	{
 	case ID_PRODUCER_DIALOG_TEXT:
 	{
-		m_CurrentProducer.name = m_ProducerName_textCtrl->GetValue();
-		m_CurrentProducer.isChanged = true;
+		m_CurrentProducer.SetName(m_ProducerName_textCtrl->GetValue());
 	}
 	break;
 
@@ -85,7 +84,7 @@ void appGUIDialogProsthesisSelection::OnEvent(albaEventBase *alba_event)
 
 	case ID_PRODUCER_DIALOG_OK_PRESSED:
 	{
-		m_CurrentProducer.name = m_ProducerName_textCtrl->GetValue();
+		m_CurrentProducer.SetName(m_ProducerName_textCtrl->GetValue());
 		this->Close();
 	}
 	break;
@@ -104,8 +103,7 @@ void appGUIDialogProsthesisSelection::SelectImage()
 
 	if (wxFileExists(imagePath))
 	{		
-		m_CurrentProducer.image = imagePath;
-		m_CurrentProducer.isChanged = true;
+		m_CurrentProducer.SetName(imagePath);
 
 		UpdateDialog();
 	}
@@ -134,9 +132,9 @@ void appGUIDialogProsthesisSelection::CreateDialog()
 		wxString imagesPath = appUtils::GetConfigDirectory().c_str();
 		wxString imgPath = imagesPath + "/Wizard/Producer.bmp";
 
-		if (wxFileExists(m_CurrentProducer.image))
+		if (wxFileExists(m_CurrentProducer.GetImgFileName().GetCStr()))
 		{
-			imgPath = m_CurrentProducer.image;
+			imgPath = m_CurrentProducer.GetImgFileName().GetCStr();
 // 			imgPath += imagesPath + "\\Config\\" + m_CurrentProducer.brandImage;
 // 			imgPath += ".bmp";
 		}
@@ -168,7 +166,7 @@ void appGUIDialogProsthesisSelection::CreateDialog()
 
 		// TEXT - Producer Name
 		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxHORIZONTAL, this, "Producer");
-		m_ProducerName_textCtrl = new wxTextCtrl(this, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducer.name, wxPoint(-1, -1), wxSize(300, 20), wxALL | wxEXPAND);
+		m_ProducerName_textCtrl = new wxTextCtrl(this, ID_PRODUCER_DIALOG_TEXT, m_CurrentProducer.GetName().GetCStr(), wxPoint(-1, -1), wxSize(300, 20), wxALL | wxEXPAND);
 		m_ProducerName_textCtrl->SetEditable(false);
 		m_ProducerName_textCtrl->Enable(false);
 		m_ProducerName_textCtrl->SetMaxLength(64);
@@ -177,8 +175,8 @@ void appGUIDialogProsthesisSelection::CreateDialog()
 		labelSizer1->Add(new albaGUILab(this, -1, "   "));
 
 		// LINK - Producer Web Site
-		appGUIHyperLink *link = new appGUIHyperLink(this, NULL, m_CurrentProducer.webSite);
-		link->SetUrl(m_CurrentProducer.webSite);
+		appGUIHyperLink *link = new appGUIHyperLink(this, NULL, m_CurrentProducer.GetWebSite().GetCStr());
+		link->SetUrl(m_CurrentProducer.GetWebSite().GetCStr());
 		labelSizer1->Add(link, 0, wxALL | wxEXPAND, 0);
 
 		infoBoxSizer->Add(labelSizer1, 0, wxALL | wxEXPAND, 5);
@@ -228,7 +226,7 @@ void appGUIDialogProsthesisSelection::UpdateDialog()
 		// imagePath += "\\Config\\" + m_CurrentProducer.brandImage;
 		// imagePath += ".bmp";
 
-		wxString imagePath = m_CurrentProducer.image;
+		wxString imagePath = m_CurrentProducer.GetImgFileName();
 
 		// Update Image
 		if (wxFileExists(imagePath))
@@ -261,6 +259,6 @@ void appGUIDialogProsthesisSelection::UpdateDialog()
 			delete previewImage;
 		}
 
-		m_ProducerName_textCtrl->SetValue(m_CurrentProducer.name);
+		m_ProducerName_textCtrl->SetValue(m_CurrentProducer.GetName().GetCStr());
 	}
 }
