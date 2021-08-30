@@ -30,6 +30,8 @@ PURPOSE. See the above copyright notice for more information.
 
 #include "wx\image.h"
 #include "wx\window.h"
+#include "albaServiceClient.h"
+#include "appLogic.h"
 
 enum PRODUCER_DIALOG_ID
 {
@@ -74,6 +76,8 @@ void appGUIDialogProducer::OnEvent(albaEventBase *alba_event)
 		m_ProducerName = m_ProducerName_textCtrl->GetValue();
 		m_ProducerWebSite = m_ProducerSite_textCtrl->GetValue();
 		m_IsChanged = true;
+
+		UpdateProducerDialog();
 	}
 	break;
 
@@ -85,9 +89,12 @@ void appGUIDialogProducer::OnEvent(albaEventBase *alba_event)
 
 	case ID_PRODUCER_DIALOG_OK_PRESSED:
 	{
+		m_ProducerName = m_ProducerName_textCtrl->GetValue();
+		m_ProducerWebSite = m_ProducerSite_textCtrl->GetValue();
+
 		m_CurrentProducer->SetName(m_ProducerName);
 		m_CurrentProducer->SetWebSite(m_ProducerWebSite);
-		m_CurrentProducer->SetImgFileName(m_ProducerImageFullName); // TO FIX
+		m_CurrentProducer->SetImgFileName(m_ProducerImageName);
 		m_IsChanged = true;
 
 		this->Close();
@@ -158,6 +165,7 @@ void appGUIDialogProducer::CreateProducerDialog()
 		// TEXT - Producer Name
 		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxVERTICAL, this, "Producer Name");
 		m_ProducerName_textCtrl = new wxTextCtrl(this, ID_PRODUCER_DIALOG_TEXT, *m_ProducerName, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
+		m_ProducerName_textCtrl->SetValidator(albaGUIValidator(this, ID_PRODUCER_DIALOG_TEXT, m_ProducerName_textCtrl, &m_ProducerName, true));
 		m_ProducerName_textCtrl->SetEditable(true);
 		m_ProducerName_textCtrl->SetMaxLength(64);
 		labelSizer1->Add(m_ProducerName_textCtrl, 0, wxALL | wxEXPAND, 0);
@@ -179,9 +187,9 @@ void appGUIDialogProducer::CreateProducerDialog()
 		m_MainBoxSizer->Add(infoBoxSizer, 0, wxALL, 5);
 
 		// BUTTON - Ok
-		albaGUIButton *okBtn = new albaGUIButton(this, ID_PRODUCER_DIALOG_OK_PRESSED, "OK", wxPoint(-1, -1));
-		okBtn->SetListener(this);
-		m_MainBoxSizer->Add(okBtn, 0, wxALIGN_RIGHT, 0);
+		m_OkBtn = new albaGUIButton(this, ID_PRODUCER_DIALOG_OK_PRESSED, "OK", wxPoint(-1, -1));
+		m_OkBtn->SetListener(this);
+		m_MainBoxSizer->Add(m_OkBtn, 0, wxALIGN_RIGHT, 0);
 
 		//////////////////////////////////////////////////////////////////////////
 
@@ -209,10 +217,11 @@ void appGUIDialogProducer::UpdateProducerDialog()
 {
 	if (m_Gui)
 	{
-		wxString imagePath = m_ProducerImageFullName;
+		bool hasName = !m_ProducerName_textCtrl->GetValue().IsEmpty();
+		m_OkBtn->Enable(hasName);
 
 		// Update Image
-		if (wxFileExists(imagePath))
+		if (wxFileExists(m_ProducerImageFullName))
 		{
 			if (m_ProducerImageButton != NULL)
 			{
@@ -222,7 +231,7 @@ void appGUIDialogProducer::UpdateProducerDialog()
 
 			// Load and show the image
 			wxImage *previewImage = new wxImage();
-			previewImage->LoadFile(imagePath.c_str(), wxBITMAP_TYPE_ANY);
+			previewImage->LoadFile(m_ProducerImageFullName, wxBITMAP_TYPE_ANY);
 
 			wxBitmap *previewBitmap;
 			previewBitmap = new wxBitmap(previewImage);
@@ -238,21 +247,28 @@ void appGUIDialogProducer::UpdateProducerDialog()
 			delete previewImage;
 		}
 
-		m_ProducerName_textCtrl->SetValue(m_ProducerName);
-		m_ProducerSite_textCtrl->SetValue(m_ProducerWebSite);
+		m_Gui->Update();
 	}
 }
 
 //----------------------------------------------------------------------------
-void appGUIDialogProducer::SetProducer(albaProDBProducer &producer)
+void appGUIDialogProducer::SetProducer(albaProDBProducer *producer)
 {
-	m_CurrentProducer = &producer;
+	if (producer)
+	{
+		wxString DBDir = ((appLogic*)GetLogicManager())->GetProsthesesDBManager()->GetDBDir();
 
-	m_ProducerName = m_CurrentProducer->GetName();
-	m_ProducerWebSite = m_CurrentProducer->GetWebSite();
-	m_ProducerImageName = m_CurrentProducer->GetImgFileName();
-	m_ProducerImageFullName = m_CurrentProducer->GetImgFileName();
-	m_IsChanged = false;
+		m_CurrentProducer = producer;
+
+		m_ProducerName = m_CurrentProducer->GetName();
+		m_ProducerWebSite = m_CurrentProducer->GetWebSite();
+		m_ProducerImageName = m_CurrentProducer->GetImgFileName();
+		m_ProducerImageFullName = DBDir + m_CurrentProducer->GetImgFileName();
+		m_IsChanged = false;
+
+		m_ProducerName_textCtrl->SetValue(m_ProducerName);
+		m_ProducerSite_textCtrl->SetValue(m_ProducerWebSite);
+	}
 }
 //----------------------------------------------------------------------------
 void appGUIDialogProducer::SelectImage()
@@ -262,10 +278,14 @@ void appGUIDialogProducer::SelectImage()
 	wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
 
 	if (wxFileExists(imagePath))
-	{
-		m_ProducerImageName = imagePath;
-		m_ProducerImageFullName = imagePath; // TO FIX
+	{		
+		m_ProducerImageFullName = imagePath;		
+		m_ProducerImageName = wxFileNameFromPath(m_ProducerImageFullName);
 		m_IsChanged = true;
+
+		// Copy Image in DB Directory
+		wxString DBDir = ((appLogic*)GetLogicManager())->GetProsthesesDBManager()->GetDBDir();
+		wxCopyFile(m_ProducerImageFullName, DBDir + m_ProducerImageName);
 
 		UpdateProducerDialog();
 	}

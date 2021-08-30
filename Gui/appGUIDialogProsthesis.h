@@ -49,8 +49,6 @@ public:
 
 protected:
 
-	void Init();
-
 	void CreateDialog();
 	void UpdateDialog();
 
@@ -66,12 +64,16 @@ protected:
 
 	albaProsthesesDBManager *m_DBManager;
 
+	std::vector<wxString> m_ProducerNameList;
+	std::vector<wxString> m_TypeNameList;
+
 	albaProDBProducer  *m_CurrentProducer;
 	albaProDBProshesis *m_CurrentProsthesis;
 
 	wxString m_ProsthesisName;
 	wxString m_ProsthesisProducerName;
 	wxString m_ProsthesisImageName;
+	wxString m_ProsthesisImageFullName;
 	wxString m_ProsthesisType;
 	albaProDBProshesis::PRO_SIDES m_ProsthesisSide;
 	bool m_IsChanged;
@@ -87,11 +89,18 @@ protected:
 	wxString m_ImagePath;
 
 	wxTextCtrl *m_NameTextCtrl;
-	wxComboBox *m_ProducerComboBox;
-	wxComboBox *m_TypeComboBox;
 
-	std::vector<wxString> m_ProducerNameList;
-	std::vector<wxString> m_TypeNameList;
+	wxComboBox *m_ProducerComboBox;
+	albaGUIButton *m_ProducerEditBtn;
+	albaGUIButton *m_ProducerAddBtn;
+	albaGUIButton *m_ProducerDelBtn;
+
+	wxComboBox *m_TypeComboBox;
+	albaGUIButton *m_TypeEditBtn;
+	albaGUIButton *m_TypeAddBtn;
+	albaGUIButton *m_TypeDelBtn;
+
+	albaGUIButton *m_OkBtn;
 
 	int m_SelectedProducer;
 	int m_SelectedType;

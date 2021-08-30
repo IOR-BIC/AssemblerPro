@@ -41,23 +41,23 @@ PURPOSE. See the above copyright notice for more information.
 enum PROSTHESIS_DIALOG_ID
 {
 	ID_DIALOG_NAME = MINID,
-	ID_DIALOG_PRODUCER,
-	ID_DIALOG_PRODUCER_EDIT,
-	ID_DIALOG_PRODUCER_ADD,
-	ID_DIALOG_PRODUCER_REM,
-	ID_DIALOG_TYPE,
-	ID_DIALOG_TYPE_EDIT,
-	ID_DIALOG_TYPE_ADD,
-	ID_DIALOG_TYPE_REM,
-	ID_DIALOG_SIDE,
 	ID_DIALOG_IMM,
+	ID_DIALOG_PRODUCER,
+	ID_DIALOG_PRODUCER_ADD,
+	ID_DIALOG_PRODUCER_DEL,
+	ID_DIALOG_PRODUCER_EDIT,
+	ID_DIALOG_TYPE,
+	ID_DIALOG_TYPE_ADD,
+	ID_DIALOG_TYPE_DEL,
+	ID_DIALOG_TYPE_EDIT,
+	ID_DIALOG_SIDE,
 	ID_DIALOG_CANCEL_PRESSED,
 	ID_DIALOG_OK_PRESSED,
 };
 
 //----------------------------------------------------------------------------
 appGUIDialogProsthesis::appGUIDialogProsthesis(const wxString& title, long style)
-: albaGUIDialog(title, style)
+	: albaGUIDialog(title, style)
 {
 	m_Gui = NULL;
 	m_MainBoxSizer = NULL;
@@ -76,9 +76,14 @@ appGUIDialogProsthesis::appGUIDialogProsthesis(const wxString& title, long style
 	m_ProsthesisName = "";
 	m_ProsthesisProducerName = "";
 	m_ProsthesisImageName = "";
+	m_ProsthesisImageFullName = "";
 	m_ProsthesisType = "";
 	m_ProsthesisSide = albaProDBProshesis::PRO_LEFT;
 	m_IsChanged = false;
+
+	m_SelectedProducer = -1;
+	m_SelectedSide = -1;
+	m_SelectedType = -1;
 
 	Init();
 	CreateDialog();
@@ -91,75 +96,27 @@ appGUIDialogProsthesis::~appGUIDialogProsthesis()
 }
 
 //----------------------------------------------------------------------------
-void appGUIDialogProsthesis::Init()
-{
-	// Load Producers Info
-	std::vector<albaProDBProducer *> DBproducers = m_DBManager->GetProducers();
-
-	m_ProducerNameList.clear();
-	m_SelectedProducer = 0;
-
-	if (DBproducers.size() > 0)
-	{
-		for (int p = 0; p < DBproducers.size(); p++)
-		{
-			m_ProducerNameList.push_back(DBproducers[p]->GetName().GetCStr());
-		}
-	}
-	else
-	{
-		m_ProducerNameList.push_back("None");
-		m_SelectedProducer = -1;
-	}
-
-	//////////////////////////////////////////////////////////////////////////
-	// Load Types Info
-	std::vector<albaProDBType *> DBTypes = m_DBManager->GetTypes();
-
-	m_TypeNameList.clear();
-	m_SelectedType = 0;
-
-	if (DBTypes.size() > 0)
-	{
-		for (int t = 0; t < DBTypes.size(); t++)
-		{
-			m_TypeNameList.push_back(DBTypes[t]->GetName().GetCStr());
-		}
-	}
-	else
-	{
-		m_TypeNameList.push_back("None");
-		m_SelectedType = -1;
-	}
-
-	//////////////////////////////////////////////////////////////////////////
-	// Side
-	m_SelectedSide = 0;
-}
-
-//----------------------------------------------------------------------------
 void appGUIDialogProsthesis::OnEvent(albaEventBase *alba_event)
 {
 	switch (alba_event->GetId())
 	{
-	case ID_DIALOG_NAME: break;
+	case ID_DIALOG_NAME: UpdateDialog(); break;
 	case ID_DIALOG_IMM: SelectImage(); break;
 
 	case ID_DIALOG_PRODUCER: break;
 	case ID_DIALOG_PRODUCER_EDIT: EditProducer(); break;
 	case ID_DIALOG_PRODUCER_ADD: AddProducer(); break;
-	case ID_DIALOG_PRODUCER_REM: RemoveProducer(); break;
+	case ID_DIALOG_PRODUCER_DEL: RemoveProducer(); break;
 
 	case ID_DIALOG_TYPE: break;
 	case ID_DIALOG_TYPE_EDIT: EditType(); break;
 	case ID_DIALOG_TYPE_ADD: AddType(); break;
-	case ID_DIALOG_TYPE_REM: RemoveType(); break;
+	case ID_DIALOG_TYPE_DEL: RemoveType(); break;
 	case ID_DIALOG_SIDE: break;
 
 	case ID_DIALOG_OK_PRESSED:
 	{
 		m_ProsthesisName = m_NameTextCtrl->GetValue();
-		m_ProsthesisImageName = m_ImagePath;
 		m_ProsthesisSide = (albaProDBProshesis::PRO_SIDES)m_SelectedSide;
 
 		// Update Prosthesis
@@ -208,8 +165,10 @@ void appGUIDialogProsthesis::CreateDialog()
 		wxString imagesPath = appUtils::GetConfigDirectory().c_str();
 		wxString imgPath = imagesPath + "/Wizard/Model.bmp"; // Default
 
-		if (wxFileExists(m_ProsthesisImageName))
-			imgPath = m_ProsthesisImageName;
+		if (wxFileExists(m_ProsthesisImageFullName))
+		{
+			imgPath = m_ProsthesisImageFullName;
+		}
 
 		if (wxFileExists(imgPath))
 		{
@@ -246,6 +205,7 @@ void appGUIDialogProsthesis::CreateDialog()
 		// TEXT - Prosthesis Name
 		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxVERTICAL, this, "Name");
 		m_NameTextCtrl = new wxTextCtrl(this, ID_DIALOG_NAME, m_ProsthesisName, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
+		m_NameTextCtrl->SetValidator(albaGUIValidator(this, ID_DIALOG_NAME, m_NameTextCtrl, &m_ProsthesisName, true));
 		m_NameTextCtrl->SetEditable(true);
 		m_NameTextCtrl->SetMaxLength(64);
 		labelSizer1->Add(m_NameTextCtrl, 0, wxALL | wxEXPAND, 0);
@@ -257,26 +217,26 @@ void appGUIDialogProsthesis::CreateDialog()
 		wxStaticBoxSizer *producerBoxSizer = new wxStaticBoxSizer(wxHORIZONTAL, this, "Producer");
 
 		// COMBO - Producer
-		m_ProducerComboBox = new wxComboBox(this, ID_DIALOG_PRODUCER, "", wxPoint(-1, -1), wxSize(panelWidth, 20), m_ProducerNameList.size(), &m_ProducerNameList[0]);
+		m_ProducerComboBox = new wxComboBox(this, ID_DIALOG_PRODUCER, "", wxPoint(-1, -1), wxSize(panelWidth, 20));// , m_ProducerNameList.size(), m_ProducerNameList);
 		m_ProducerComboBox->SetValidator(albaGUIValidator(this, ID_DIALOG_PRODUCER, m_ProducerComboBox, &m_SelectedProducer));
 		producerBoxSizer->Add(m_ProducerComboBox, 0, wxALL | wxEXPAND, 0);
 
 		wxBoxSizer *producerBtnSizer = new wxBoxSizer(wxHORIZONTAL);
 
-		// BUTTON - Producer Edit
-		albaGUIButton *producerEditBtn = new albaGUIButton(this, ID_DIALOG_PRODUCER_EDIT, "Edit", wxPoint(-1, -1), wxSize(80, 23));
-		producerEditBtn->SetListener(this);
-		producerBtnSizer->Add(producerEditBtn, 0, wxALIGN_RIGHT, 5);
-
 		// BUTTON - Producer Add
-		albaGUIButton *producerAddBtn = new albaGUIButton(this, ID_DIALOG_PRODUCER_ADD, "+", wxPoint(-1, -1), wxSize(50, 23));
-		producerAddBtn->SetListener(this);
-		producerBtnSizer->Add(producerAddBtn, 0, wxALIGN_RIGHT, 5);
+		m_ProducerAddBtn = new albaGUIButton(this, ID_DIALOG_PRODUCER_ADD, "+", wxPoint(-1, -1), wxSize(50, 23));
+		m_ProducerAddBtn->SetListener(this);
+		producerBtnSizer->Add(m_ProducerAddBtn, 0, wxALIGN_RIGHT, 5);
 
 		// BUTTON - Producer Rem
-		albaGUIButton *producerRemBtn = new albaGUIButton(this, ID_DIALOG_PRODUCER_REM, "-", wxPoint(-1, -1), wxSize(50, 23));
-		producerRemBtn->SetListener(this);
-		producerBtnSizer->Add(producerRemBtn, 0, wxALIGN_RIGHT, 5);
+		m_ProducerDelBtn = new albaGUIButton(this, ID_DIALOG_PRODUCER_DEL, "-", wxPoint(-1, -1), wxSize(50, 23));
+		m_ProducerDelBtn->SetListener(this);
+		producerBtnSizer->Add(m_ProducerDelBtn, 0, wxALIGN_RIGHT, 5);
+
+		// BUTTON - Producer Edit
+		m_ProducerEditBtn = new albaGUIButton(this, ID_DIALOG_PRODUCER_EDIT, "Edit", wxPoint(-1, -1), wxSize(80, 23));
+		m_ProducerEditBtn->SetListener(this);
+		producerBtnSizer->Add(m_ProducerEditBtn, 0, wxALIGN_RIGHT, 5);
 
 		producerBoxSizer->Add(producerBtnSizer, 0, wxALL | wxEXPAND);
 
@@ -286,31 +246,25 @@ void appGUIDialogProsthesis::CreateDialog()
 
 		wxStaticBoxSizer *typeBoxSizer = new wxStaticBoxSizer(wxHORIZONTAL, this, "Type");
 
-		// COMBO - Component Type
-		m_TypeComboBox = new wxComboBox(this, ID_DIALOG_TYPE, "", wxPoint(-1, -1), wxSize(panelWidth, 20), m_TypeNameList.size(), &m_TypeNameList[0]);
+		// COMBO - Type
+		m_TypeComboBox = new wxComboBox(this, ID_DIALOG_TYPE, "", wxPoint(-1, -1), wxSize(panelWidth, 20));// , m_TypeNameList.size(), m_TypeNameList);
 		m_TypeComboBox->SetValidator(albaGUIValidator(this, ID_DIALOG_TYPE, m_TypeComboBox, &m_SelectedType));
 		typeBoxSizer->Add(m_TypeComboBox, 0, wxALL | wxEXPAND, 0);
 
-		// BUTTON - Component Type Edit
-		albaGUIButton *componentTypeEditBtn = new albaGUIButton(this, ID_DIALOG_TYPE_EDIT, "Edit", wxPoint(-1, -1), wxSize(80, 23));
-		componentTypeEditBtn->SetListener(this);
-		typeBoxSizer->Add(componentTypeEditBtn, 0, wxALIGN_RIGHT, 5);
+		// BUTTON - Type Add
+		m_TypeAddBtn = new albaGUIButton(this, ID_DIALOG_TYPE_ADD, "+", wxPoint(-1, -1), wxSize(50, 23));
+		m_TypeAddBtn->SetListener(this);
+		typeBoxSizer->Add(m_TypeAddBtn, 0, wxALIGN_RIGHT, 5);
 
-		// BUTTON - Component Type Add
-		albaGUIButton *componentTypeAddBtn = new albaGUIButton(this, ID_DIALOG_TYPE_ADD, "+", wxPoint(-1, -1), wxSize(50, 23));
-		componentTypeAddBtn->SetListener(this);
-		typeBoxSizer->Add(componentTypeAddBtn, 0, wxALIGN_RIGHT, 5);
+		// BUTTON - Type Del
+		m_TypeDelBtn = new albaGUIButton(this, ID_DIALOG_TYPE_DEL, "-", wxPoint(-1, -1), wxSize(50, 23));
+		m_TypeDelBtn->SetListener(this);
+		typeBoxSizer->Add(m_TypeDelBtn, 0, wxALIGN_RIGHT, 5);
 
-		// BUTTON - Component Type Del
-		albaGUIButton *componentTypeDelBtn = new albaGUIButton(this, ID_DIALOG_TYPE_REM, "-", wxPoint(-1, -1), wxSize(50, 23));
-		componentTypeDelBtn->SetListener(this);
-		typeBoxSizer->Add(componentTypeDelBtn, 0, wxALIGN_RIGHT, 5);
-
-		m_Gui->Enable(ID_DIALOG_TYPE, m_TypeNameList.size() >= 0);
-		m_Gui->Enable(ID_DIALOG_TYPE_EDIT, m_TypeNameList.size() >= 0);
-		m_Gui->Enable(ID_DIALOG_TYPE_ADD, m_TypeNameList.size() >= 0);
-		m_Gui->Enable(ID_DIALOG_TYPE_REM, m_TypeNameList.size() >= 1);
-		componentTypeDelBtn->Enable(m_TypeNameList.size() > 1);
+		// BUTTON - Type Edit
+		m_TypeEditBtn = new albaGUIButton(this, ID_DIALOG_TYPE_EDIT, "Edit", wxPoint(-1, -1), wxSize(80, 23));
+		m_TypeEditBtn->SetListener(this);
+		typeBoxSizer->Add(m_TypeEditBtn, 0, wxALIGN_RIGHT, 5);
 
 		infoBoxSizer->Add(typeBoxSizer, 0, wxALL | wxEXPAND, 5);
 
@@ -348,9 +302,9 @@ void appGUIDialogProsthesis::CreateDialog()
 		btnBoxSizer->Add(cancelBtn, 0, wxALIGN_RIGHT, 15);
 
 		// BUTTON - Ok
-		albaGUIButton *okBtn = new albaGUIButton(this, ID_DIALOG_OK_PRESSED, "OK", wxPoint(-1, -1));
-		okBtn->SetListener(this);
-		btnBoxSizer->Add(okBtn, 0, wxALIGN_RIGHT, 15);
+		m_OkBtn = new albaGUIButton(this, ID_DIALOG_OK_PRESSED, "OK", wxPoint(-1, -1));
+		m_OkBtn->SetListener(this);
+		btnBoxSizer->Add(m_OkBtn, 0, wxALIGN_RIGHT, 15);
 
 		m_MainBoxSizer->Add(btnBoxSizer, 0, wxALL | wxALIGN_RIGHT, 5);
 
@@ -383,35 +337,21 @@ void appGUIDialogProsthesis::UpdateDialog()
 {
 	if (m_Gui)
 	{
-		// Update Producer
-// 		if (m_CurrentProsthesis)
-// 			for (int p = 0; p < m_ProducerNameList.size(); p++)
-// 			{
-// 				if (m_CurrentProsthesis->GetProducer().GetCStr() == m_ProducerNameList[p]) m_SelectedProducer = p;
-// 			}
+		m_ProducerEditBtn->Enable(m_ProducerNameList.size() > 0);
+		m_ProducerAddBtn->Enable(true);
+		m_ProducerDelBtn->Enable(m_ProducerNameList.size() > 0);
 		
-		// Update Type
-// 		if (m_TypeNameList.size() <= 1)
-// 		{
-// 			if (m_TypeNameList.size() == 1 && m_TypeNameList[0] == "")
-// 			{
-// 				m_Gui->Enable(ID_DIALOG_TYPE_EDIT, false);
-// 				m_Gui->Enable(ID_DIALOG_TYPE_ADD, true);
-// 				m_Gui->Enable(ID_DIALOG_TYPE_REM, false);
-// 			}
-// 
-// 			if (m_TypeNameList.size() <= 0)
-// 			{
-// 				m_Gui->Enable(ID_DIALOG_TYPE_EDIT, false);
-// 				m_Gui->Enable(ID_DIALOG_TYPE_ADD, true);
-// 				m_Gui->Enable(ID_DIALOG_TYPE_REM, false);
-// 			}
-// 
-// 			m_Gui->Update();
-// 		}
-
+		m_TypeEditBtn->Enable(m_TypeNameList.size() > 0);
+		m_TypeAddBtn->Enable(true);
+		m_TypeDelBtn->Enable(m_TypeNameList.size() > 0);
+		
+		bool hasName = !m_NameTextCtrl->GetValue().IsEmpty();
+		bool hasProducer = m_ProducerNameList.size() > 0;
+		bool hasType = m_TypeNameList.size() > 0;
+		m_OkBtn->Enable(hasName && hasProducer && hasType);
+			
 		// Update Image
-		if (wxFileExists(m_ImagePath))
+		if (wxFileExists(m_ProsthesisImageFullName))
 		{
 			if (m_ImageButton != NULL)
 			{
@@ -421,7 +361,7 @@ void appGUIDialogProsthesis::UpdateDialog()
 
 			// Load and show the image
 			wxImage *previewImage = new wxImage();
-			previewImage->LoadFile(m_ImagePath.c_str(), wxBITMAP_TYPE_ANY);
+			previewImage->LoadFile(m_ProsthesisImageFullName, wxBITMAP_TYPE_ANY);
 
 			wxBitmap *previewBitmap;
 			previewBitmap = new wxBitmap(previewImage);
@@ -437,6 +377,8 @@ void appGUIDialogProsthesis::UpdateDialog()
 			delete previewBitmap;
 			delete previewImage;
 		}
+
+		m_Gui->Update();
 	}
 }
 
@@ -445,29 +387,57 @@ void appGUIDialogProsthesis::SetProsthesis(albaProDBProshesis *prosthesis)
 {
 	if (prosthesis)
 	{
+		wxString DBDir = m_DBManager->GetDBDir();
+
 		m_CurrentProsthesis = prosthesis;
 
 		m_ProsthesisName = m_CurrentProsthesis->GetName();
 		m_ProsthesisProducerName = m_CurrentProsthesis->GetProducer();
 		m_ProsthesisImageName = m_CurrentProsthesis->GetImgFileName();
+		m_ProsthesisImageFullName = DBDir + m_CurrentProsthesis->GetImgFileName();
 		m_ProsthesisType = m_CurrentProsthesis->GetType();
 		m_ProsthesisSide = m_CurrentProsthesis->GetSide();
 
-		//
+		// Load Info
 		m_NameTextCtrl->SetValue(m_ProsthesisName);
 		m_ImagePath = m_ProsthesisImageName;
 
+		// Load Producers Info
+		std::vector<albaProDBProducer *> DBproducers = m_DBManager->GetProducers();
+
+		m_ProducerNameList.clear();
+		m_ProducerComboBox->Clear();
 		m_SelectedProducer = 0;
-		for (int p = 0; p < m_ProducerNameList.size(); p++)
+
+		for (int p = 0; p < DBproducers.size(); p++)
+		{
+			m_ProducerNameList.push_back(DBproducers[p]->GetName().GetCStr());
+			m_ProducerComboBox->Append(DBproducers[p]->GetName().GetCStr());
+
 			if (m_ProducerNameList[p] == m_CurrentProsthesis->GetProducer())
 				m_SelectedProducer = p;
+		}
+		
+		// Load Types Info
+		std::vector<albaProDBType *> DBTypes = m_DBManager->GetTypes();
 
+		m_TypeNameList.clear();
+		m_TypeComboBox->Clear();
 		m_SelectedType = 0;
-		for (int t = 0; t < m_TypeNameList.size(); t++)
+		
+		for (int t = 0; t < DBTypes.size(); t++)
+		{
+			m_TypeNameList.push_back(DBTypes[t]->GetName().GetCStr());
+			m_TypeComboBox->Append(DBTypes[t]->GetName().GetCStr());
+
 			if (m_TypeNameList[t] == m_CurrentProsthesis->GetType())
 				m_SelectedType = t;
+		}
 
+		// Load Side Info
 		m_SelectedSide = m_ProsthesisSide;
+
+		UpdateDialog();
 	}
 }
 
@@ -480,7 +450,14 @@ void appGUIDialogProsthesis::SelectImage()
 
 	if (wxFileExists(imagePath))
 	{
-		m_ImagePath = imagePath;
+		m_ProsthesisImageFullName = imagePath;
+		m_ProsthesisImageName = wxFileNameFromPath(m_ProsthesisImageFullName);
+		m_IsChanged = true;
+
+		// Copy Image in DB Directory
+		wxString DBDir = ((appLogic*)GetLogicManager())->GetProsthesesDBManager()->GetDBDir();
+		wxCopyFile(m_ProsthesisImageFullName, DBDir + m_ProsthesisImageName);
+
 		UpdateDialog();
 	}
 }
@@ -490,7 +467,7 @@ void appGUIDialogProsthesis::EditType()
 {
 	if (m_SelectedType >= 0 && m_SelectedType < m_TypeNameList.size())
 	{
-		wxTextEntryDialog *dlg = new wxTextEntryDialog(this, "Name", "Type", m_TypeNameList[m_SelectedType]);
+		wxTextEntryDialog *dlg = new wxTextEntryDialog(this, "Name", "Edit Type", m_TypeNameList[m_SelectedType]);
 		int result = dlg->ShowModal();
 		wxString name = dlg->GetValue();
 
@@ -504,35 +481,37 @@ void appGUIDialogProsthesis::EditType()
 			m_TypeComboBox->Update();
 
 			m_IsChanged = true;
+
+			UpdateDialog();
 		}
 	}
 }
 //----------------------------------------------------------------------------
 void appGUIDialogProsthesis::AddType()
 {
-	wxTextEntryDialog *dlg = new wxTextEntryDialog(this, "Name", "Type", "");
+	wxTextEntryDialog *dlg = new wxTextEntryDialog(this, "Name", "Add Type", wxString::Format("newType(%d)", m_TypeNameList.size()));
 	int result = dlg->ShowModal();
 	wxString name = dlg->GetValue();
 
 	if (result == wxID_OK && !name.IsEmpty())
 	{
 		// Add to DB
-		albaProDBType newType;
-		newType.SetName(name);
-		m_DBManager->GetTypes().push_back(&newType);
+		albaProDBType *newType = new albaProDBType();
+		newType->SetName(name);
+		m_DBManager->GetTypes().push_back(newType);
 
 		m_TypeNameList.push_back(name);
 		m_SelectedType = m_TypeNameList.size() - 1;
 		m_TypeComboBox->Insert(name, m_SelectedType);
 		m_TypeComboBox->Select(m_SelectedType);
-	}
 
-	m_Gui->Enable(ID_DIALOG_TYPE_REM, m_TypeNameList.size() > 1);
+		UpdateDialog();
+	}
 }
 //----------------------------------------------------------------------------
 void appGUIDialogProsthesis::RemoveType()
 {
-	if (m_TypeNameList.size() > 1 && m_SelectedType < m_TypeNameList.size())
+	if (m_TypeNameList.size() > 0 && m_SelectedType < m_TypeNameList.size())
 	{
 		m_TypeNameList.erase(m_TypeNameList.begin() + m_SelectedType);
 		m_TypeComboBox->Delete(m_SelectedType);
@@ -543,9 +522,9 @@ void appGUIDialogProsthesis::RemoveType()
 
 		m_TypeComboBox->Select(m_SelectedType);
 		m_TypeComboBox->Update();
-	}
 
-	m_Gui->Enable(ID_DIALOG_TYPE_REM, m_TypeNameList.size() > 1);
+		UpdateDialog();
+	}
 }
 
 //----------------------------------------------------------------------------
@@ -556,7 +535,7 @@ void appGUIDialogProsthesis::EditProducer()
 		m_CurrentProducer = m_DBManager->GetProducers()[m_SelectedProducer];
 
 		appGUIDialogProducer pd(_("Edit Producer"));
-		pd.SetProducer(*m_CurrentProducer);
+		pd.SetProducer(m_CurrentProducer);
 		pd.Show();
 
 		if (pd.OkClosed())
@@ -576,6 +555,8 @@ void appGUIDialogProsthesis::EditProducer()
 			m_DBManager->GetProducers()[m_SelectedProducer]->SetWebSite(m_CurrentProducer->GetWebSite());
 
 			m_IsChanged = true;
+
+			UpdateDialog();
 		}
 	}
 }
@@ -583,10 +564,10 @@ void appGUIDialogProsthesis::EditProducer()
 void appGUIDialogProsthesis::AddProducer()
 {
 	// Add new Producer
-	albaProDBProducer newProducer;
-	newProducer.SetName(wxString::Format("newProducer(%d)", m_ProducerNameList.size()));
-	newProducer.SetWebSite("");
-	newProducer.SetImgFileName("");
+	albaProDBProducer *newProducer = new albaProDBProducer();
+	newProducer->SetName(wxString::Format("newProducer(%d)", m_ProducerNameList.size()));
+	newProducer->SetWebSite("");
+	newProducer->SetImgFileName("");
 
 	appGUIDialogProducer pd(_("Add Producer"));
 	pd.SetProducer(newProducer);
@@ -594,29 +575,29 @@ void appGUIDialogProsthesis::AddProducer()
 
 	if (pd.OkClosed())
 	{
-		m_CurrentProducer = &newProducer;
-
 		// Add to DB
-		m_DBManager->GetProducers().push_back(m_CurrentProducer);
+		m_DBManager->GetProducers().push_back(newProducer);
 
-		m_ProducerNameList.push_back(newProducer.GetName().GetCStr());
+		m_ProducerNameList.push_back(newProducer->GetName().GetCStr());
 		m_SelectedProducer = m_ProducerNameList.size() - 1;
 
 		if (m_ProducerComboBox)
 		{
 			// Add to Combobox
-			m_TypeComboBox->Insert(newProducer.GetName().GetCStr(), m_SelectedProducer);
+			m_ProducerComboBox->Insert(newProducer->GetName().GetCStr(), m_SelectedProducer);
 			m_ProducerComboBox->Select(m_SelectedProducer);
 			m_ProducerComboBox->Update();
 		}
 
-		m_Gui->Enable(ID_DIALOG_PRODUCER_REM, m_ProducerNameList.size() > 1);
+		m_CurrentProducer = newProducer;
+
+		UpdateDialog();
 	}
 }
 //----------------------------------------------------------------------------
 void appGUIDialogProsthesis::RemoveProducer()
 {
-	if (m_ProducerNameList.size() > 1 && m_SelectedProducer < m_ProducerNameList.size())
+	if (m_ProducerNameList.size() > 0 && m_SelectedProducer < m_ProducerNameList.size())
 	{
 		m_ProducerNameList.erase(m_ProducerNameList.begin() + m_SelectedProducer);
 		m_ProducerComboBox->Delete(m_SelectedProducer);
@@ -627,7 +608,7 @@ void appGUIDialogProsthesis::RemoveProducer()
 
 		m_ProducerComboBox->Select(m_SelectedProducer);
 		m_ProducerComboBox->Update();
-	}
 
-	m_Gui->Enable(ID_DIALOG_PRODUCER_REM, m_ProducerNameList.size() > 1);
+		UpdateDialog();
+	}
 }

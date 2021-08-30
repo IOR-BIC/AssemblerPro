@@ -39,6 +39,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "wx\image.h"
 #include "wx\window.h"
 #include "appGUIDialogProsthesisSelection.h"
+#include "appGUIDialogProsthesis.h"
 
 //----------------------------------------------------------------------------
 albaCxxTypeMacro(appOpTestProsthesisGUI);
@@ -85,11 +86,13 @@ albaOp* appOpTestProsthesisGUI::Copy()
 void appOpTestProsthesisGUI::OpRun()
 {
 	LoadInfo();
-	
+
 	if (!m_TestMode)
 	{
 		CreateGui();
 	}
+
+
 }
 
 /// Load/Save Data
@@ -103,10 +106,12 @@ void appOpTestProsthesisGUI::LoadInfo()
 
 	std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
 	
+	m_ProsthesisNameList.clear();
+
 	// Load Prostheses Info
 	for (int m = 0; m < DBprosthesis.size(); m++)
 	{
-
+		m_ProsthesisNameList.push_back(DBprosthesis[m]->GetName().GetCStr());
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -153,12 +158,20 @@ void appOpTestProsthesisGUI::OnEvent(albaEventBase *alba_event)
 		{
 			switch (e->GetId())
 			{
+			case ID_PROSTHESIS_SELECTION: 
+				SelectProsthesis(); 
+				break;
+
 			case ID_PROSTHESIS_CHANGE:
 			{
 				appGUIDialogProsthesisSelection pd(_("Select Prosthesis"));
 				pd.Show();
 			}
 			break;
+
+			case ID_PROSTHESIS_EDIT: 
+				EditProsthesis(); 
+				break;
 
 			case ID_COMPONENT_SELECT: break;
 			case ID_COMPONENT_EDIT:
@@ -196,6 +209,8 @@ void appOpTestProsthesisGUI::OnEvent(albaEventBase *alba_event)
 void appOpTestProsthesisGUI::CreateGui()
 {
 	m_Gui = new appGUI(this);
+
+	m_ProsthesisComboBox = m_Gui->Combo(ID_PROSTHESIS_SELECTION, "", &m_Selection);
 
 	m_Gui->String(ID_PROSTHESIS_NAME, "", &m_ProsthesisName);
 	m_Gui->Enable(ID_PROSTHESIS_NAME, false);
@@ -254,5 +269,56 @@ void appOpTestProsthesisGUI::UpdateGui()
 	if (m_Gui)
 	{
 		m_Gui->Update();
+	}
+	
+	std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
+
+	m_ProsthesisNameList.clear();
+	m_ProsthesisComboBox->Clear();
+	m_Selection = 0;
+
+	// Load Prostheses Info
+	for (int m = 0; m < DBprosthesis.size(); m++)
+	{
+		m_ProsthesisNameList.push_back(DBprosthesis[m]->GetName().GetCStr());
+		m_ProsthesisComboBox->Append(DBprosthesis[m]->GetName().GetCStr());
+	}
+}
+
+//----------------------------------------------------------------------------
+void appOpTestProsthesisGUI::SelectProsthesis()
+{
+	int sel = m_Selection;
+
+	std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
+
+	m_ProsthesisName = DBprosthesis[m_Selection]->GetName();
+	m_Gui->Update();
+}
+//----------------------------------------------------------------------------
+void appOpTestProsthesisGUI::EditProsthesis()
+{
+	std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
+
+	albaProDBProshesis *selectedProsthesis = DBprosthesis[m_Selection];
+
+	// Show dialog
+	appGUIDialogProsthesis md(_("Add Prosthesis"));
+	md.SetProsthesis(selectedProsthesis);
+	md.ShowModal();
+
+	if (md.OkClosed())
+	{
+		// Add New Prosthesis to DB
+		//m_DBManager->GetProstheses().push_back(m_CurrentProsthesis);
+		m_DBManager->SaveDB();
+
+// 		wxString message = wxString::Format("Added New Prosthesis!");
+// 		wxMessageBox(message);
+ 	}
+	else
+	{
+		// Reload DB
+		m_DBManager->LoadDB();
 	}
 }

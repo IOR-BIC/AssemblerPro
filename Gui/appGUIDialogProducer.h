@@ -39,7 +39,7 @@ public:
 
 	void OnEvent(albaEventBase *alba_event);
 
-	void SetProducer(albaProDBProducer &producer);
+	void SetProducer(albaProDBProducer *producer);
 	albaProDBProducer* GetProducer() { return m_CurrentProducer; };
 
 	void Show();
@@ -69,5 +69,7 @@ protected:
 
 	wxTextCtrl *m_ProducerName_textCtrl;
 	wxTextCtrl *m_ProducerSite_textCtrl;
+
+	albaGUIButton *m_OkBtn;
 };
 #endif

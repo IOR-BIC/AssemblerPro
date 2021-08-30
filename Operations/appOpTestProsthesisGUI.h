@@ -41,7 +41,8 @@ public:
 	//Widgets ID's	
 	enum OP_TEST_PROSTHESIS_ID
 	{
-		ID_PROSTHESIS_GROUP_START,
+		ID_PROSTHESIS_GROUP_START = MINID,
+		ID_PROSTHESIS_SELECTION,
 		ID_PROSTHESIS_NAME,
 		ID_PROSTHESIS_CHANGE,
 		ID_PROSTHESIS_EDIT,
@@ -93,11 +94,18 @@ protected:
 
 	void UpdateGui();
 
+	void SelectProsthesis();
+	void EditProsthesis();
 	bool m_EditMode;
 	
 	albaProsthesesDBManager *m_DBManager;
 	wxString m_ProsthesisName;
 	int m_NumComponentGroups;
 	int m_Show;
+
+	wxComboBox *m_ProsthesisComboBox;
+
+	std::vector<wxString> m_ProsthesisNameList;
+	int m_Selection;
 };
 #endif
