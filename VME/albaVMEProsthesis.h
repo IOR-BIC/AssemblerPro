@@ -26,6 +26,8 @@ PURPOSE. See the above copyright notice for more information.
 class mmaMaterial;
 class vtkAppendPolyData;
 class vtkOutlineSource;
+class vtkTransform;
+class vtkTransformPolyDataFilter;
 class albaProDBCompGruop;
 class albaProDBProshesis;
 

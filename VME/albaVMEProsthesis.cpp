@@ -35,7 +35,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "vtkAppendPolyData.h"
 #include "albaProsthesesDBManager.h"
 #include "vtkPolyData.h"
-#include "wx\cocoa\listbox.h"
+#include "wx/listctrl.h"
 
 
 //-------------------------------------------------------------------------
