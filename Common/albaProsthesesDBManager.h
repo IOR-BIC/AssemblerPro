@@ -124,6 +124,8 @@ public:
 	virtual void Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node) override;
 	virtual void Clear() override;
 
+	/** Returns the components list*/
+	std::vector<albaProDBComponent *> *GetComponents() { return &m_Components; }
 protected:
 	albaString m_Name;
 	std::vector<albaProDBComponent *> m_Components;
@@ -161,6 +163,8 @@ public:
 	static PRO_SIDES GetSideByString(albaString sideName);
 	static char *GetSideAsStr(PRO_SIDES side);
 
+	/** returns the vector of components */
+	std::vector<albaProDBCompGruop *> *GetCompGroups() { return &m_CompGroups; }
 protected:
 	albaString m_Name;
 	albaString m_ImgFileName;

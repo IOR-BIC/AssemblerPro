@@ -32,6 +32,9 @@ PURPOSE. See the above copyright notice for more information.
 #include "vtkTransformPolyDataFilter.h"
 #include "vtkTransform.h"
 #include "vtkLookupTable.h"
+#include "vtkAppendPolyData.h"
+#include "albaProsthesesDBManager.h"
+#include "vtkPolyData.h"
 
 
 //-------------------------------------------------------------------------
@@ -40,10 +43,12 @@ albaCxxTypeMacro(albaVMEProsthesis)
 //-------------------------------------------------------------------------
 albaVMEProsthesis::albaVMEProsthesis()
 {
+	memset(m_ShowComponents, 0, sizeof(int) * 100);
 }
 //-------------------------------------------------------------------------
 albaVMEProsthesis::~albaVMEProsthesis()
 {
+	vtkDEL(m_AppendPolydata);
 }
 //-------------------------------------------------------------------------
 int albaVMEProsthesis::InternalInitialize()
@@ -90,6 +95,97 @@ albaGUI* albaVMEProsthesis::CreateGui()
 
 	return m_Gui;
 }
+
+//----------------------------------------------------------------------------
+void albaVMEProsthesis::AddComponentGroup(albaProDBCompGruop *componentGroup)
+{
+	//VTK Stuffs
+	vtkTransformPolyDataFilter *compTraFilter;
+	vtkNEW(compTraFilter);
+
+	m_TransformFilters.push_back(compTraFilter);
+
+	vtkTransform *compTra;
+	vtkNEW(compTra);
+	compTra->PostMultiply();
+	m_Transforms.push_back(compTra);
+
+	int traSize = m_Transforms.size();
+	if (traSize > 1)
+		compTra->Concatenate(m_Transforms[traSize - 2]->GetMatrix());
+
+	std::vector<albaProDBComponent *> *components = componentGroup->GetComponents();
+
+	if (components->size() > 0)
+	{
+		albaProDBComponent * currentComp = components->at(0);
+		compTra->Concatenate(currentComp->GetMatrix().GetVTKMatrix());
+		compTraFilter->SetInput(currentComp->GetVTKData());
+	}
+
+	compTraFilter->SetTransform(compTra);
+	m_AppendPolydata->AddInput(compTraFilter->GetOutput());
+
+	//GUI Stuffs
+	int baseID = ID_LAST + m_ComponentGui.size()*ID_LAST_COMP_ID;
+
+	albaGUI *compGui=new albaGUI(this);
+
+	compGui->Bool(baseID +ID_SHOW_COMPONENT, componentGroup->GetName(), &m_ShowComponents[m_ComponentGui.size()], 1, "Show/Hide");
+	wxListBox *listBox = compGui->ListBox(baseID+ID_SELECT_COMPONENT, "");
+
+	for (int comp = 0; comp < components->size(); comp++)
+	{
+		listBox->Append(components->at(comp)->GetName().GetCStr());
+	}
+	compGui->Divider(1);
+
+	m_ComponentListBox.push_back(listBox);
+	m_ComponentGui.push_back(compGui);
+	m_Gui->Add(compGui);
+	m_Gui->FitGui();
+	m_Gui->FitInside();
+}
+
+//----------------------------------------------------------------------------
+void albaVMEProsthesis::ClearComponentGroups()
+{
+	for (int i = 0; i < m_TransformFilters.size(); i++)
+	{
+		m_AppendPolydata->RemoveInput(m_TransformFilters[i]->GetOutput());
+		vtkDEL(m_TransformFilters[i]);
+		vtkDEL(m_Transforms[i]);
+		m_Gui->Remove(m_ComponentGui[i]);
+
+		delete m_ComponentGui[i];
+	}
+
+	m_TransformFilters.clear();
+	m_Transforms.clear();
+	m_ComponentListBox.clear();
+	m_ComponentGui.clear();
+}
+
+//----------------------------------------------------------------------------
+void albaVMEProsthesis::SetProsthesis(albaProDBProshesis *prosthesis)
+{
+	if (m_AppendPolydata == NULL)
+		vtkNEW(m_AppendPolydata);
+
+	//remove current components
+	ClearComponentGroups();
+
+
+	std::vector<albaProDBCompGruop *> *componentsVector = prosthesis->GetCompGroups();
+
+	for(int i=0;i<componentsVector->size();i++)
+	{
+		AddComponentGroup(componentsVector->at(i));
+	}
+
+	SetData(m_AppendPolydata->GetOutput(),0);
+}
+
 //-------------------------------------------------------------------------
 void albaVMEProsthesis::OnEvent(albaEventBase *alba_event)
 {

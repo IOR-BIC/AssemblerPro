@@ -26,6 +26,8 @@ PURPOSE. See the above copyright notice for more information.
 class mmaMaterial;
 class vtkAppendPolyData;
 class vtkOutlineSource;
+class albaProDBCompGruop;
+class albaProDBProshesis;
 
 /** albaVMEProsthesis - 
 */
@@ -60,9 +62,17 @@ public:
 	//----------------------------------------------------------------------------
 	// Widgets ID's
 	//----------------------------------------------------------------------------
-	enum PROSTHESIS_COMPONENT_GUI_ID
+	enum PROSTHESIS_GUI_ID
 	{
 		ID_START = albaVME::ID_LAST,
+		ID_LAST
+	};
+
+	enum PROSTHESIS_COMP_GUI_ID
+	{
+		ID_SHOW_COMPONENT,
+		ID_SELECT_COMPONENT,
+		ID_LAST_COMP_ID
 	};
 
 protected:
@@ -74,6 +84,26 @@ protected:
 
 	/** Internally used to create a new instance of the GUI.*/
 	/*virtual*/ albaGUI *CreateGui();
+
+	void AddComponentGroup(albaProDBCompGruop *componentGroup);
+
+	void ClearComponentGroups();
+
+	void SetProsthesis(albaProDBProshesis *prosthesis);
+
+
+	//Components vtkData
+	std::vector <vtkTransformPolyDataFilter *> m_TransformFilters;
+	std::vector <vtkTransform *> m_Tranforms; 
+	
+	//Components Gui
+	std::vector <albaGUI *> m_ComponentGui;
+	int m_ShowComponents[100]; //need to use an array because vector pointers can change at runtime
+	std::vector <wxListBox *> m_ComponentListBox;
+
+
+	vtkAppendPolyData *m_AppendPolydata;
+	albaProDBProshesis m_Prosthesis;
 
 private:
 	albaVMEProsthesis(const albaVMEProsthesis&); // Not implemented
