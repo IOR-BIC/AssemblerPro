@@ -91,10 +91,11 @@ protected:
 
 	void SetProsthesis(albaProDBProshesis *prosthesis);
 
+	virtual void OnComponentEvent(int compGroup, int id);
 
 	//Components vtkData
 	std::vector <vtkTransformPolyDataFilter *> m_TransformFilters;
-	std::vector <vtkTransform *> m_Tranforms; 
+	std::vector <vtkTransform *> m_Transforms; 
 	
 	//Components Gui
 	std::vector <albaGUI *> m_ComponentGui;
@@ -103,7 +104,7 @@ protected:
 
 
 	vtkAppendPolyData *m_AppendPolydata;
-	albaProDBProshesis m_Prosthesis;
+	albaProDBProshesis *m_Prosthesis;
 
 private:
 	albaVMEProsthesis(const albaVMEProsthesis&); // Not implemented
