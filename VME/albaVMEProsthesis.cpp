@@ -151,8 +151,8 @@ void albaVMEProsthesis::AddComponentGroup(albaProDBCompGruop *componentGroup)
 	albaGUI *compGui=new albaGUI(this);
 
 	//show all by default
-	m_ShowComponents[m_ComponentGui.size()] = true;
-	compGui->Bool(baseID +ID_SHOW_COMPONENT, componentGroup->GetName(), &m_ShowComponents[m_ComponentGui.size()], 1, "Show/Hide");
+	m_ShowComponents[currGroup] = true;
+	compGui->Bool(baseID +ID_SHOW_COMPONENT, componentGroup->GetName(), &m_ShowComponents[currGroup], 1, "Show/Hide");
 	wxListBox *listBox = compGui->ListBox(baseID+ID_SELECT_COMPONENT, "");
 
 	for (int comp = 0; comp < components->size(); comp++)
@@ -168,6 +168,7 @@ void albaVMEProsthesis::AddComponentGroup(albaProDBCompGruop *componentGroup)
 	
 	CreateGui();
 	compGui->FitGui();
+	compGui->Update();
 
 	m_Gui->Add(compGui);
 	m_Gui->FitGui();
@@ -211,7 +212,7 @@ void albaVMEProsthesis::SetProsthesis(albaProDBProshesis *prosthesis)
 		AddComponentGroup(componentsVector->at(i));
 	}
 
-	SetData(m_AppendPolydata->GetOutput(),0);
+	SetData(m_AppendPolydata->GetOutput(),0, ALBA_VME_REFERENCE_DATA);
 }
 
 //-------------------------------------------------------------------------
@@ -252,12 +253,14 @@ void albaVMEProsthesis::OnComponentEvent(int compGroup, int id)
 	switch (id)
 	{
 		case ID_SHOW_COMPONENT:
+		{
 			if (m_ShowComponents[compGroup])
 				m_AppendPolydata->AddInput(m_TransformFilters[compGroup]->GetOutput());
 			else
 				m_AppendPolydata->RemoveInput(m_TransformFilters[compGroup]->GetOutput());
-
-			SetData(m_AppendPolydata->GetOutput(), 0);
+			m_AppendPolydata->Update();
+			GetLogicManager()->CameraUpdate();
+		}
 		break;
 		case ID_SELECT_COMPONENT:
 		{
@@ -292,7 +295,10 @@ void albaVMEProsthesis::OnComponentEvent(int compGroup, int id)
 					compTra->Update();
 				}
 			}
+			m_AppendPolydata->Update();
+			GetLogicManager()->CameraUpdate();
 		}
+		break;
 		default:
 			break;
 	}
