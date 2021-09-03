@@ -44,7 +44,7 @@ public:
 
 	
 	/** Return the suggested pipe-typename for the visualization of this vme */
-	/*virtual*/ albaString GetVisualPipe() {return albaString("albaPipeGenericPolydata");};
+	virtual albaString GetVisualPipe() { return albaString("albaPipeSurface"); };
 
 	/**
 	Return the list of timestamps for this VME. Timestamps list is 
@@ -60,6 +60,8 @@ public:
 		
   /** Return VME output. */
 	albaVMEOutput *GetOutput();
+
+	void SetProsthesis(albaProDBProshesis *prosthesis);
 
 	//----------------------------------------------------------------------------
 	// Widgets ID's
@@ -90,8 +92,6 @@ protected:
 	void AddComponentGroup(albaProDBCompGruop *componentGroup);
 
 	void ClearComponentGroups();
-
-	void SetProsthesis(albaProDBProshesis *prosthesis);
 
 	virtual void OnComponentEvent(int compGroup, int id);
 

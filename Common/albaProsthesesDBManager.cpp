@@ -472,7 +472,7 @@ vtkPolyData * albaProDBComponent::GetVTKData()
 	fileData+=m_Filename;
 
 	std::string fileMemory;
-	albaDecryptFileInMemory(fileData, fileMemory, dbManager->GetPassPhrase());
+	albaDecryptFileInMemory(fileData, fileMemory, "fattinonfostepervivercomebruti");// dbManager->GetPassPhrase());
 	if (fileMemory.empty())
 	{
 		albaLogMessage("Decryption Error! On file:%s", fileData.GetCStr());
@@ -487,8 +487,11 @@ vtkPolyData * albaProDBComponent::GetVTKData()
 	reader->Update();
 
 
-	return reader->GetOutput();
+	vtkPolyData * output = reader->GetOutput();
 
+	output->Register(NULL);
+
+	return output;
 }
 
 //----------------------------------------------------------------------------

@@ -31,6 +31,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "appOpImportProsthesisDB.h"
 #include "appOpSearchProsthesis.h"
 #include "appOpTestProsthesisGUI.h"
+#include "appOpCreateProsthesisVME.h"
 
 #include "appUtils.h"
 
@@ -116,6 +117,9 @@ bool AssemblerPro::OnInit()
 
 	// Search Prosthesis Op
 	m_Logic->Plug(new appOpSearchProsthesis("Search Prosthesis"), "");
+
+	m_Logic->Plug(new appOpCreateProsthesisVME(), "");
+
 
 	//////////////////////////////////////////////////////////////////////////
 	//Views

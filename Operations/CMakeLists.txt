@@ -23,7 +23,7 @@ appOpSearchProsthesis.cpp	appOpSearchProsthesis.h
 appOpImportProsthesisDB.cpp	appOpImportProsthesisDB.h
 appOpExportProsthesisDB.cpp	appOpExportProsthesisDB.h
 appOpTestProsthesisGUI.cpp	appOpTestProsthesisGUI.h
-
+appOpCreateProsthesisVME.cpp appOpCreateProsthesisVME.h
 )
 
 SET(PROJECT_LIBS ${PROJECT_LIBS})

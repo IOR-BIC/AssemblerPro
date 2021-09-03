@@ -44,6 +44,7 @@ albaCxxTypeMacro(albaVMEProsthesis)
 //-------------------------------------------------------------------------
 albaVMEProsthesis::albaVMEProsthesis()
 {
+	m_AppendPolydata = NULL;
 }
 
 
@@ -90,12 +91,14 @@ void albaVMEProsthesis::GetLocalTimeStamps(std::vector<albaTimeStamp> &kframes)
 //-------------------------------------------------------------------------
 albaGUI* albaVMEProsthesis::CreateGui()
 {
-	m_Gui = new albaGUI(this);
+	if (m_Gui == NULL)
+	{
+		m_Gui = new albaGUI(this);
 
 
-	m_Gui->Divider();
-	m_Gui->FitGui();
-
+		m_Gui->Divider();
+		m_Gui->FitGui();
+	}
 	return m_Gui;
 }
 
@@ -132,7 +135,10 @@ void albaVMEProsthesis::AddComponentGroup(albaProDBCompGruop *componentGroup)
 			compTra->Concatenate(prevComp->GetMatrix().GetVTKMatrix());
 		}
 		albaProDBComponent *currentComp = components->at(0);
-		compTraFilter->SetInput(currentComp->GetVTKData());
+		vtkPolyData * compVTKData = currentComp->GetVTKData();
+		if(compVTKData)
+			compTraFilter->SetInput(compVTKData);
+		compVTKData->UnRegister(NULL);
 	}
 	compTra->Update();
 
@@ -159,6 +165,10 @@ void albaVMEProsthesis::AddComponentGroup(albaProDBCompGruop *componentGroup)
 
 	m_ComponentListBox.push_back(listBox);
 	m_ComponentGui.push_back(compGui);
+	
+	CreateGui();
+	compGui->FitGui();
+
 	m_Gui->Add(compGui);
 	m_Gui->FitGui();
 	m_Gui->FitInside();
@@ -192,6 +202,7 @@ void albaVMEProsthesis::SetProsthesis(albaProDBProshesis *prosthesis)
 	//remove current components
 	ClearComponentGroups();
 
+	m_Prosthesis = prosthesis;
 
 	std::vector<albaProDBCompGruop *> *componentsVector = prosthesis->GetCompGroups();
 
@@ -219,7 +230,7 @@ void albaVMEProsthesis::OnEvent(albaEventBase *alba_event)
 			}
 			break;
 			default:
-				if (eventId > ID_LAST && eventId < ID_LAST + ID_LAST_COMP_ID*compNum)
+				if (eventId >= ID_LAST && eventId < ID_LAST + ID_LAST_COMP_ID*compNum)
 				{
 					int baseId = eventId - ID_LAST;
 					int comp = baseId / ID_LAST_COMP_ID;
@@ -245,6 +256,8 @@ void albaVMEProsthesis::OnComponentEvent(int compGroup, int id)
 				m_AppendPolydata->AddInput(m_TransformFilters[compGroup]->GetOutput());
 			else
 				m_AppendPolydata->RemoveInput(m_TransformFilters[compGroup]->GetOutput());
+
+			SetData(m_AppendPolydata->GetOutput(), 0);
 		break;
 		case ID_SELECT_COMPONENT:
 		{
