@@ -49,7 +49,9 @@ protected:
 	void UpdateComponentDialog();
 
 	void AddVTKFromFile();
-	void AddVTKFromTree();
+	void AddVTKFromTree(albaVME *node);
+
+	static bool VTKDataAccept(albaVME* node) { return(node != NULL /*&& node->IsALBAType(albaVMELandmarkCloud)*/); };
 
 	albaProDBComponent *m_CurrentComponent;
 	wxString m_ComponentName;

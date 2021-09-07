@@ -65,7 +65,7 @@ void appGUIDialogComponent::OnEvent(albaEventBase *alba_event)
 		break;
 
 	case ID_COMPONENT_DIALOG_SET_VTKDATA_FROM_TREE:
-		m_HasVtkData = true;
+		AddVTKFromTree(NULL);
 		UpdateComponentDialog();
 		break;
 
@@ -201,7 +201,17 @@ void appGUIDialogComponent::AddVTKFromFile()
 
 }
 //----------------------------------------------------------------------------
-void appGUIDialogComponent::AddVTKFromTree()
+void appGUIDialogComponent::AddVTKFromTree(albaVME *node)
 {
+	if (node == NULL)
+	{
+		albaString title = _("Choose VTK Data");
+		albaEvent e(this, VME_CHOOSE, &title);
+		e.SetPointer(&appGUIDialogComponent::VTKDataAccept);
+		albaEventMacro(e);
 
+		m_HasVtkData = true;
+
+		node = e.GetVme();
+	}
 }
