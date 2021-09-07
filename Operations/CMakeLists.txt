@@ -24,6 +24,7 @@ appOpImportProsthesisDB.cpp	appOpImportProsthesisDB.h
 appOpExportProsthesisDB.cpp	appOpExportProsthesisDB.h
 appOpTestProsthesisGUI.cpp	appOpTestProsthesisGUI.h
 appOpCreateProsthesisVME.cpp appOpCreateProsthesisVME.h
+appOpAddLandmark.cpp		appOpAddLandmark.h
 )
 
 SET(PROJECT_LIBS ${PROJECT_LIBS})

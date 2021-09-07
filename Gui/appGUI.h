@@ -56,6 +56,9 @@ public:
 	/** Integer entry widget. */
 	void TwoIntegers(int id, albaString label, int *var1, int *var2, int min = MININT, int max = MAXINT, albaString tooltip = "", bool labelAlwaysEnable = false, double customSizer = 1.0);
 
+	/** Component widget (Show, Name, Delete). */
+	void ComponentButton(int id1, int id2, int id3, int* boolVar, wxString* textVar);
+
 private:
 	DECLARE_EVENT_TABLE()
 };

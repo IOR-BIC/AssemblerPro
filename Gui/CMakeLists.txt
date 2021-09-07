@@ -19,10 +19,11 @@ PROJECT(appGui)
 SET(PROJECT_SRCS
 appGUI.cpp					appGUI.h
 appSideBar.cpp				appSideBar.h
+appGUIDialogProsthesisSelection.cpp	appGUIDialogProsthesisSelection.h
 appGUIDialogProducer.cpp	appGUIDialogProducer.h
 appGUIDialogProsthesis.cpp	appGUIDialogProsthesis.h
 appGUIDialogComponent.cpp	appGUIDialogComponent.h
-appGUIDialogProsthesisSelection.cpp	appGUIDialogProsthesisSelection.h
+appGUIDialogMatrix.cpp		appGUIDialogMatrix.h
 appGUIHyperLink.cpp			appGUIHyperLink.h
 appGUISeparator.cpp			appGUISeparator.h
 )
