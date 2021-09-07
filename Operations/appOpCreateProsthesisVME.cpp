@@ -21,12 +21,11 @@ PURPOSE. See the above copyright notice for more information.
 
 #include "appOpCreateProsthesisVME.h"
 #include "appDecl.h"
-#include "appGUI.h"
 
+#include "albaAbsLogicManager.h"
 #include "albaGUI.h"
 #include "albaVME.h"
 #include "albaVMEProsthesis.h"
-#include "albaAbsLogicManager.h"
 #include "albaProsthesesDBManager.h"
 
 //----------------------------------------------------------------------------
@@ -37,9 +36,7 @@ appOpCreateProsthesisVME::appOpCreateProsthesisVME(wxString label) :albaOp(label
 {
 	m_OpType = OPTYPE_OP;
 	m_Canundo = true;
-
 }
-
 //----------------------------------------------------------------------------
 appOpCreateProsthesisVME::~appOpCreateProsthesisVME()
 {
@@ -48,7 +45,6 @@ appOpCreateProsthesisVME::~appOpCreateProsthesisVME()
 //----------------------------------------------------------------------------
 bool appOpCreateProsthesisVME::Accept(albaVME *node)
 {
-	//return node->IsA("...");
 	return true;
 }
 
@@ -61,90 +57,14 @@ albaOp* appOpCreateProsthesisVME::Copy()
 //----------------------------------------------------------------------------
 void appOpCreateProsthesisVME::OpRun()
 {
-	if (!m_TestMode)
-	{
-		CreateGui();
-	}
+	albaVMEProsthesis *pro;
+	albaNEW(pro);
+	pro->SetName("New Prosthesis");
+	albaProsthesesDBManager * prosthesesDBManager = GetLogicManager()->GetProsthesesDBManager();
+	pro->SetProsthesis(prosthesesDBManager->GetProstheses().at(0));
+	pro->ReparentTo(m_Input);
+
+	GetLogicManager()->VmeShow(pro, true);
 	
-	//OpStop(OP_RUN_OK);
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesisVME::OpStop(int result)
-{
-	if (!m_TestMode)
-	{
-		HideGui();
-	}
-
-	if (result == OP_RUN_OK)
-	{
-		albaVMEProsthesis *pro;
-		albaNEW(pro);
-		pro->SetName("New Prosthesis");
-		albaProsthesesDBManager * prosthesesDBManager = GetLogicManager()->GetProsthesesDBManager();
-		pro->SetProsthesis(prosthesesDBManager->GetProstheses().at(0));
-		pro->ReparentTo(m_Input);
-	}
-
-	albaEventMacro(albaEvent(this, result));
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesisVME::OpDo()
-{
-}
-
-//----------------------------------------------------------------------------
-void appOpCreateProsthesisVME::OnEvent(albaEventBase *alba_event)
-{
-	if (albaEvent *e = albaEvent::SafeDownCast(alba_event))
-	{
-		m_Gui->Update();
-		//if (e->GetSender() == m_Gui)
-		{
-			switch (e->GetId())
-			{
-			case wxOK:
-				OpStop(OP_RUN_OK);
-				break;
-
-			case wxCANCEL:
-				OpStop(OP_RUN_CANCEL);
-				break;
-
-			default:
-				Superclass::OnEvent(alba_event);
-				break;
-			}
-		}
-// 		else
-// 		{
-// 			Superclass::OnEvent(alba_event);
-// 		}
-	}
-}
-
-//----------------------------------------------------------------------------
-void appOpCreateProsthesisVME::CreateGui()
-{
-	// Interface:
-	m_Gui = new appGUI(this);
-
-	m_Gui->HintBox(NULL, "This operation is empty.", "Hint");
-
-//	((appGUI*)m_Gui)->HyperLink(NULL, "Link", "https://github.com/IOR-BIC");
-
-// 	((appGUI*)m_Gui)->Separator(0, wxSize(1, 100));
-//	((appGUI*)m_Gui)->Separator(2, wxSize(250, 1));
-	
-	// ToDO: add your custom widgets...
-
-	//m_Gui->Label("Press a button");
-
-	//////////////////////////////////////////////////////////////////////////
-	m_Gui->Label("");
-	m_Gui->Divider(1);
-	m_Gui->OkCancel();
-	m_Gui->Label("");
-
-	ShowGui();
+	OpStop(OP_RUN_OK);
 }

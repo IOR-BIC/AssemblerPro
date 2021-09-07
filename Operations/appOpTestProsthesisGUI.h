@@ -22,6 +22,10 @@ PURPOSE. See the above copyright notice for more information.
 #include "appOperationsDefines.h"
 #include "appDecl.h"
 #include "albaOp.h"
+#include "appGUI.h"
+#include <vector>
+#include "albaEvent.h"
+#include "appGUIDialogComponent.h"
 
 //----------------------------------------------------------------------------
 // Forward references :
@@ -29,8 +33,12 @@ PURPOSE. See the above copyright notice for more information.
 class albaProsthesesDBManager;
 class albaProDBProshesis;
 class albaProDBProducer;
+class albaProDBCompGruop;
+class albaProDBComponent;
 class appGUIDialogComponent;
 class appGUIDialogProsthesisSelection;
+class ComponentGroupGUI;
+
 //----------------------------------------------------------------------------
 // Class Name: appOpTestProsthesisGUI
 //----------------------------------------------------------------------------
@@ -41,17 +49,22 @@ public:
 	//Widgets ID's	
 	enum OP_TEST_PROSTHESIS_ID
 	{
-		ID_PROSTHESIS_GROUP_START = MINID,
-		ID_PROSTHESIS_SELECTION,
+		ID_PROSTHESIS_SELECTION = MINID,
 		ID_PROSTHESIS_NAME,
 		ID_PROSTHESIS_CHANGE,
 		ID_PROSTHESIS_EDIT,
+
+		ID_GROUP_CREATE,
+		ID_GROUP_REMOVE,
+
 		ID_GROUP_SHOW,
+		ID_GROUP_NAME,
+
 		ID_COMPONENT_SELECT,
 		ID_COMPONENT_ADD,
 		ID_COMPONENT_DEL,
 		ID_COMPONENT_EDIT,
-		ID_PROSTHESIS_GROUP_END,
+		ID_COMPONENT_MATRIX,
 	};
 
 	/** Constructor. */
@@ -84,10 +97,14 @@ public:
 	/** Receive events coming from the user interface.*/
 	void OnEvent(albaEventBase *alba_event);
 
+
 protected:
 
 	/** This method is called at the end of the operation and result contain the wxOK or wxCANCEL. */
 	/*virtual*/ void OpStop(int result);	
+
+	void OnEventFromGroup(albaEventBase *alba_event);
+	int GetGroup(albaEvent * e);
 
 	/** Create the Operation GUI */
 	virtual void CreateGui();
@@ -96,16 +113,76 @@ protected:
 
 	void SelectProsthesis();
 	void EditProsthesis();
-	bool m_EditMode;
 	
+	void AddNewGroup();
+	void DelGroup();
+	void LoadGroups();
+	void ClearGroups();
+	void EditGroupName();
+
 	albaProsthesesDBManager *m_DBManager;
-	wxString m_ProsthesisName;
-	int m_NumComponentGroups;
-	int m_Show;
-
+	
 	wxComboBox *m_ProsthesisComboBox;
-
 	std::vector<wxString> m_ProsthesisNameList;
-	int m_Selection;
+	int m_SelectedProsthesis;
+	wxString m_ProsthesisName;
+
+	std::vector<ComponentGroupGUI*> m_ComponentGroupList;
+	int m_SelectedGroup;
+
+	appGUI *m_ContentGui;
+	appGUI *m_GroupGui;
 };
+
+//----------------------------------------------------------------------------
+// Class Name: ComponentGroupGUI
+//----------------------------------------------------------------------------
+class ComponentGroupGUI : public albaObserver
+{
+
+public:
+
+	/** Constructor. */
+	ComponentGroupGUI();
+
+	/** Destructor. */
+	~ComponentGroupGUI();
+
+	/** Receive events coming from the user interface.*/
+	void OnEvent(albaEventBase *alba_event);;
+	
+	appGUI* GetGui();
+	void GuiUpdate();
+
+	void SetListener(albaObserver * listener) { m_Listener = listener; };
+	
+	void SetCompGroup(albaProDBCompGruop *compGroup);
+	albaProDBCompGruop* GetCompGroup() { return m_CurrentCompGroup; };
+
+	void SetName(wxString name) { m_GroupName = name; };
+	wxString GetName() { return m_GroupName; };
+
+	void ShowGroup();
+
+	void AddNewComponent();
+	void DelComponent();
+	void EditComponent();
+
+	void EditMatrix();
+protected:
+
+	albaObserver *m_Listener;
+	appGUI *m_ComponentGui;
+	
+	albaProDBCompGruop *m_CurrentCompGroup;
+	wxString m_GroupName;
+	int m_ShowGroup;
+	
+	wxListBox *m_ComponentListBox;
+	std::vector<wxString> m_ComponentsNameList;
+	albaProDBComponent *m_CurrentComponent;
+
+	int m_SelectedComponent;
+};
+
 #endif

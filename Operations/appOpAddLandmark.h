@@ -1,6 +1,6 @@
 /*=========================================================================
 Program:   AssemblerPro
-Module:    appOpCreateProsthesisVME.h
+Module:    appOpAddLandmark.h
 Language:  C++
 Date:      $Date: 2021-01-01 12:00:00 $
 Version:   $Revision: 1.0.0.0 $
@@ -13,45 +13,60 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE. See the above copyright notice for more information.
 =========================================================================*/
 
-#ifndef __appOpCreateProsthesisVME_H__
-#define __appOpCreateProsthesisVME_H__
+#ifndef __appOpAddLandmark_H__
+#define __appOpAddLandmark_H__
 
 //----------------------------------------------------------------------------
 // Include :
 //----------------------------------------------------------------------------
 #include "appOperationsDefines.h"
+#include "albaOpAddLandmark.h"
 #include "appDecl.h"
 #include "albaOp.h"
 
 //----------------------------------------------------------------------------
 // Forward references :
 //----------------------------------------------------------------------------
+class albaGUIDictionaryWidget;
+class albaVMELandmark;
+class albaVMELandmarkCloud;
 
 //----------------------------------------------------------------------------
-// Class Name: appOpCreateProsthesisVME
+// Class Name: appOpAddLandmark
 //----------------------------------------------------------------------------
-class APP_OPERATIONS_EXPORT appOpCreateProsthesisVME : public albaOp
+class APP_OPERATIONS_EXPORT appOpAddLandmark : public albaOpAddLandmark
 {
 public:
 	/** Constructor. */
-	appOpCreateProsthesisVME(wxString label = "Op Create Prosthesis VME");
+	appOpAddLandmark(wxString label = "Add Landmark");
 
 	/** Destructor. */
-	~appOpCreateProsthesisVME();
+	~appOpAddLandmark();
 
 	/** RTTI macro. */
-	albaTypeMacro(appOpCreateProsthesisVME, albaOp);
+	albaTypeMacro(appOpAddLandmark, albaOpAddLandmark);
 
 	/** Return a copy of the operation */
 	/*virtual*/ albaOp* Copy();
 
 	/** Return true for the acceptable vme type. */
-	/*virtual*/ bool Accept(albaVME *node);
+	///*virtual*/ bool Accept(albaVME *node);
 
 	/** Builds operation's interface. */
 	/*virtual*/ void OpRun();
 
+	/** Execute the operation. */
+	///*virtual*/ void OpDo();
+
+	/** Receive events coming from the user interface.*/
+	//void OnEvent(albaEventBase *alba_event);
+
 protected:
 
+	/** This method is called at the end of the operation and result contain the wxOK or wxCANCEL. */
+	///*virtual*/ void OpStop(int result);	
+
+	/** Create the Operation GUI */
+	virtual void CreateGui();
 };
 #endif

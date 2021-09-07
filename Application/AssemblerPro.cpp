@@ -32,6 +32,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "appOpSearchProsthesis.h"
 #include "appOpTestProsthesisGUI.h"
 #include "appOpCreateProsthesisVME.h"
+#include "appOpAddLandmark.h"
 
 #include "appUtils.h"
 
@@ -120,6 +121,7 @@ bool AssemblerPro::OnInit()
 
 	m_Logic->Plug(new appOpCreateProsthesisVME(), "");
 
+	m_Logic->Plug(new appOpAddLandmark(), "");
 
 	//////////////////////////////////////////////////////////////////////////
 	//Views
@@ -218,6 +220,8 @@ void AssemblerPro::InitializeIcons()
 	albaADDPIC(OP_CREATE_PROSTHESIS);
 #include "pic/OP_SEARCH_PROSTHESIS.xpm"
 	albaADDPIC(OP_SEARCH_PROSTHESIS);
+#include "pic/OP_ADD_LANDMARK.xpm"
+	albaADDPIC(OP_ADD_LANDMARK);
 }
 
 //--------------------------------------------------------------------------------

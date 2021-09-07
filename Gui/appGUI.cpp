@@ -159,3 +159,39 @@ void appGUI::TwoIntegers(int id, albaString label, int *var1, int *var2, int min
 		Add(sizer, 0, wxALL, M);
 	}
 }
+
+//-------------------------------------------------------------------------
+void appGUI::ComponentButton(int id1, int id2, int id3, int* boolVar, wxString* textVar)
+{
+	wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
+	
+	// CheckBox
+	int w_id1 = GetWidgetId(id1);
+	wxCheckBox *check = new wxCheckBox(this, w_id1, "", dp, wxSize(-1, -1), m_EntryStyle);
+	check->SetValidator(albaGUIValidator(this, w_id1, check, boolVar));
+	check->SetFont(m_Font);
+	check->SetToolTip("Show/Hide");
+
+	sizer->Add(check, 0, wxALL, M);
+
+	// TextCtrl
+	int w_id2 = GetWidgetId(id2);
+	wxTextCtrl *text = new wxTextCtrl(this, w_id2, "", dp, wxSize(LW+97, LH));
+	text->SetValidator(albaGUIValidator(this, w_id2, text, textVar, true));
+	text->SetFont(m_Font);
+	text->SetToolTip("Group Name");
+	
+	sizer->Add(text, 0, wxALL, M);
+
+	// Button
+	int w_id3 = GetWidgetId(id3);
+	albaGUIButton *butt = new albaGUIButton(this, w_id3, "Del", dp, wxSize(30, BH));
+	butt->SetValidator(albaGUIValidator(this, w_id3, butt));
+	butt->SetFont(m_Font);
+	butt->SetToolTip("Delete Group");
+
+	sizer->Add(butt, 0, wxALL, M);
+
+	//
+	Add(sizer, 0, wxALL, M);
+}

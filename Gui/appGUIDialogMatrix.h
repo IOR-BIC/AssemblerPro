@@ -1,6 +1,6 @@
 /*=========================================================================
 Program:   AssemblerPro
-Module:    appGUIDialogComponent.h
+Module:    appGUIDialogMatrix.h
 Language:  C++
 Date:      $Date: 2021-01-01 12:00:00 $
 Version:   $Revision: 1.0.0.0 $
@@ -13,26 +13,28 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE. See the above copyright notice for more information.
 =========================================================================*/
 
-#ifndef __appGUIDialogComponent_H__
-#define __appGUIDialogComponent_H__
+#ifndef __appGUIDialogMatrix_H__
+#define __appGUIDialogMatrix_H__
 
 //----------------------------------------------------------------------------
 // Include:
 //----------------------------------------------------------------------------
 #include "albaGUIDialog.h"
+#include "albaMatrix.h"
 
 //----------------------------------------------------------------------------
 // forward declarations
 //----------------------------------------------------------------------------
+class albaMatrix;
 class albaGUIButton;
 class albaGUILab;
 class albaProDBComponent;
 
-class ALBA_EXPORT appGUIDialogComponent : public albaGUIDialog
+class ALBA_EXPORT appGUIDialogMatrix : public albaGUIDialog
 {
 public:
-	appGUIDialogComponent(const wxString& title, long style = albaCLOSEWINDOW);
-	virtual ~appGUIDialogComponent();
+	appGUIDialogMatrix(const wxString& title, long style = albaCLOSEWINDOW);
+	virtual ~appGUIDialogMatrix();
 
 	void OnEvent(albaEventBase *alba_event);
 
@@ -45,20 +47,16 @@ public:
 
 protected:
 
-	void CreateComponentDialog();
-	void UpdateComponentDialog();
-
-	void AddVTKFromFile();
-	void AddVTKFromTree();
+	void CreateMatrixDialog();
+	void UpdateMatrixDialog();
 
 	albaProDBComponent *m_CurrentComponent;
-	wxString m_ComponentName;
-	bool m_HasVtkData;
+	albaMatrix m_ComponentMatrix;
 	bool m_IsChanged;
+	
+	wxString m_TextValues[4][4];
 
 	albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
-	wxTextCtrl *m_ComponentName_textCtrl;
-	wxTextCtrl *m_VtkDataTextCtrl;
 	albaGUIButton *m_OkBtn;
 };
 #endif
