@@ -207,6 +207,9 @@ void appLogic::OnEvent(albaEventBase *alba_event)
 		case ID_EXTRA_TOOLBAR:
 			m_Win->ShowDockPane("extraToolbar", !m_Win->DockPaneIsShown("extraToolbar"));
 			break;
+		case MENU_VIEW_INFO_SIDEBAR:
+			m_Win->ShowDockPane("sidebarLeft", !m_Win->DockPaneIsShown("sidebarLeft"));
+			break;
 
 		default:
 			albaLogicWithManagers::OnEvent(alba_event);
@@ -602,9 +605,9 @@ void appLogic::EnableMenuAndToolbar()
 //----------------------------------------------------------------------------
 void appLogic::CreateControlPanel()
 {
-	m_SidebarStyle = albaSideBar::SINGLE_NOTEBOOK;
-	m_SideBar = new albaSideBar(m_Win, MENU_VIEW_SIDEBAR, this, m_SidebarStyle); //Default SideBar
+	m_SidebarStyle = albaSideBar::DOUBLE_NOTEBOOK;
+	//m_SideBar = new albaSideBar(m_Win, MENU_VIEW_SIDEBAR, this, m_SidebarStyle); //Default SideBar
 
 	// Create Custom SideBar
-	//m_SideBar = new appSideBar(m_Win, MENU_VIEW_SIDEBAR, this);
+	m_SideBar = new appSideBar(m_Win, MENU_VIEW_SIDEBAR, this, m_SidebarStyle);
 }

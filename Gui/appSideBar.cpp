@@ -15,17 +15,16 @@ PURPOSE. See the above copyright notice for more information.
 
 #include "appDefines.h" 
 //----------------------------------------------------------------------------
-// NOTE: Every CPP file in the APP must include "appDefines.h" as first.
-// This force to include Window, wxWidgets and VTK exactly in this order.
+// NOTE: Every CPP file in the ALBA must include "albaDefines.h" as first.
+// This force to include Window,wxWidgets and VTK exactly in this order.
+// Failing in doing this will result in a run-time error saying:
+// "Failure#0: The value of ESP was not properly saved across a function call"
 //----------------------------------------------------------------------------
 
 #include "appSideBar.h"
 #include "appDecl.h"
-#include "appLogic.h"
-#include "appUtils.h"
 
 #include "albaGUI.h"
-#include "albaGUIApplicationSettings.h"
 #include "albaGUIDialogFindVme.h"
 #include "albaGUIDockManager.h"
 #include "albaGUIHolder.h"
@@ -36,34 +35,47 @@ PURPOSE. See the above copyright notice for more information.
 #include "albaGUITree.h"
 #include "albaGUIVMEChooser.h"
 #include "albaPipe.h"
-#include "albaTagArray.h"
-#include "albaTransform.h"
 #include "albaVME.h"
-#include "albaVMEGroup.h"
-#include "albaVMEIterator.h"
 #include "albaVMEOutput.h"
 #include "albaVMERoot.h"
 #include "albaView.h"
 #include "albaViewVTK.h"
 
 //----------------------------------------------------------------------------
-appSideBar::appSideBar(albaGUIMDIFrame* parent, int id, albaObserver *Listener)
+appSideBar::appSideBar(albaGUIMDIFrame* parent, int id, albaObserver *Listener, long style)
 {
 	m_SelectedVme = NULL;
-	m_OldSelectedVme = NULL;
 	m_SelectedView = NULL;
-	m_CurrentStatusGui = NULL;
+	m_CurrentVmeGui = NULL;
+	m_CurrentVmeOutputGui = NULL;
+	m_CurrentPipeGui = NULL;
 	m_AppendingGUI = NULL;
 
-	m_Listener = Listener;
+	m_LeftNotebook = NULL;
+	m_InfoPanel = NULL;
 
-	// Notebook
-	m_Notebook = new wxNotebook(parent, id);
+	m_Parent = parent;
+	m_Id = id;
+	m_Listener = Listener;
+	m_Style = style;
+
+	InitMainPanel();
+	InitLeftPanel();
+}
+
+//----------------------------------------------------------------------------
+void appSideBar::InitMainPanel()
+{
+	// Main panel  
+	m_Notebook = new wxNotebook(m_Parent, m_Id);
 	m_Notebook->SetFont(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
 
-	// VME panel
-	m_StatusPanel = new albaGUIHolder(m_Notebook, -1, false, true);
-	m_Notebook->AddPage(m_StatusPanel, _("Status"));
+	// Tree Panel
+	m_Tree = new albaGUICheckTree(m_Notebook, -1, false, true);
+	m_Tree->SetListener(m_Listener);
+	m_Tree->SetSize(-1, 300);
+	m_Tree->SetTitle(" vme hierarchy: ");
+	m_Notebook->AddPage(m_Tree, _("Data tree"), true);
 
 	// View property panel
 	m_ViewPropertyPanel = new albaGUIHolder(m_Notebook, -1, false, true);
@@ -77,14 +89,8 @@ appSideBar::appSideBar(albaGUIMDIFrame* parent, int id, albaObserver *Listener)
 	m_OpPanel->Push(empty_op);
 	m_Notebook->AddPage(m_OpPanel, _("Operation"));
 
-	// VME Tree
-	//m_Tree = NULL;
-	//m_Tree = new albaGUICheckTree(m_Notebook, 100, false, true);
-	//m_Tree->SetListener(Listener);
-	//m_Tree->SetSize(-1, 300);
-	//m_Tree->SetTitle(" vme hierarchy: ");
-
-	parent->AddDockPane(m_Notebook, wxPaneInfo()
+	//
+	m_Parent->AddDockPane(m_Notebook, wxPaneInfo()
 		.Name("sidebar")
 		.Caption(wxT("Control Panel"))
 		.Right()
@@ -95,61 +101,93 @@ appSideBar::appSideBar(albaGUIMDIFrame* parent, int id, albaObserver *Listener)
 	);
 }
 //----------------------------------------------------------------------------
-appSideBar::~appSideBar()
+void appSideBar::InitLeftPanel()
 {
+	// Left Notebook  
+	m_LeftNotebook = new wxNotebook(m_Parent, MENU_VIEW_INFO_SIDEBAR);
+	m_LeftNotebook->SetFont(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
+
+	// Info panel
+	// 	m_InfoPanel = new albaGUIHolder(m_LeftNotebook, -1, false, true);
+	// 	m_LeftNotebook->AddPage(m_InfoPanel, _("Info"));
+
+	if (m_Style == DOUBLE_NOTEBOOK)
+	{
+		m_SideSplittedPanel = new wxSplitterWindow(m_LeftNotebook, -1, wxDefaultPosition, wxSize(-1, -1),/*wxSP_3DSASH |*/ wxSP_FULLSASH);
+
+		m_VmeNotebook = new wxNotebook(m_SideSplittedPanel, -1);
+		m_VmeNotebook->SetFont(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
+
+		m_VmePanel = new albaGUIHolder(m_VmeNotebook, -1, false, true);
+		m_VmeNotebook->AddPage(m_VmePanel, _("VME"));
+
+		m_VisualNotebook = new wxNotebook(m_SideSplittedPanel, -1);
+		m_VisualNotebook->SetFont(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
+
+		m_VmePipePanel = new albaGUIHolder(m_VisualNotebook, -1, false, true);
+		m_VisualNotebook->AddPage(m_VmePipePanel, _("Visual props"));
+
+		m_SideSplittedPanel->SetMinimumPaneSize(50);
+		m_SideSplittedPanel->SplitHorizontally(m_VmeNotebook, m_VisualNotebook);
+
+		m_LeftNotebook->AddPage(m_SideSplittedPanel, _("Info Panel"), true);
+	}
+	else
+	{
+		// VME panel
+		m_VmePanel = new albaGUIHolder(m_LeftNotebook, -1, false, true);
+		m_LeftNotebook->AddPage(m_VmePanel, _("VME"));
+
+		// VME panel
+		m_VmePipePanel = new albaGUIHolder(m_LeftNotebook, -1, false, true);
+		m_LeftNotebook->AddPage(m_VmePipePanel, _(" Visual props "));
+	}
+
+	//
+	m_Parent->AddDockPane(m_LeftNotebook, wxPaneInfo()
+		.Name("sidebarLeft")
+		.Caption(wxT("Info Panel"))
+		.Left()
+		.Layer(2)
+		.MinSize(240, 450)
+		.TopDockable(false)
+		.BottomDockable(false)
+	);
 }
 
 //----------------------------------------------------------------------------
-void appSideBar::Show()
+appSideBar::~appSideBar()
 {
-	m_Notebook->Show(!m_Notebook->IsShown());
 }
-
-/// OPERATION ////////////////////////////////////////////////////////////////
-
 //----------------------------------------------------------------------------
 void appSideBar::OpShowGui(bool push_gui, albaGUIPanel *panel)
 {
 	m_Notebook->Show(true);
-
-	if(push_gui)
+	if (push_gui)
 	{
-		m_Notebook->SetSelection(2);
+		m_Notebook->SetSelection(1);
 		m_OpPanel->Push(panel);
-	}
-
-	if (m_CurrentStatusGui)
-	{
-		// Disable Status Panel during operation
-		m_CurrentStatusGui->Disable();
 	}
 }
 //----------------------------------------------------------------------------
 void appSideBar::OpHideGui(bool view_closed)
 {
-	if(view_closed)
+	if (view_closed)
 	{
-		m_Notebook->SetSelection(0);
-		m_ViewPropertyPanel->RemoveCurrentGui();
-		m_ViewPropertyPanel->SetTitle("");
+		this->m_Notebook->SetSelection(0);
+		this->m_ViewPropertyPanel->RemoveCurrentGui();
+		this->m_ViewPropertyPanel->SetTitle("");
 	}
 	else
 	{
 		m_OpPanel->Pop();
 		m_Notebook->SetSelection(0);
 	}
-
-	m_OldSelectedVme = NULL;
-	UpdateStatusPanel();
 }
-
-/// VIEW /////////////////////////////////////////////////////////////////////
-
 //----------------------------------------------------------------------------
 void appSideBar::ViewSelect(albaView *view)
 {
-	//if(m_Tree)	m_Tree->ViewSelected(view);
-
+	m_Tree->ViewSelected(view);
 	if (view)
 	{
 		wxString s = " ";
@@ -167,117 +205,155 @@ void appSideBar::ViewSelect(albaView *view)
 		m_ViewPropertyPanel->SetTitle(_("No view selected:"));
 		m_ViewPropertyPanel->RemoveCurrentGui();
 	}
-
 	m_SelectedView = view;
-	UpdateStatusPanel();
-
-	//m_Notebook->SetSelection(1);
+	UpdateVmePanel();
 }
 //----------------------------------------------------------------------------
 void appSideBar::ViewDeleted(albaView *view)
 {
-	//if (m_Tree)	m_Tree->ViewDeleted(view);
+	m_Tree->ViewDeleted(view);
 	ViewSelect(NULL);
 }
-
 //----------------------------------------------------------------------------
 void appSideBar::EnableSelect(bool enable)
 {
-	//if (m_Tree)	m_Tree->EnableSelect(enable);
+	m_Tree->EnableSelect(enable);
 }
-
-/// VME //////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------
 void appSideBar::VmeAdd(albaVME *vme)
 {
-	//if(m_Tree)	m_Tree->VmeAdd(vme);
-	UpdateStatusPanel();
+	m_Tree->VmeAdd(vme);
 }
 //----------------------------------------------------------------------------
 void appSideBar::VmeRemove(albaVME *vme)
 {
-	//if (m_Tree)	m_Tree->VmeRemove(vme);
-	UpdateStatusPanel();
+	m_Tree->VmeRemove(vme);
+	if (vme == m_SelectedVme)
+	{
+		m_SelectedVme = NULL;
+		UpdateVmePanel();
+	}
 }
 //----------------------------------------------------------------------------
 void appSideBar::VmeModified(albaVME *vme)
 {
-	//m_Tree->VmeModified(vme);
-	UpdateStatusPanel();
+	m_Tree->VmeModified(vme);
+	if (vme == m_SelectedVme)
+		UpdateVmePanel();
 }
 //----------------------------------------------------------------------------
 void appSideBar::VmeShow(albaVME *vme, bool visibility)
 {
-	//if (m_Tree)	m_Tree->VmeShow(vme, visibility);
-	UpdateStatusPanel();
+	m_Tree->VmeShow(vme, visibility);
+	if (vme == m_SelectedVme)
+		UpdateVmePanel();
 }
 //----------------------------------------------------------------------------
 void appSideBar::VmeSelected(albaVME *vme)
 {
-  m_SelectedVme = vme;
+	m_SelectedVme = vme;
+	UpdateVmePanel();
+	m_Tree->VmeSelected(vme);
 
-  /*if (m_Tree) {
-	  m_Tree->VmeSelected(vme);
-	  m_Tree->SetFocus();
-  }*/
-
-  UpdateStatusPanel();
+	m_Tree->SetFocus();
 }
+
+//----------------------------------------------------------------------------
+void appSideBar::Show()
+{
+	m_Notebook->Show(!m_Notebook->IsShown());
+}
+
+//----------------------------------------------------------------------------
+void appSideBar::UpdateVmePanel()
+{
+	albaVMEOutput *vme_out = NULL;
+	albaPipe      *vme_pipe = NULL;
+	albaGUI       *vme_gui = NULL;
+	albaGUI       *vme_out_gui = NULL;
+	albaGUI       *vme_pipe_gui = NULL;
+
+	if (m_AppendingGUI && m_CurrentVmeGui)
+		m_AppendingGUI->Remove(m_CurrentVmeGui);
+
+	if (m_AppendingGUI && m_CurrentVmeOutputGui)
+		m_AppendingGUI->Remove(m_CurrentVmeOutputGui);
+
+	m_AppendingGUI = NULL;
+
+	if (m_SelectedVme)
+	{
+		vme_gui = m_SelectedVme->GetGui();
+
+		albaVME *v = m_SelectedVme;
+		vme_out = v->GetOutput();
+		if (!vme_out->IsA("albaVMEOutputNULL")) // Paolo 2005-05-05
+		{
+			vme_out_gui = vme_out->GetGui();
+			if (!v->IsDataAvailable())
+				vme_out->Update();
+		}
+		else
+			vme_out = NULL;
+
+		if (m_SelectedView)
+		{
+			vme_pipe = m_SelectedView->GetNodePipe(m_SelectedVme);
+
+			if (vme_pipe)
+				vme_pipe_gui = vme_pipe->GetGui();
+		}
+
+		m_CurrentPipeGui = vme_pipe_gui;
+		m_CurrentVmeGui = vme_gui;
+		m_CurrentVmeOutputGui = vme_out_gui;
+
+		m_AppendingGUI = new albaGUI(NULL);
+
+		if (vme_gui)
+		{
+			m_AppendingGUI->AddGui(vme_gui);
+		}
+
+		if (m_Style == SINGLE_NOTEBOOK && vme_pipe_gui)
+		{
+			m_AppendingGUI->Label(_("GUI Visual Pipes"), true);
+			m_AppendingGUI->AddGui(vme_pipe_gui);
+		}
+
+		if (vme_out_gui)
+		{
+			m_AppendingGUI->Divider(1);
+			m_AppendingGUI->Label(_("Output"), true);
+			m_AppendingGUI->AddGui(vme_out_gui);
+		}
+
+		m_AppendingGUI->FitGui();
+		m_AppendingGUI->Update();
+	}
+
+	if (m_Style == DOUBLE_NOTEBOOK)
+	{
+		m_VmePipePanel->Put(vme_pipe_gui);
+	}
+	if (m_AppendingGUI)
+		m_VmePanel->Put(m_AppendingGUI);
+	else
+		m_VmePanel->Put(new albaGUI(NULL));
+}
+
 //----------------------------------------------------------------------------
 std::vector<albaVME*> appSideBar::VmeChoose(void *vme_accept_function, long style, albaString title, bool multiSelect, albaVME *vme)
 {
-	//albaGUIVMEChooser vc(m_Tree, title.GetCStr(), vme_accept_function, style, multiSelect, vme);
-	//return vc.ShowChooserDialog();
-
-	albaErrorMessage("Error on choose VME");
-	std::vector<albaVME*> emptyList;
-	return emptyList;
+	albaGUIVMEChooser vc(m_Tree, title.GetCStr(), vme_accept_function, style, multiSelect, vme);
+	return vc.ShowChooserDialog();
 }
+
 //----------------------------------------------------------------------------
 void appSideBar::FindVME()
 {
-	//albaGUICheckTree *tree = m_Tree;
-	//albaGUIDialogFindVme fd(_("Find VME"));
-	//fd.SetTree(tree);
-	//fd.ShowModal();
-
-	albaErrorMessage("Error on find VME");
-}
-
-/// STATUS ///////////////////////////////////////////////////////////////////
-//----------------------------------------------------------------------------
-void appSideBar::UpdateStatusPanel()
-{
-	if (m_SelectedVme == m_OldSelectedVme) 
-		return;
-
-	m_OldSelectedVme = m_SelectedVme;
-
- 	if (m_AppendingGUI && m_CurrentStatusGui)
- 		m_AppendingGUI->Remove(m_CurrentStatusGui);
-
-	m_AppendingGUI = NULL;
-	m_AppendingGUI = new albaGUI(NULL);
-	
-	if (m_SelectedVme)
-	{
-		//vme_gui = m_SelectedVme->GetGui();	
-
-		UpdateStatus();		
-		m_AppendingGUI->AddGui(m_CurrentStatusGui);
-	}
-
-	//m_CurrentVmeGui = vme_gui;
-		
-	m_AppendingGUI->Label("");
-	m_AppendingGUI->FitGui();
-	m_AppendingGUI->Update();
-
-	m_StatusPanel->Put(m_AppendingGUI);
-	m_AppendingGUI->SetListener(m_Listener);
-}
-//----------------------------------------------------------------------------
-void appSideBar::UpdateStatus()
-{
-	
+	albaGUICheckTree *tree = m_Tree;
+	albaGUIDialogFindVme fd(_("Find VME"));
+	fd.SetTree(tree);
+	fd.ShowModal();
 }
