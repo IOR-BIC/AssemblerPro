@@ -69,6 +69,8 @@ public:
 	enum PROSTHESIS_GUI_ID
 	{
 		ID_START = albaVME::ID_LAST,
+		ID_PROSTHESIS_NAME,
+		ID_PROSTHESIS_CHANGE,
 		ID_LAST
 	};
 
@@ -107,6 +109,7 @@ protected:
 
 	vtkAppendPolyData *m_AppendPolydata;
 	albaProDBProshesis *m_Prosthesis;
+	albaString m_ProsthesisName;
 
 private:
 	albaVMEProsthesis(const albaVMEProsthesis&); // Not implemented

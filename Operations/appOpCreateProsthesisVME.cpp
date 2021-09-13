@@ -26,6 +26,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "albaGUI.h"
 #include "albaVME.h"
 #include "albaVMEProsthesis.h"
+#include "appVMEProsthesisEdit.h"
 #include "albaProsthesesDBManager.h"
 
 //----------------------------------------------------------------------------
@@ -57,7 +58,8 @@ albaOp* appOpCreateProsthesisVME::Copy()
 //----------------------------------------------------------------------------
 void appOpCreateProsthesisVME::OpRun()
 {
-	albaVMEProsthesis *pro;
+	//albaVMEProsthesis *pro;
+	appVMEProsthesisEdit *pro;
 	albaNEW(pro);
 	pro->SetName("New Prosthesis");
 	albaProsthesesDBManager * prosthesesDBManager = GetLogicManager()->GetProsthesesDBManager();

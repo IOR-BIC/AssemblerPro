@@ -45,9 +45,8 @@ albaCxxTypeMacro(albaVMEProsthesis)
 albaVMEProsthesis::albaVMEProsthesis()
 {
 	m_AppendPolydata = NULL;
+	m_ProsthesisName = "";
 }
-
-
 
 //-------------------------------------------------------------------------
 albaVMEProsthesis::~albaVMEProsthesis()
@@ -94,7 +93,12 @@ albaGUI* albaVMEProsthesis::CreateGui()
 	if (m_Gui == NULL)
 	{
 		m_Gui = new albaGUI(this);
+		
+		m_Gui->String(ID_PROSTHESIS_NAME, "", &m_ProsthesisName);
+		m_Gui->Enable(ID_PROSTHESIS_NAME, false);
 
+		m_Gui->Button(ID_PROSTHESIS_CHANGE, "Change Prosthesis");
+		m_Gui->Divider(1);
 
 		m_Gui->Divider();
 		m_Gui->FitGui();
@@ -205,6 +209,9 @@ void albaVMEProsthesis::SetProsthesis(albaProDBProshesis *prosthesis)
 
 	m_Prosthesis = prosthesis;
 
+	m_ProsthesisName = m_Prosthesis->GetProducer(); 
+	m_ProsthesisName += " | " + m_Prosthesis->GetName();
+
 	std::vector<albaProDBCompGruop *> *componentsVector = prosthesis->GetCompGroups();
 
 	for(int i=0;i<componentsVector->size();i++)
@@ -225,6 +232,9 @@ void albaVMEProsthesis::OnEvent(albaEventBase *alba_event)
 		int compNum = m_ComponentGui.size();
 		switch (eventId)
 		{
+		case ID_PROSTHESIS_CHANGE: 
+			break;
+
 			case ID_START:
 			{
 
