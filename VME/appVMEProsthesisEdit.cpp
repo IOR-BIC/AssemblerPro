@@ -54,6 +54,13 @@ appVMEProsthesisEdit::~appVMEProsthesisEdit()
 }
 
 //-------------------------------------------------------------------------
+char** appVMEProsthesisEdit::GetIcon()
+{
+#include "albaVMEProsthesis.xpm"
+	return albaVMEProsthesis_xpm;
+}
+
+//-------------------------------------------------------------------------
 int appVMEProsthesisEdit::InternalInitialize()
 {
 	if (Superclass::InternalInitialize() == ALBA_OK)
@@ -61,7 +68,6 @@ int appVMEProsthesisEdit::InternalInitialize()
 		m_DBManager = GetLogicManager()->GetProsthesesDBManager();
 
 		UpdateGui();
-		//SelectProsthesis();
 
 		return ALBA_OK;
 	}
@@ -79,6 +85,15 @@ albaGUI* appVMEProsthesisEdit::CreateGui()
 	m_Gui->TwoButtons(ID_PROSTHESIS_CHANGE, ID_PROSTHESIS_EDIT, "Change", "Edit");
 	m_Gui->Divider(1);
 
+	m_ContentGui = new appGUI(this);
+	m_GroupGui = new appGUI(this);
+
+	m_ContentGui->Add(m_GroupGui);
+	m_Gui->Add(m_ContentGui);
+
+	m_Gui->Divider(0);
+	m_Gui->Button(ID_GROUP_CREATE, "New Component Group");
+
 	m_Gui->Divider();
 	m_Gui->FitGui();
 
@@ -89,8 +104,9 @@ void appVMEProsthesisEdit::UpdateGui()
 {
 	if (m_Gui)
 	{
-		std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
+		std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
 
+		//
 		if (m_ProsthesisComboBox)
 		{
 			m_ProsthesisComboBox->Clear();
@@ -104,8 +120,47 @@ void appVMEProsthesisEdit::UpdateGui()
 				m_ProsthesisComboBox->Select(m_SelectedProsthesis);
 		}
 
-// 		m_Gui->Divider(0);
-// 		m_Gui->Button(ID_GROUP_CREATE, "New Component Group");
+// 		//
+// 		if (m_GroupGui)
+// 		{			
+// // 			for (int i = 0; i < m_ComponentGui.size(); i++)
+// // 			{
+// // 				m_ContentGui->Remove(m_ComponentGui[i]);
+// // 			}
+// 
+// 			for (int i = 0; i < m_GroupGui->GetChildren().size(); i++)
+// 			{
+// 				m_GroupGui->Remove(m_GroupGui->GetChildren()[i]);
+// 			}
+// 
+// 			for (int i = 0; i < m_ComponentGui.size(); i++)
+// 			{
+// 				//if (m_ContentGui->FindWindowById(m_ComponentGui[i]->GetId()) == NULL)
+// 				{
+// 					m_ComponentGui[i]->FitGui();
+// 					m_ComponentGui[i]->Update();
+// 					m_GroupGui->Add(m_ComponentGui[i]);
+// 				}
+// 			}
+// 
+// 			m_GroupGui->FitGui();
+// 			m_GroupGui->FitInside();
+// 		}
+// 
+// 		m_Gui->FitGui();
+// 		m_Gui->FitInside();
+
+
+//
+		m_GroupGui->FitGui();
+		m_GroupGui->FitInside();
+		m_ContentGui->FitGui();
+		m_GroupGui->FitInside();
+
+		m_Gui->FitGui();
+		m_Gui->FitInside();
+
+		m_Gui->Update();
 	}
 }
 
@@ -117,8 +172,25 @@ void appVMEProsthesisEdit::OnEvent(albaEventBase *alba_event)
 	{
 		switch (e->GetId())
 		{
-		case ID_PROSTHESIS_SELECTION: SelectProsthesis(); break;
-		case ID_PROSTHESIS_EDIT: EditProsthesis(); break;
+		case ID_PROSTHESIS_SELECTION: 
+		{
+			std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
+			SetProsthesis(DBprosthesis[m_SelectedProsthesis]);
+			UpdateGui();
+		}
+		break;
+		
+		case ID_PROSTHESIS_EDIT:
+		{
+			EditProsthesis(m_Prosthesis); 
+		}
+		break;
+
+		case ID_GROUP_CREATE:
+		{
+			NewGroup();
+		}
+		break;
 
 		case ID_START:
 		{
@@ -136,39 +208,13 @@ void appVMEProsthesisEdit::OnEvent(albaEventBase *alba_event)
 }
 
 //----------------------------------------------------------------------------
-void appVMEProsthesisEdit::SelectProsthesis()
+void appVMEProsthesisEdit::EditProsthesis(albaProDBProsthesis *prosthesis)
 {
-	std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
-
-	SetProsthesis(DBprosthesis[m_SelectedProsthesis]);
-
-// 	if (m_Gui) 
-// 	{
-// 		m_Gui->Divider(0);
-// 		m_Gui->Button(ID_GROUP_CREATE, "New Component Group");
-// 	}
-
-//
-// 	m_GroupGui->FitGui();
-// 	m_ContentGui->FitGui();
-	for (int c=0; c<m_ComponentGui.size(); c++)
-	{
-		m_ComponentGui[c]->Update();
-		m_ComponentGui[c]->FitGui();
-	}
-
-	m_Gui->FitGui();
-
-	m_Gui->Update();
-}
-//----------------------------------------------------------------------------
-void appVMEProsthesisEdit::EditProsthesis()
-{
-	if (m_Prosthesis)
+	if (prosthesis)
 	{
 		// Show dialog
 		appGUIDialogProsthesis md(_("Edit Prosthesis"));
-		md.SetProsthesis(m_Prosthesis);
+		md.SetProsthesis(prosthesis);
 		md.ShowModal();
 
 		if (md.OkClosed())
@@ -183,4 +229,31 @@ void appVMEProsthesisEdit::EditProsthesis()
 			m_DBManager->LoadDB();
 		}
 	}
+}
+
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::NewGroup()
+{
+	wxString name = wxString::Format("NewComponentGroup(%d)", m_ComponentGui.size() + 1);
+
+	std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
+	std::vector<albaProDBCompGroup *> *DBCompGroups = DBprosthesis[m_SelectedProsthesis]->GetCompGroups();
+
+	albaProDBCompGroup *gaux = DBCompGroups->at(0);
+	albaProDBComponent *caux = gaux->GetComponents()->at(0);
+
+	albaProDBCompGroup *newDBGroup = new albaProDBCompGroup();
+	newDBGroup->SetName(name);
+
+	albaProDBComponent *newComponent = new albaProDBComponent();
+	newComponent->SetName("New Comp");
+	newComponent->SetMatrix(caux->GetMatrix());
+	newComponent->SetVTKData(caux->GetVTKData());
+	newDBGroup->GetComponents()->push_back(newComponent);
+
+	DBCompGroups->push_back(newDBGroup);
+
+	AddComponentGroup(newDBGroup);
+
+	UpdateGui();
 }

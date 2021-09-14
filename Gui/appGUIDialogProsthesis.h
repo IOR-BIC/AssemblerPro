@@ -40,8 +40,8 @@ public:
 	
 	void OnEvent(albaEventBase *alba_event);
 
-	void SetProsthesis(albaProDBProshesis *prosthesis);;
-	albaProDBProshesis* GetProsthesis() { return m_CurrentProsthesis; };
+	void SetProsthesis(albaProDBProsthesis *prosthesis);
+	albaProDBProsthesis* GetProsthesis() { return m_CurrentProsthesis; };
 
 	void Show();
 
@@ -68,14 +68,14 @@ protected:
 	std::vector<wxString> m_TypeNameList;
 
 	albaProDBProducer  *m_CurrentProducer;
-	albaProDBProshesis *m_CurrentProsthesis;
+	albaProDBProsthesis *m_CurrentProsthesis;
 
 	wxString m_ProsthesisName;
 	wxString m_ProsthesisProducerName;
 	wxString m_ProsthesisImageName;
 	wxString m_ProsthesisImageFullName;
 	wxString m_ProsthesisType;
-	albaProDBProshesis::PRO_SIDES m_ProsthesisSide;
+	albaProDBProsthesis::PRO_SIDES m_ProsthesisSide;
 	bool m_IsChanged;
 
 	albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
@@ -105,6 +105,5 @@ protected:
 	int m_SelectedProducer;
 	int m_SelectedType;
 	int m_SelectedSide;
-
 };
 #endif

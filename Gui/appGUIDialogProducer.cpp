@@ -20,6 +20,7 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 
 #include "appGUIDialogProducer.h"
+#include "appLogic.h"
 #include "appUtils.h"
 
 #include "albaDecl.h"
@@ -27,11 +28,10 @@ PURPOSE. See the above copyright notice for more information.
 #include "albaGUILab.h"
 #include "albaGUIPicButton.h"
 #include "albaGUIValidator.h"
+#include "albaServiceClient.h"
 
 #include "wx\image.h"
 #include "wx\window.h"
-#include "albaServiceClient.h"
-#include "appLogic.h"
 
 enum PRODUCER_DIALOG_ID
 {

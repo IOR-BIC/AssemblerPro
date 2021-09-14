@@ -27,6 +27,7 @@ PURPOSE. See the above copyright notice for more information.
 class albaGUIButton;
 class albaGUILab;
 class albaProDBComponent;
+class albaVMEStorage;
 
 class ALBA_EXPORT appGUIDialogComponent : public albaGUIDialog
 {

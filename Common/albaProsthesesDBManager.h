@@ -113,7 +113,7 @@ protected:
 /**
 Class Name: albaProsthesisDBManager.
 */
-class albaProDBCompGruop : public ProStorable
+class albaProDBCompGroup : public ProStorable
 {
 public:
 	albaString GetName() const { return m_Name; }
@@ -132,7 +132,7 @@ protected:
 };
 
 
-class albaProDBProshesis: public ProStorable
+class albaProDBProsthesis: public ProStorable
 {
 public: 
 
@@ -152,8 +152,8 @@ public:
 	void SetType(albaString val) { m_Type = val; }
 	albaString GetProducer() const { return m_Producer; }
 	void SetProducer(albaString val) { m_Producer = val; }
-	albaProDBProshesis::PRO_SIDES GetSide() const { return m_Side; }
-	void SetSide(albaProDBProshesis::PRO_SIDES val) { m_Side = val; }
+	albaProDBProsthesis::PRO_SIDES GetSide() const { return m_Side; }
+	void SetSide(albaProDBProsthesis::PRO_SIDES val) { m_Side = val; }
 
 	// Inherited via ProStorable
 	virtual int Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
@@ -164,7 +164,7 @@ public:
 	static char *GetSideAsStr(PRO_SIDES side);
 
 	/** returns the vector of components */
-	std::vector<albaProDBCompGruop *> *GetCompGroups() { return &m_CompGroups; }
+	std::vector<albaProDBCompGroup *> *GetCompGroups() { return &m_CompGroups; }
 protected:
 	albaString m_Name;
 	albaString m_ImgFileName;
@@ -172,7 +172,7 @@ protected:
 	albaString m_Type;
 	PRO_SIDES m_Side;
 
-	std::vector<albaProDBCompGruop *> m_CompGroups;
+	std::vector<albaProDBCompGroup *> m_CompGroups;
 
 };
 
@@ -207,10 +207,10 @@ public:
 	/** returns the number of components that uses the file, zero if there are no components */
 	int GetComponentFileCount(albaString fileName);
 
-	std::vector<albaProDBProshesis *> SearchProstheses(albaString producer, albaString type, albaString side);
+	std::vector<albaProDBProsthesis *> SearchProstheses(albaString producer, albaString type, albaString side);
 	std::vector<albaProDBProducer *>& GetProducers() { return m_Producers; };
 	std::vector<albaProDBType *>& GetTypes() { return m_Types; };
-	std::vector<albaProDBProshesis *>& GetProstheses() { return m_Prostheses; };
+	std::vector<albaProDBProsthesis *>& GetProstheses() { return m_Prostheses; };
 
 
 
@@ -228,7 +228,7 @@ private:
 
 	std::vector<albaProDBProducer *> m_Producers;
 	std::vector<albaProDBType *> m_Types;
-	std::vector<albaProDBProshesis *>  m_Prostheses;
+	std::vector<albaProDBProsthesis *>  m_Prostheses;
 
 	std::vector<albaString> m_ComponentsFiles;
 	std::vector<int> m_CompFilesNum;

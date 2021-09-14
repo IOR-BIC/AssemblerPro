@@ -165,7 +165,7 @@ void appSideBar::OpShowGui(bool push_gui, albaGUIPanel *panel)
 	m_Notebook->Show(true);
 	if (push_gui)
 	{
-		m_Notebook->SetSelection(1);
+		m_Notebook->SetSelection(2);
 		m_OpPanel->Push(panel);
 	}
 }
@@ -254,8 +254,9 @@ void appSideBar::VmeSelected(albaVME *vme)
 	m_SelectedVme = vme;
 	UpdateVmePanel();
 	m_Tree->VmeSelected(vme);
-
 	m_Tree->SetFocus();
+
+	m_LeftNotebook->SetSelection(0);
 }
 
 //----------------------------------------------------------------------------

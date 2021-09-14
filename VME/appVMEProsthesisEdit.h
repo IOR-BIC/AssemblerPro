@@ -35,6 +35,8 @@ public:
 	/** Precess events coming from other objects */ 
 	/*virtual*/ void OnEvent(albaEventBase *alba_event);
 
+	/** return an xpm-icon that can be used to represent this node */
+	static char ** GetIcon();
 
 	//----------------------------------------------------------------------------
 	// Widgets ID's
@@ -54,14 +56,14 @@ protected:
 
 	/*virtual*/ int InternalInitialize();
 
-	void UpdateGui();
-
 	/** Internally used to create a new instance of the GUI.*/
 	/*virtual*/ albaGUI *CreateGui();
 
-	void SelectProsthesis();
-	void EditProsthesis();
+	void UpdateGui();
 
+	void EditProsthesis(albaProDBProsthesis *prosthesis);
+
+	void NewGroup();
 	albaProsthesesDBManager *m_DBManager;
 
 	wxComboBox *m_ProsthesisComboBox;

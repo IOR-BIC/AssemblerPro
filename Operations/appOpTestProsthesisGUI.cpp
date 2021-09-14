@@ -23,6 +23,9 @@ PURPOSE. See the above copyright notice for more information.
 #include "appDecl.h"
 #include "appGUI.h"
 #include "appGUIDialogComponent.h"
+#include "appGUIDialogMatrix.h"
+#include "appGUIDialogProsthesis.h"
+#include "appGUIDialogProsthesisSelection.h"
 #include "appLogic.h"
 #include "appUtils.h"
 
@@ -36,14 +39,11 @@ PURPOSE. See the above copyright notice for more information.
 #include "albaServiceClient.h"
 #include "albaVME.h"
 
-#include "wx\image.h"
-#include "wx\window.h"
-#include "appGUIDialogProsthesisSelection.h"
-#include "appGUIDialogProsthesis.h"
-#include "wx\sizer.h"
 #include "wx\defs.h"
+#include "wx\image.h"
+#include "wx\sizer.h"
+#include "wx\window.h"
 #include <vector>
-#include "appGUIDialogMatrix.h"
 
 //----------------------------------------------------------------------------
 albaCxxTypeMacro(appOpTestProsthesisGUI);
@@ -64,7 +64,6 @@ appOpTestProsthesisGUI::appOpTestProsthesisGUI(wxString label) :albaOp(label)
 	m_ProsthesisName = "";
 	m_SelectedProsthesis = -1;
 }
-
 //----------------------------------------------------------------------------
 appOpTestProsthesisGUI::~appOpTestProsthesisGUI()
 {
@@ -109,7 +108,7 @@ void appOpTestProsthesisGUI::OpRun()
 void appOpTestProsthesisGUI::LoadInfo()
 {
 	m_DBManager = GetLogicManager()->GetProsthesesDBManager();
-	std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
+	std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
 
 	if (DBprosthesis.size() > 0)
 		m_SelectedProsthesis = 0;
@@ -241,7 +240,7 @@ void appOpTestProsthesisGUI::UpdateGui()
 	if (m_Gui)
 	{
 		// Update Prosthesis Name List
-		std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
+		std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
 
 		m_ProsthesisNameList.clear();
 		m_ProsthesisComboBox->Clear();
@@ -265,7 +264,7 @@ void appOpTestProsthesisGUI::UpdateGui()
 //----------------------------------------------------------------------------
 void appOpTestProsthesisGUI::SelectProsthesis()
 {
-	std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
+	std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
 
 	m_ProsthesisName = DBprosthesis[m_SelectedProsthesis]->GetName();
 
@@ -274,8 +273,8 @@ void appOpTestProsthesisGUI::SelectProsthesis()
 //----------------------------------------------------------------------------
 void appOpTestProsthesisGUI::EditProsthesis()
 {
-	std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
-	albaProDBProshesis *selectedProsthesis = DBprosthesis[m_SelectedProsthesis];
+	std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
+	albaProDBProsthesis *selectedProsthesis = DBprosthesis[m_SelectedProsthesis];
 
 	// Show dialog
 	appGUIDialogProsthesis md(_("Edit Prosthesis"));
@@ -316,9 +315,9 @@ void appOpTestProsthesisGUI::AddNewGroup()
 	newGroup->GetGui()->Update();
 	newGroup->SetListener(this);
 
-	std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
-	std::vector<albaProDBCompGruop *> *DBCompGroups = DBprosthesis[m_SelectedProsthesis]->GetCompGroups();
-	albaProDBCompGruop *newDBGroup = new albaProDBCompGruop();
+	std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
+	std::vector<albaProDBCompGroup *> *DBCompGroups = DBprosthesis[m_SelectedProsthesis]->GetCompGroups();
+	albaProDBCompGroup *newDBGroup = new albaProDBCompGroup();
 	newDBGroup->SetName(newGroup->GetName().c_str());
 	DBCompGroups->push_back(newDBGroup);
 
@@ -329,8 +328,8 @@ void appOpTestProsthesisGUI::DelGroup()
 {
 	if (m_ComponentGroupList.size() > 0 && m_SelectedGroup < m_ComponentGroupList.size())
 	{
-		std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
-		std::vector<albaProDBCompGruop *> *DBCompGroups = DBprosthesis[m_SelectedProsthesis]->GetCompGroups();
+		std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
+		std::vector<albaProDBCompGroup *> *DBCompGroups = DBprosthesis[m_SelectedProsthesis]->GetCompGroups();
 
 		DBCompGroups->erase(DBCompGroups->begin() + m_SelectedGroup);
 		m_ComponentGroupList.erase(m_ComponentGroupList.begin() + m_SelectedGroup);
@@ -357,8 +356,8 @@ void appOpTestProsthesisGUI::LoadGroups()
 {
 	ClearGroups();
 
-	std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
-	std::vector<albaProDBCompGruop *> *DBCompGroups = DBprosthesis[m_SelectedProsthesis]->GetCompGroups();
+	std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
+	std::vector<albaProDBCompGroup *> *DBCompGroups = DBprosthesis[m_SelectedProsthesis]->GetCompGroups();
 
 	for (int c = 0; c < DBCompGroups->size(); c++)
 	{
@@ -396,8 +395,8 @@ void appOpTestProsthesisGUI::EditGroupName()
 {
 	if (m_ComponentGroupList.size() > 0 && m_SelectedGroup < m_ComponentGroupList.size())
 	{
-		std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->GetProstheses();
-		std::vector<albaProDBCompGruop *> *DBCompGroups = DBprosthesis[m_SelectedProsthesis]->GetCompGroups();
+		std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
+		std::vector<albaProDBCompGroup *> *DBCompGroups = DBprosthesis[m_SelectedProsthesis]->GetCompGroups();
 
 		// Update DB GroupName
 		DBCompGroups->at(m_SelectedProsthesis)->SetName(m_ComponentGroupList[m_SelectedGroup]->GetName());
@@ -468,7 +467,7 @@ void ComponentGroupGUI::GuiUpdate()
 }
 
 //----------------------------------------------------------------------------
-void ComponentGroupGUI::SetCompGroup(albaProDBCompGruop *compGroup)
+void ComponentGroupGUI::SetCompGroup(albaProDBCompGroup *compGroup)
 {
 	if (compGroup != NULL)
 	{

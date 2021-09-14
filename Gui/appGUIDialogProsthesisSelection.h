@@ -50,7 +50,7 @@ protected:
 	void UpdateDialog();
 
 	albaProDBProducer m_CurrentProducer;
-	albaProDBProshesis m_CurrentProsthesis;
+	albaProDBProsthesis m_CurrentProsthesis;
 
 	albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
 	
