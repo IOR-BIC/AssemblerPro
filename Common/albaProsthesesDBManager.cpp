@@ -590,14 +590,19 @@ int albaProDBComponent::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 void albaProDBComponent::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node)
 {
 	//Types
-	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement * componentNode = doc->createElement(albaXMLString(NODE_COMPONENTS));
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement * componentNode = doc->createElement(albaXMLString(NODE_COMPONENT));
 
 	componentNode->setAttribute(albaXMLString(ATTR_NAME), albaXMLString(m_Name));
+	componentNode->setAttribute(albaXMLString(ATTR_FILE), albaXMLString(m_Filename));
+	
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement * matrixtNode = doc->createElement(albaXMLString(NODE_MATRIX));
 
 	char tmpStr[1024];
 	double *el = *m_Matrix.GetElements();
 	sprintf(tmpStr, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", el[0], el[1], el[2], el[3], el[4], el[5], el[6], el[7], el[8], el[9], el[10], el[11], el[12], el[13], el[14], el[15]);
-	componentNode->setTextContent(albaXMLString(tmpStr));
+	matrixtNode->setTextContent(albaXMLString(tmpStr));
+
+	componentNode->appendChild(matrixtNode);
 
 	node->appendChild(componentNode);
 }
