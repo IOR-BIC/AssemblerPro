@@ -45,15 +45,24 @@ albaCxxTypeMacro(albaVMEProsthesis)
 albaVMEProsthesis::albaVMEProsthesis()
 {
 	m_AppendPolydata = NULL;
+	m_ProsthesisName = "";
+
+	m_ContentGui = NULL;
+	m_GroupGui = NULL;
 }
-
-
-
 //-------------------------------------------------------------------------
 albaVMEProsthesis::~albaVMEProsthesis()
 {
 	vtkDEL(m_AppendPolydata);
 }
+
+//-------------------------------------------------------------------------
+char** albaVMEProsthesis::GetIcon()
+{
+#include "albaVMEProsthesis.xpm"
+	return albaVMEProsthesis_xpm;
+}
+
 //-------------------------------------------------------------------------
 int albaVMEProsthesis::InternalInitialize()
 {
@@ -88,22 +97,47 @@ void albaVMEProsthesis::GetLocalTimeStamps(std::vector<albaTimeStamp> &kframes)
 {
 	kframes.clear(); // no timestamps
 }
+
 //-------------------------------------------------------------------------
 albaGUI* albaVMEProsthesis::CreateGui()
 {
 	if (m_Gui == NULL)
 	{
 		m_Gui = new albaGUI(this);
+		
+		m_Gui->String(ID_PROSTHESIS_NAME, "", &m_ProsthesisName);
+		m_Gui->Enable(ID_PROSTHESIS_NAME, false);
 
+		m_Gui->Button(ID_PROSTHESIS_CHANGE, "Change Prosthesis");
+		m_Gui->Divider(1);
+
+		m_ContentGui = new appGUI(this);
+		m_GroupGui = new appGUI(this);
+
+		m_ContentGui->Add(m_GroupGui);
+		m_Gui->Add(m_ContentGui);
 
 		m_Gui->Divider();
 		m_Gui->FitGui();
 	}
 	return m_Gui;
 }
+//-------------------------------------------------------------------------
+void albaVMEProsthesis::UpdateGui()
+{
+	if (m_Gui)
+	{
+		m_GroupGui->FitGui();
+		m_ContentGui->FitGui();
+		m_Gui->FitGui();
+
+		m_Gui->FitInside();
+		m_Gui->Update();
+	}
+}
 
 //----------------------------------------------------------------------------
-void albaVMEProsthesis::AddComponentGroup(albaProDBCompGruop *componentGroup)
+void albaVMEProsthesis::AddComponentGroup(albaProDBCompGroup *componentGroup)
 {
 	//VTK Stuffs
 	vtkTransformPolyDataFilter *compTraFilter;
@@ -128,7 +162,7 @@ void albaVMEProsthesis::AddComponentGroup(albaProDBCompGruop *componentGroup)
 	{		
 		if (currGroup >= 1)
 		{
-			albaProDBCompGruop *prevGroup = m_Prosthesis->GetCompGroups()->at(currGroup - 1);
+			albaProDBCompGroup *prevGroup = m_Prosthesis->GetCompGroups()->at(currGroup - 1);
 			int prevSelComp = m_ComponentListBox[currGroup - 1]->GetSelection();
 			albaProDBComponent *prevComp = prevGroup->GetComponents()->at(prevSelComp);
 			
@@ -165,14 +199,13 @@ void albaVMEProsthesis::AddComponentGroup(albaProDBCompGruop *componentGroup)
 
 	m_ComponentListBox.push_back(listBox);
 	m_ComponentGui.push_back(compGui);
-	
-	CreateGui();
+
+	// Add to Gui
+	m_GroupGui->Add(compGui);
 	compGui->FitGui();
 	compGui->Update();
 
-	m_Gui->Add(compGui);
-	m_Gui->FitGui();
-	m_Gui->FitInside();
+	UpdateGui();
 }
 
 //----------------------------------------------------------------------------
@@ -183,7 +216,7 @@ void albaVMEProsthesis::ClearComponentGroups()
 		m_AppendPolydata->RemoveInput(m_TransformFilters[i]->GetOutput());
 		vtkDEL(m_TransformFilters[i]);
 		vtkDEL(m_Transforms[i]);
-		m_Gui->Remove(m_ComponentGui[i]);
+		//m_ContentGui->Remove(m_ComponentGui[i]);
 
 		delete m_ComponentGui[i];
 	}
@@ -192,27 +225,47 @@ void albaVMEProsthesis::ClearComponentGroups()
 	m_Transforms.clear();
 	m_ComponentListBox.clear();
 	m_ComponentGui.clear();
+
+
+	// Rebuild Gui
+	m_GroupGui = NULL;
+	m_GroupGui = new appGUI(this);
+
+	m_ContentGui->DestroyChildren();
+	m_ContentGui->Add(m_GroupGui);
+
+	UpdateGui();
 }
 
 //----------------------------------------------------------------------------
-void albaVMEProsthesis::SetProsthesis(albaProDBProshesis *prosthesis)
+void albaVMEProsthesis::SetProsthesis(albaProDBProsthesis *prosthesis)
 {
-	if (m_AppendPolydata == NULL)
-		vtkNEW(m_AppendPolydata);
-
-	//remove current components
-	ClearComponentGroups();
-
-	m_Prosthesis = prosthesis;
-
-	std::vector<albaProDBCompGruop *> *componentsVector = prosthesis->GetCompGroups();
-
-	for(int i=0;i<componentsVector->size();i++)
+	if (prosthesis)
 	{
-		AddComponentGroup(componentsVector->at(i));
-	}
+		CreateGui();
 
-	SetData(m_AppendPolydata->GetOutput(),0, ALBA_VME_REFERENCE_DATA);
+		if (m_AppendPolydata == NULL)
+			vtkNEW(m_AppendPolydata);
+
+		//remove current components
+		ClearComponentGroups();
+
+		m_Prosthesis = prosthesis;
+
+		m_ProsthesisName = m_Prosthesis->GetProducer();
+		m_ProsthesisName += " | " + m_Prosthesis->GetName();
+
+		std::vector<albaProDBCompGroup *> *componentsVector = prosthesis->GetCompGroups();
+
+		for (int i = 0; i < componentsVector->size(); i++)
+		{
+			AddComponentGroup(componentsVector->at(i));
+		}
+
+		SetData(m_AppendPolydata->GetOutput(), 0, ALBA_VME_REFERENCE_DATA);
+			
+		UpdateGui();
+	}
 }
 
 //-------------------------------------------------------------------------
@@ -225,6 +278,9 @@ void albaVMEProsthesis::OnEvent(albaEventBase *alba_event)
 		int compNum = m_ComponentGui.size();
 		switch (eventId)
 		{
+		case ID_PROSTHESIS_CHANGE: 
+			break;
+
 			case ID_START:
 			{
 
@@ -264,8 +320,8 @@ void albaVMEProsthesis::OnComponentEvent(int compGroup, int id)
 		break;
 		case ID_SELECT_COMPONENT:
 		{
-			std::vector<albaProDBCompGruop *> * compGroups = m_Prosthesis->GetCompGroups();
-			albaProDBCompGruop *group = compGroups->at(compGroup);
+			std::vector<albaProDBCompGroup *> * compGroups = m_Prosthesis->GetCompGroups();
+			albaProDBCompGroup *group = compGroups->at(compGroup);
 			int groups = compGroups->size();
 			std::vector<albaProDBComponent *> *components = group->GetComponents();
 			int compId = m_ComponentListBox[compGroup]->GetSelection();
@@ -286,7 +342,7 @@ void albaVMEProsthesis::OnComponentEvent(int compGroup, int id)
 					albaProDBComponent * prevComp = currentComp;
 
 
-					albaProDBCompGruop *currentGroup = compGroups->at(i);
+					albaProDBCompGroup *currentGroup = compGroups->at(i);
 					int prevSelComp = m_ComponentListBox[i]->GetSelection();
 					currentComp = currentGroup->GetComponents()->at(prevSelComp);
 

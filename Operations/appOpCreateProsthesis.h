@@ -27,7 +27,7 @@ PURPOSE. See the above copyright notice for more information.
 // Forward references :
 //----------------------------------------------------------------------------
 class albaProsthesesDBManager;
-class albaProDBProshesis;
+class albaProDBProsthesis;
 class appGUIDialogProsthesis;
 
 //----------------------------------------------------------------------------
@@ -64,6 +64,6 @@ protected:
 	/*virtual*/ void OpStop(int result);	
 
 	albaProsthesesDBManager *m_DBManager;
-	albaProDBProshesis *m_CurrentProsthesis;
+	albaProDBProsthesis *m_CurrentProsthesis;
 };
 #endif

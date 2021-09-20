@@ -20,13 +20,22 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 
 #include "appGUIDialogComponent.h"
+#include "appLogic.h"
 
 #include "albaDecl.h"
 #include "albaGUIButton.h"
 #include "albaGUILab.h"
 #include "albaGUIValidator.h"
+#include "albaOpImporterSTL.h"
 #include "albaProsthesesDBManager.h"
+#include "albaVME.h"
+#include "albaVMEManager.h"
+#include "albaVMEOutput.h"
+#include "albaVMESurface.h"
 
+#include "vtkALBASmartPointer.h"
+#include "vtkDataSetReader.h"
+#include "wx\filename.h"
 #include "wx\statline.h"
 
 enum COMPONENT_DIALOG_ID
@@ -70,9 +79,8 @@ void appGUIDialogComponent::OnEvent(albaEventBase *alba_event)
 		break;
 
 	case ID_COMPONENT_DIALOG_SET_VTKDATA_FROM_FILE:
-		m_HasVtkData = true;
+		AddVTKFromFile();
 		UpdateComponentDialog();
-
 		break;
 
 	case ID_COMPONENT_DIALOG_OK_PRESSED:
@@ -186,10 +194,9 @@ void appGUIDialogComponent::UpdateComponentDialog()
 	{
 		m_ComponentName_textCtrl->SetValue(m_ComponentName);
 
-			wxString message = m_HasVtkData ? "VTK DATA [OK]" : "VTK DATA [NOT FOUND]";
-			m_VtkDataTextCtrl->SetValue(message);
-
-
+		wxString message = m_HasVtkData ? "VTK DATA [OK]" : "VTK DATA [NOT FOUND]";
+		m_VtkDataTextCtrl->SetValue(message);
+		
 		m_OkBtn->Enable(!m_ComponentName.IsEmpty() && m_HasVtkData);
 		m_Gui->Update();
 	}
@@ -198,7 +205,50 @@ void appGUIDialogComponent::UpdateComponentDialog()
 //----------------------------------------------------------------------------
 void appGUIDialogComponent::AddVTKFromFile()
 {
+	albaString fileNameFullPath = albaGetDocumentsDirectory().c_str();
+	albaString wildc = "STL file (*.stl)|*.stl|VTK file (*.vtk)|*.vtk";
+	wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
 
+	if (wxFileExists(imagePath))
+	{
+		wxString name, path, ext;
+		wxFileName::SplitPath(imagePath, &path, &name, &ext);
+		
+		vtkPolyData *polyData = NULL;
+
+		if (ext == "stl")
+		{
+			// Import STL file
+	 		albaOpImporterSTL *importer = new albaOpImporterSTL("Importer STL");
+	 		importer->TestModeOn();
+	 		importer->SetFileName(imagePath);
+	 		importer->OpRun();
+	 
+	 		std::vector<albaVMESurface*> importedSTL;
+	 		importer->GetImportedSTL(importedSTL);
+	 		albaVMESurface *node = importedSTL[0];
+
+			polyData = (vtkPolyData*)node->GetOutput()->GetVTKData();
+			m_CurrentComponent->SetVTKData(polyData);
+
+			albaDEL(importer);
+
+			m_HasVtkData = true;
+		}
+		else if (ext == "vtk")
+		{
+			// Import VTK file
+			vtkALBASmartPointer<vtkDataSetReader> importer;
+			importer->SetFileName(imagePath);
+			importer->Update();
+
+			polyData = (vtkPolyData*)importer->GetOutput();
+
+			m_CurrentComponent->SetVTKData(polyData);
+
+			m_HasVtkData = true;
+		}
+	}
 }
 //----------------------------------------------------------------------------
 void appGUIDialogComponent::AddVTKFromTree(albaVME *node)
@@ -208,10 +258,18 @@ void appGUIDialogComponent::AddVTKFromTree(albaVME *node)
 		albaString title = _("Choose VTK Data");
 		albaEvent e(this, VME_CHOOSE, &title);
 		e.SetPointer(&appGUIDialogComponent::VTKDataAccept);
-		albaEventMacro(e);
-
-		m_HasVtkData = true;
+		//albaEventMacro(e);
+		((appLogic*)GetLogicManager())->OnEvent(&e);
 
 		node = e.GetVme();
+	}
+
+	if (node)
+	{
+		vtkPolyData *polyData = NULL;
+		polyData = (vtkPolyData*)node->GetOutput()->GetVTKData();
+		m_CurrentComponent->SetVTKData(polyData);
+
+		m_HasVtkData = true;
 	}
 }

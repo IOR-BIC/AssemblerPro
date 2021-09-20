@@ -35,22 +35,39 @@ public:
 	/** Precess events coming from other objects */ 
 	/*virtual*/ void OnEvent(albaEventBase *alba_event);
 
-	
+	/** return an xpm-icon that can be used to represent this node */
+	static char ** GetIcon();
+
 	//----------------------------------------------------------------------------
 	// Widgets ID's
 	//----------------------------------------------------------------------------
 	enum PROSTHESIS_COMPONENT_GUI_ID
 	{
-		ID_START = albaVME::ID_LAST,
+		ID_START = ID_LAST,
+		ID_PROSTHESIS_SELECTION,
+		ID_PROSTHESIS_EDIT,
+		ID_GROUP_CREATE,
+		ID_GROUP_REMOVE,
 	};
 
 protected:
 	appVMEProsthesisEdit();
 	virtual ~appVMEProsthesisEdit();
 
+	/*virtual*/ int InternalInitialize();
+
 	/** Internally used to create a new instance of the GUI.*/
 	/*virtual*/ albaGUI *CreateGui();
 
+	void UpdateGui();
+
+	void EditProsthesis(albaProDBProsthesis *prosthesis);
+
+	void NewGroup();
+	albaProsthesesDBManager *m_DBManager;
+
+	wxComboBox *m_ProsthesisComboBox;
+	int m_SelectedProsthesis;
 
 private:
 	appVMEProsthesisEdit(const appVMEProsthesisEdit&); // Not implemented

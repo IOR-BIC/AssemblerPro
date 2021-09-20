@@ -20,6 +20,7 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 
 #include "appGUIDialogProducer.h"
+#include "appLogic.h"
 #include "appUtils.h"
 
 #include "albaDecl.h"
@@ -27,18 +28,17 @@ PURPOSE. See the above copyright notice for more information.
 #include "albaGUILab.h"
 #include "albaGUIPicButton.h"
 #include "albaGUIValidator.h"
+#include "albaServiceClient.h"
 
 #include "wx\image.h"
 #include "wx\window.h"
-#include "albaServiceClient.h"
-#include "appLogic.h"
 
 enum PRODUCER_DIALOG_ID
 {
-	ID_PRODUCER_DIALOG_TEXT = MINID,
-	ID_PRODUCER_DIALOG_IMM,
-	ID_PRODUCER_DIALOG_LINK,
-	ID_PRODUCER_DIALOG_OK_PRESSED,
+	ID_PRODUCER_TEXT = MINID,
+	ID_PRODUCER_IMM,
+	ID_PRODUCER_LINK,
+	ID_DIALOG_OK_PRESSED,
 };
 
 //----------------------------------------------------------------------------
@@ -71,7 +71,7 @@ void appGUIDialogProducer::OnEvent(albaEventBase *alba_event)
 {
 	switch (alba_event->GetId())
 	{
-	case ID_PRODUCER_DIALOG_TEXT:
+	case ID_PRODUCER_TEXT:
 	{
 		m_ProducerName = m_ProducerName_textCtrl->GetValue();
 		m_ProducerWebSite = m_ProducerSite_textCtrl->GetValue();
@@ -81,13 +81,13 @@ void appGUIDialogProducer::OnEvent(albaEventBase *alba_event)
 	}
 	break;
 
-	case ID_PRODUCER_DIALOG_IMM:
+	case ID_PRODUCER_IMM:
 	{
 		SelectImage();
 	}
 	break;
 
-	case ID_PRODUCER_DIALOG_OK_PRESSED:
+	case ID_DIALOG_OK_PRESSED:
 	{
 		m_ProducerName = m_ProducerName_textCtrl->GetValue();
 		m_ProducerWebSite = m_ProducerSite_textCtrl->GetValue();
@@ -150,7 +150,7 @@ void appGUIDialogProducer::CreateProducerDialog()
 			m_MainBoxSizer->Add(m_ImageSizer, 0, wxALL | wxALIGN_CENTER, 0);
 
 			// BUTTON - Change Producer Brand Image
-			albaGUIButton *immBtn = new albaGUIButton(this, ID_PRODUCER_DIALOG_IMM, "Change Image", wxPoint(-1, -1));
+			albaGUIButton *immBtn = new albaGUIButton(this, ID_PRODUCER_IMM, "Change Image", wxPoint(-1, -1));
 			immBtn->SetListener(this);
 			m_MainBoxSizer->Add(immBtn, 0, wxALIGN_RIGHT, 0);
 
@@ -164,8 +164,8 @@ void appGUIDialogProducer::CreateProducerDialog()
 
 		// TEXT - Producer Name
 		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxVERTICAL, this, "Producer Name");
-		m_ProducerName_textCtrl = new wxTextCtrl(this, ID_PRODUCER_DIALOG_TEXT, *m_ProducerName, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
-		m_ProducerName_textCtrl->SetValidator(albaGUIValidator(this, ID_PRODUCER_DIALOG_TEXT, m_ProducerName_textCtrl, &m_ProducerName, true));
+		m_ProducerName_textCtrl = new wxTextCtrl(this, ID_PRODUCER_TEXT, *m_ProducerName, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
+		m_ProducerName_textCtrl->SetValidator(albaGUIValidator(this, ID_PRODUCER_TEXT, m_ProducerName_textCtrl, &m_ProducerName, true));
 		m_ProducerName_textCtrl->SetEditable(true);
 		m_ProducerName_textCtrl->SetMaxLength(64);
 		labelSizer1->Add(m_ProducerName_textCtrl, 0, wxALL | wxEXPAND, 0);
@@ -174,7 +174,7 @@ void appGUIDialogProducer::CreateProducerDialog()
 
 		// TEXT - Producer Web Site
 		wxStaticBoxSizer *labelSizer2 = new wxStaticBoxSizer(wxVERTICAL, this, "Web Site");
-		m_ProducerSite_textCtrl = new wxTextCtrl(this, ID_PRODUCER_DIALOG_TEXT, *m_ProducerWebSite, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
+		m_ProducerSite_textCtrl = new wxTextCtrl(this, ID_PRODUCER_TEXT, *m_ProducerWebSite, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
 		m_ProducerSite_textCtrl->SetEditable(true);
 		m_ProducerSite_textCtrl->SetMaxLength(64);
 		labelSizer2->Add(m_ProducerSite_textCtrl, 0, wxALL | wxEXPAND, 0);
@@ -187,7 +187,7 @@ void appGUIDialogProducer::CreateProducerDialog()
 		m_MainBoxSizer->Add(infoBoxSizer, 0, wxALL, 5);
 
 		// BUTTON - Ok
-		m_OkBtn = new albaGUIButton(this, ID_PRODUCER_DIALOG_OK_PRESSED, "OK", wxPoint(-1, -1));
+		m_OkBtn = new albaGUIButton(this, ID_DIALOG_OK_PRESSED, "OK", wxPoint(-1, -1));
 		m_OkBtn->SetListener(this);
 		m_MainBoxSizer->Add(m_OkBtn, 0, wxALIGN_RIGHT, 0);
 

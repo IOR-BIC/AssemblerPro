@@ -172,7 +172,7 @@ void appOpSearchProsthesis::Find()
 	albaString type = "";
 	albaString side = "";
 
-	std::vector<albaProDBProshesis *> DBprosthesis = m_DBManager->SearchProstheses(m_SearchString, type, side);
+	std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->SearchProstheses(m_SearchString, type, side);
 
 	m_ResultsListBox->Clear();
 

@@ -71,12 +71,12 @@ void appOpCreateProsthesis::OpRun()
 	m_DBManager = ((appLogic*)GetLogicManager())->GetProsthesesDBManager();
 
 	// Create New Prosthesis
-	m_CurrentProsthesis = new albaProDBProshesis();
+	m_CurrentProsthesis = new albaProDBProsthesis();
 	m_CurrentProsthesis->SetName("newProsthesis");
 	m_CurrentProsthesis->SetProducer("");
 	m_CurrentProsthesis->SetImgFileName("");
 	m_CurrentProsthesis->SetType("");
-	m_CurrentProsthesis->SetSide(albaProDBProshesis::PRO_LEFT);
+	m_CurrentProsthesis->SetSide(albaProDBProsthesis::PRO_LEFT);
 
 	// Show dialog
 	appGUIDialogProsthesis md(_("Add Prosthesis"));

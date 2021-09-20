@@ -291,7 +291,7 @@ int albaProsthesesDBManager::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 				if (!CheckNodeElement(prosthesesNode, NODE_PROSTHESIS))
 					continue;
 
-				albaProDBProshesis *newProsthesis = new albaProDBProshesis();
+				albaProDBProsthesis *newProsthesis = new albaProDBProsthesis();
 				m_Prostheses.push_back(newProsthesis);
 				if (newProsthesis->Load(prosthesesNode) == ALBA_ERROR)
 					return ALBA_ERROR;
@@ -401,17 +401,17 @@ int albaProsthesesDBManager::GetComponentFileCount(albaString fileName)
 }
 
 //----------------------------------------------------------------------------
-std::vector<albaProDBProshesis *> albaProsthesesDBManager::SearchProstheses(albaString producer, albaString type, albaString side)
+std::vector<albaProDBProsthesis *> albaProsthesesDBManager::SearchProstheses(albaString producer, albaString type, albaString side)
 {
-	std::vector<albaProDBProshesis *> proList;
+	std::vector<albaProDBProsthesis *> proList;
 	for (int i = 0; i < m_Prostheses.size(); i++)
 	{
-		albaProDBProshesis *prosthesis = m_Prostheses[i];
+		albaProDBProsthesis *prosthesis = m_Prostheses[i];
 		if (!producer.IsEmpty() && producer != prosthesis->GetProducer())
 			continue;
 		if (!type.IsEmpty() && type != prosthesis->GetType())
 			continue;
-		if (!side.IsEmpty() && albaProDBProshesis::GetSideByString(side) != prosthesis->GetSide())
+		if (!side.IsEmpty() && albaProDBProsthesis::GetSideByString(side) != prosthesis->GetSide())
 			continue;
 		
 		proList.push_back(prosthesis);
@@ -421,7 +421,7 @@ std::vector<albaProDBProshesis *> albaProsthesesDBManager::SearchProstheses(alba
 }
 
 //----------------------------------------------------------------------------
-int albaProDBCompGruop::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
+int albaProDBCompGroup::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 {
 	//<Components Name="Stem">
 	m_Name = GetElementAttribute(node, ATTR_NAME);
@@ -453,7 +453,7 @@ int albaProDBCompGruop::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 }
 
 //----------------------------------------------------------------------------
-void albaProDBCompGruop::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node)
+void albaProDBCompGroup::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node)
 {
 	//Types
 	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement * groupNode = doc->createElement(albaXMLString(NODE_COMPONENTS));
@@ -590,14 +590,19 @@ int albaProDBComponent::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 void albaProDBComponent::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node)
 {
 	//Types
-	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement * componentNode = doc->createElement(albaXMLString(NODE_COMPONENTS));
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement * componentNode = doc->createElement(albaXMLString(NODE_COMPONENT));
 
 	componentNode->setAttribute(albaXMLString(ATTR_NAME), albaXMLString(m_Name));
+	componentNode->setAttribute(albaXMLString(ATTR_FILE), albaXMLString(m_Filename));
+	
+	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement * matrixtNode = doc->createElement(albaXMLString(NODE_MATRIX));
 
 	char tmpStr[1024];
 	double *el = *m_Matrix.GetElements();
 	sprintf(tmpStr, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", el[0], el[1], el[2], el[3], el[4], el[5], el[6], el[7], el[8], el[9], el[10], el[11], el[12], el[13], el[14], el[15]);
-	componentNode->setTextContent(albaXMLString(tmpStr));
+	matrixtNode->setTextContent(albaXMLString(tmpStr));
+
+	componentNode->appendChild(matrixtNode);
 
 	node->appendChild(componentNode);
 }
@@ -654,7 +659,7 @@ void albaProDBProducer::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, X
 	node->appendChild(producerNode);
 }
 
-int albaProDBProshesis::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
+int albaProDBProsthesis::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 {
 	//<Prosthesis Name="Example" Producer="Producer" Type="Acetabular" Side="Both" Img="Example.png">
 	m_Name = GetElementAttribute(node, ATTR_NAME);
@@ -685,7 +690,7 @@ int albaProDBProshesis::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 		if (!CheckNodeElement(componentGroupNode, NODE_COMPONENTS))
 			continue;
 
-		albaProDBCompGruop *componentGroup = new albaProDBCompGruop();
+		albaProDBCompGroup *componentGroup = new albaProDBCompGroup();
 
 		m_CompGroups.push_back(componentGroup);
 		if (componentGroup->Load(componentGroupNode) == ALBA_ERROR)
@@ -696,7 +701,7 @@ int albaProDBProshesis::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 }
 
 //----------------------------------------------------------------------------
-void albaProDBProshesis::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node)
+void albaProDBProsthesis::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *node)
 {
 	//Producers
 	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *prosthesisNode = doc->createElement(albaXMLString(NODE_PROSTHESIS));
@@ -752,7 +757,7 @@ void albaProDBComponent::Clear()
 }
 
 //----------------------------------------------------------------------------
-void albaProDBCompGruop::Clear()
+void albaProDBCompGroup::Clear()
 {
 	for (int i = 0; i < m_Components.size(); i++)
 	{
@@ -764,7 +769,7 @@ void albaProDBCompGruop::Clear()
 }
 
 //----------------------------------------------------------------------------
-void albaProDBProshesis::Clear()
+void albaProDBProsthesis::Clear()
 {
 
 	for (int i = 0; i < m_CompGroups.size(); i++)
@@ -777,7 +782,7 @@ void albaProDBProshesis::Clear()
 }
 
 //----------------------------------------------------------------------------
-albaProDBProshesis::PRO_SIDES albaProDBProshesis::GetSideByString(albaString sideName)
+albaProDBProsthesis::PRO_SIDES albaProDBProsthesis::GetSideByString(albaString sideName)
 {
 	if (sideName == "Left")
 		return PRO_LEFT;
@@ -790,17 +795,17 @@ albaProDBProshesis::PRO_SIDES albaProDBProshesis::GetSideByString(albaString sid
 }
 
 //----------------------------------------------------------------------------
-char * albaProDBProshesis::GetSideAsStr(PRO_SIDES side)
+char * albaProDBProsthesis::GetSideAsStr(PRO_SIDES side)
 {
 	switch (side)
 	{
-		case albaProDBProshesis::PRO_LEFT:
+		case albaProDBProsthesis::PRO_LEFT:
 			return "Left";
 			break;
-		case albaProDBProshesis::PRO_RIGHT:
+		case albaProDBProsthesis::PRO_RIGHT:
 			return "Right";
 			break;
-		case albaProDBProshesis::PRO_BOTH:
+		case albaProDBProsthesis::PRO_BOTH:
 			return "Both";
 			break;
 		default:

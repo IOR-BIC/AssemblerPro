@@ -29,13 +29,13 @@ PURPOSE. See the above copyright notice for more information.
 #include "albaGUILab.h"
 #include "albaGUIPicButton.h"
 #include "albaGUIValidator.h"
+#include "albaProsthesesDBManager.h"
 #include "albaServiceClient.h"
 
 #include "wx\statline.h"
 #include "wx\image.h"
 #include "wx\combobox.h"
 #include "wx\window.h"
-#include "albaProsthesesDBManager.h"
 #include <vector>
 
 enum PROSTHESIS_DIALOG_ID
@@ -78,7 +78,7 @@ appGUIDialogProsthesis::appGUIDialogProsthesis(const wxString& title, long style
 	m_ProsthesisImageName = "";
 	m_ProsthesisImageFullName = "";
 	m_ProsthesisType = "";
-	m_ProsthesisSide = albaProDBProshesis::PRO_LEFT;
+	m_ProsthesisSide = albaProDBProsthesis::PRO_LEFT;
 	m_IsChanged = false;
 
 	m_SelectedProducer = -1;
@@ -117,7 +117,7 @@ void appGUIDialogProsthesis::OnEvent(albaEventBase *alba_event)
 	case ID_DIALOG_OK_PRESSED:
 	{
 		m_ProsthesisName = m_NameTextCtrl->GetValue();
-		m_ProsthesisSide = (albaProDBProshesis::PRO_SIDES)m_SelectedSide;
+		m_ProsthesisSide = (albaProDBProsthesis::PRO_SIDES)m_SelectedSide;
 
 		// Update Prosthesis
 		m_CurrentProsthesis->SetName(m_ProsthesisName);
@@ -217,7 +217,7 @@ void appGUIDialogProsthesis::CreateDialog()
 		wxStaticBoxSizer *producerBoxSizer = new wxStaticBoxSizer(wxHORIZONTAL, this, "Producer");
 
 		// COMBO - Producer
-		m_ProducerComboBox = new wxComboBox(this, ID_DIALOG_PRODUCER, "", wxPoint(-1, -1), wxSize(panelWidth, 20));// , m_ProducerNameList.size(), m_ProducerNameList);
+		m_ProducerComboBox = new wxComboBox(this, ID_DIALOG_PRODUCER, "", wxPoint(-1, -1), wxSize(panelWidth, 20));
 		m_ProducerComboBox->SetValidator(albaGUIValidator(this, ID_DIALOG_PRODUCER, m_ProducerComboBox, &m_SelectedProducer));
 		producerBoxSizer->Add(m_ProducerComboBox, 0, wxALL | wxEXPAND, 0);
 
@@ -383,7 +383,7 @@ void appGUIDialogProsthesis::UpdateDialog()
 }
 
 //----------------------------------------------------------------------------
-void appGUIDialogProsthesis::SetProsthesis(albaProDBProshesis *prosthesis)
+void appGUIDialogProsthesis::SetProsthesis(albaProDBProsthesis *prosthesis)
 {
 	if (prosthesis)
 	{

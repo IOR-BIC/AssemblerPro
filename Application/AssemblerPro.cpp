@@ -33,6 +33,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "appOpTestProsthesisGUI.h"
 #include "appOpCreateProsthesisVME.h"
 #include "appOpAddLandmark.h"
+#include "appVMEProsthesisEdit.h"
 
 #include "appUtils.h"
 
@@ -41,6 +42,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "albaPipeVolumeSliceBlend.h"
 #include "albaServiceLocator.h"
 #include "albaVMEFactory.h" 
+#include "albaVMEProsthesis.h"
 #include "albaViewVTK.h"
 
 #include <vtkTimerLog.h>
@@ -72,7 +74,8 @@ bool AssemblerPro::OnInit()
 	assert(result == ALBA_OK);
 
 	// Plug custom VME
-	// ...
+	albaPlugVME<appVMEProsthesisEdit>("Prosthesis Edit");
+	albaPlugVME<albaVMEProsthesis>("Prosthesis");
 
 	// Create Logic Manager
 	m_Logic = new appLogic();

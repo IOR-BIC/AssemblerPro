@@ -19,21 +19,23 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 // Include :
 //----------------------------------------------------------------------------
-#include "appOperationsDefines.h"
 #include "appDecl.h"
-#include "albaOp.h"
 #include "appGUI.h"
-#include <vector>
-#include "albaEvent.h"
 #include "appGUIDialogComponent.h"
+#include "appOperationsDefines.h"
+
+#include "albaEvent.h"
+#include "albaOp.h"
+
+#include <vector>
 
 //----------------------------------------------------------------------------
 // Forward references :
 //----------------------------------------------------------------------------
 class albaProsthesesDBManager;
-class albaProDBProshesis;
+class albaProDBProsthesis;
 class albaProDBProducer;
-class albaProDBCompGruop;
+class albaProDBCompGroup;
 class albaProDBComponent;
 class appGUIDialogComponent;
 class appGUIDialogProsthesisSelection;
@@ -112,6 +114,7 @@ protected:
 	void UpdateGui();
 
 	void SelectProsthesis();
+	void ChangeProsthesis();
 	void EditProsthesis();
 	
 	void AddNewGroup();
@@ -156,8 +159,8 @@ public:
 
 	void SetListener(albaObserver * listener) { m_Listener = listener; };
 	
-	void SetCompGroup(albaProDBCompGruop *compGroup);
-	albaProDBCompGruop* GetCompGroup() { return m_CurrentCompGroup; };
+	void SetCompGroup(albaProDBCompGroup *compGroup);
+	albaProDBCompGroup* GetCompGroup() { return m_CurrentCompGroup; };
 
 	void SetName(wxString name) { m_GroupName = name; };
 	wxString GetName() { return m_GroupName; };
@@ -174,7 +177,7 @@ protected:
 	albaObserver *m_Listener;
 	appGUI *m_ComponentGui;
 	
-	albaProDBCompGruop *m_CurrentCompGroup;
+	albaProDBCompGroup *m_CurrentCompGroup;
 	wxString m_GroupName;
 	int m_ShowGroup;
 	

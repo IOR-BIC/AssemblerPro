@@ -19,6 +19,7 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 #include "appVMEDefines.h"
 #include "albaVMEGeneric.h"
+#include "appGUI.h"
 
 //----------------------------------------------------------------------------
 // forward declarations :
@@ -28,8 +29,8 @@ class vtkAppendPolyData;
 class vtkOutlineSource;
 class vtkTransform;
 class vtkTransformPolyDataFilter;
-class albaProDBCompGruop;
-class albaProDBProshesis;
+class albaProDBCompGroup;
+class albaProDBProsthesis;
 
 /** albaVMEProsthesis - 
 */
@@ -61,7 +62,10 @@ public:
   /** Return VME output. */
 	albaVMEOutput *GetOutput();
 
-	void SetProsthesis(albaProDBProshesis *prosthesis);
+	/** return an xpm-icon that can be used to represent this node */
+	static char ** GetIcon();
+
+	void SetProsthesis(albaProDBProsthesis *prosthesis);
 
 	//----------------------------------------------------------------------------
 	// Widgets ID's
@@ -69,6 +73,8 @@ public:
 	enum PROSTHESIS_GUI_ID
 	{
 		ID_START = albaVME::ID_LAST,
+		ID_PROSTHESIS_NAME,
+		ID_PROSTHESIS_CHANGE,
 		ID_LAST
 	};
 
@@ -89,7 +95,9 @@ protected:
 	/** Internally used to create a new instance of the GUI.*/
 	/*virtual*/ albaGUI *CreateGui();
 
-	void AddComponentGroup(albaProDBCompGruop *componentGroup);
+	void UpdateGui();
+
+	void AddComponentGroup(albaProDBCompGroup *componentGroup);
 
 	void ClearComponentGroups();
 
@@ -101,12 +109,16 @@ protected:
 	
 	//Components Gui
 	std::vector <albaGUI *> m_ComponentGui;
+	appGUI *m_GroupGui;
+	appGUI *m_ContentGui;
+
 	int m_ShowComponents[100]; //need to use an array because vector pointers can change at runtime
 	std::vector <wxListBox *> m_ComponentListBox;
 
 
 	vtkAppendPolyData *m_AppendPolydata;
-	albaProDBProshesis *m_Prosthesis;
+	albaProDBProsthesis *m_Prosthesis;
+	albaString m_ProsthesisName;
 
 private:
 	albaVMEProsthesis(const albaVMEProsthesis&); // Not implemented
