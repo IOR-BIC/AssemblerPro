@@ -116,7 +116,7 @@ void appOpTestProsthesisGUI::LoadInfo()
 //----------------------------------------------------------------------------
 void appOpTestProsthesisGUI::SaveInfo()
 {
-	
+	// TODO
 }
 
 //----------------------------------------------------------------------------
@@ -146,41 +146,24 @@ void appOpTestProsthesisGUI::OnEvent(albaEventBase *alba_event)
 	{
 		m_SelectedGroup = GetGroup(e);
 
-		if (m_SelectedGroup >= 0) 
+		if (m_SelectedGroup >= 0)
 			OnEventFromGroup(e);
 		else
-		
-		switch (e->GetId())
 		{
+			switch (e->GetId())
+			{
 			// Prosthesis Events
-		case ID_PROSTHESIS_SELECTION:
-			SelectProsthesis();
-			break;
+			case ID_PROSTHESIS_SELECTION: SelectProsthesis(); break;
+			case ID_PROSTHESIS_CHANGE: ChangeProsthesis(); break;
+			case ID_PROSTHESIS_EDIT: EditProsthesis(); break;
+			case ID_GROUP_CREATE: AddNewGroup(); break;
 
-		case ID_PROSTHESIS_CHANGE:
-		{
-			appGUIDialogProsthesisSelection pd(_("Select Prosthesis"));
-			pd.Show();
-		}
-		break;
+			// Op Events
+			case wxOK: OpStop(OP_RUN_OK); break;
+			case wxCANCEL: OpStop(OP_RUN_CANCEL); break;
 
-		case ID_PROSTHESIS_EDIT:
-			EditProsthesis();
-			break;
-
-		case ID_GROUP_CREATE: AddNewGroup(); break;
-
-		case wxOK:
-			OpStop(OP_RUN_OK);
-			break;
-
-		case wxCANCEL:
-			OpStop(OP_RUN_CANCEL);
-			break;
-
-		default:
-			Superclass::OnEvent(alba_event);
-			break;
+			default: Superclass::OnEvent(alba_event); break;
+			}
 		}
 	}
 }
@@ -269,6 +252,30 @@ void appOpTestProsthesisGUI::SelectProsthesis()
 	m_ProsthesisName = DBprosthesis[m_SelectedProsthesis]->GetName();
 
 	LoadGroups();
+}
+//----------------------------------------------------------------------------
+void appOpTestProsthesisGUI::ChangeProsthesis()
+{
+	appGUIDialogProsthesisSelection pd(_("Select Prosthesis"));
+	std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
+	pd.SetProducer(DBprosthesis[m_SelectedProsthesis]->GetProducer());
+	pd.Show();
+
+	if (pd.OkClosed())
+	{
+		std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
+
+		albaProDBProsthesis *prosthesis = pd.GetProsthesis();
+
+		for (int m = 0; m < DBprosthesis.size(); m++)
+		{
+			if (DBprosthesis[m] == prosthesis)
+			{
+				m_SelectedProsthesis = m;
+				SelectProsthesis();
+			}
+		}
+	}
 }
 //----------------------------------------------------------------------------
 void appOpTestProsthesisGUI::EditProsthesis()

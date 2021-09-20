@@ -217,7 +217,7 @@ void appGUIDialogProsthesis::CreateDialog()
 		wxStaticBoxSizer *producerBoxSizer = new wxStaticBoxSizer(wxHORIZONTAL, this, "Producer");
 
 		// COMBO - Producer
-		m_ProducerComboBox = new wxComboBox(this, ID_DIALOG_PRODUCER, "", wxPoint(-1, -1), wxSize(panelWidth, 20));// , m_ProducerNameList.size(), m_ProducerNameList);
+		m_ProducerComboBox = new wxComboBox(this, ID_DIALOG_PRODUCER, "", wxPoint(-1, -1), wxSize(panelWidth, 20));
 		m_ProducerComboBox->SetValidator(albaGUIValidator(this, ID_DIALOG_PRODUCER, m_ProducerComboBox, &m_SelectedProducer));
 		producerBoxSizer->Add(m_ProducerComboBox, 0, wxALL | wxEXPAND, 0);
 

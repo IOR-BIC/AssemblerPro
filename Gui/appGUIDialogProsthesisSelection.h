@@ -30,6 +30,7 @@ class albaGUIButton;
 class albaGUILab;
 class albaGUIPicButton;
 class appGUIHyperLink;
+class albaProsthesesDBManager;
 
 class ALBA_EXPORT appGUIDialogProsthesisSelection : public albaGUIDialog
 {
@@ -40,7 +41,13 @@ public:
 
 	void OnEvent(albaEventBase *alba_event);
 
-	void SelectImage();
+	void SetProducer(albaProDBProducer *producer);
+	void SetProducer(albaString producerName);
+
+	void SetProsthesis(albaProDBProsthesis *prosthesis);
+	albaProDBProsthesis * GetProsthesis() {	return m_CurrentProsthesis; };
+
+	bool OkClosed() { return m_IsChanged; };
 
 	void Show();
 
@@ -48,16 +55,39 @@ protected:
 
 	void CreateDialog();
 	void UpdateDialog();
+	
+	bool m_IsChanged;
 
-	albaProDBProducer m_CurrentProducer;
-	albaProDBProsthesis m_CurrentProsthesis;
+	albaProsthesesDBManager *m_DBManager;
+
+	albaProDBProducer  *m_CurrentProducer;
+	albaProDBProsthesis *m_CurrentProsthesis;
+
+	int m_SelectedProducer;
+	int m_SelectedProsthesis;
+
+	wxString m_ProducerName;
+	wxString m_ProducerWebSite;
+	wxString m_ProducerImageName;
+	wxString m_ProducerImageFullName;
+
+	wxString m_ProsthesisName;
+	wxString m_ProsthesisImageName;
+	wxString m_ProsthesisImageFullName;
 
 	albaGUI *m_Gui; ///< Gui variable used to plug custom widgets
 	
 	wxBoxSizer *m_MainBoxSizer;
-	wxBoxSizer *m_ImageSizer;
+	wxBoxSizer *m_ProducerImageSizer;
 	albaGUIPicButton *m_ProducerImageButton;
 
+	wxComboBox *m_ProducerComboBox;
 	wxTextCtrl *m_ProducerName_textCtrl;
+	appGUIHyperLink *m_ProducerName_Link;
+
+	wxStaticBoxSizer *m_ProsthesisBoxSizer;
+	wxComboBox *m_ProsthesisComboBox;
+
+	albaGUIButton *m_OkBtn;
 };
 #endif

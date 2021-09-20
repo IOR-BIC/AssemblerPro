@@ -114,6 +114,7 @@ protected:
 	void UpdateGui();
 
 	void SelectProsthesis();
+	void ChangeProsthesis();
 	void EditProsthesis();
 	
 	void AddNewGroup();
