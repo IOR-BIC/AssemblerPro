@@ -170,9 +170,11 @@ void albaVMEProsthesis::AddComponentGroup(albaProDBCompGroup *componentGroup)
 		}
 		albaProDBComponent *currentComp = components->at(0);
 		vtkPolyData * compVTKData = currentComp->GetVTKData();
-		if(compVTKData)
+		if (compVTKData)
+		{
 			compTraFilter->SetInput(compVTKData);
-		compVTKData->UnRegister(NULL);
+			compVTKData->UnRegister(NULL);
+		}
 	}
 	compTra->Update();
 
@@ -357,6 +359,23 @@ void albaVMEProsthesis::OnComponentEvent(int compGroup, int id)
 		break;
 		default:
 			break;
+	}
+}
+
+//----------------------------------------------------------------------------
+void albaVMEProsthesis::FitParentGui()
+{
+	albaGUI* parent = (albaGUI*)m_Gui->GetParent();
+	if (parent)
+	{
+		parent->FitGui();
+		parent->Update();
+	}
+	albaGUI* grandParent = (albaGUI*)m_Gui->GetParent();
+	if (grandParent)
+	{
+		grandParent->FitGui();
+		grandParent->Update();
 	}
 }
 

@@ -475,8 +475,8 @@ vtkPolyData * albaProDBComponent::GetVTKData()
 	albaDecryptFileInMemory(fileData, fileMemory, "fattinonfostepervivercomebruti");// dbManager->GetPassPhrase());
 	if (fileMemory.empty())
 	{
-		albaLogMessage("Decryption Error! On file:%s", fileData.GetCStr());
-		wxMessageBox(_("Decryption Error!"));
+		//albaLogMessage("Decryption Error! On file:%s", fileData.GetCStr());
+		//wxMessageBox(_("Decryption Error!"));
 		return NULL;
 	}
 

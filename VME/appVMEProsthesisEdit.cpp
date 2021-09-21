@@ -78,25 +78,27 @@ int appVMEProsthesisEdit::InternalInitialize()
 //-------------------------------------------------------------------------
 albaGUI* appVMEProsthesisEdit::CreateGui()
 {
-	m_Gui = new albaGUI(this);
+	if (m_Gui == NULL)
+	{
+		m_Gui = new albaGUI(this);
 
-	m_ProsthesisComboBox = m_Gui->Combo(ID_PROSTHESIS_SELECTION, "", &m_SelectedProsthesis);
+		m_ProsthesisComboBox = m_Gui->Combo(ID_PROSTHESIS_SELECTION, "", &m_SelectedProsthesis);
 
-	m_Gui->TwoButtons(ID_PROSTHESIS_CHANGE, ID_PROSTHESIS_EDIT, "Change", "Edit");
-	m_Gui->Divider(1);
+		m_Gui->TwoButtons(ID_PROSTHESIS_CHANGE, ID_PROSTHESIS_EDIT, "Change", "Edit");
+		m_Gui->Divider(1);
 
-	m_ContentGui = new appGUI(this);
-	m_GroupGui = new appGUI(this);
+		m_ContentGui = new appGUI(this);
+		m_GroupGui = new appGUI(this);
 
-	m_ContentGui->Add(m_GroupGui);
-	m_Gui->Add(m_ContentGui);
+		m_ContentGui->Add(m_GroupGui);
+		m_Gui->Add(m_ContentGui);
 
-	m_Gui->Divider(0);
-	m_Gui->Button(ID_GROUP_CREATE, "New Component Group");
+		m_Gui->Divider(0);
+		m_Gui->Button(ID_GROUP_CREATE, "New Component Group");
 
-	m_Gui->Divider();
-	m_Gui->FitGui();
-
+		m_Gui->Divider();
+		m_Gui->FitGui();
+	}
 	return m_Gui;
 }
 //-------------------------------------------------------------------------
@@ -177,6 +179,7 @@ void appVMEProsthesisEdit::OnEvent(albaEventBase *alba_event)
 			std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
 			SetProsthesis(DBprosthesis[m_SelectedProsthesis]);
 			UpdateGui();
+			FitParentGui();
 		}
 		break;
 		
@@ -189,6 +192,7 @@ void appVMEProsthesisEdit::OnEvent(albaEventBase *alba_event)
 		case ID_GROUP_CREATE:
 		{
 			NewGroup();
+			FitParentGui();
 		}
 		break;
 

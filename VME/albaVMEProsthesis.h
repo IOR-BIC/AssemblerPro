@@ -103,6 +103,8 @@ protected:
 
 	virtual void OnComponentEvent(int compGroup, int id);
 
+	void FitParentGui();
+
 	//Components vtkData
 	std::vector <vtkTransformPolyDataFilter *> m_TransformFilters;
 	std::vector <vtkTransform *> m_Transforms; 
