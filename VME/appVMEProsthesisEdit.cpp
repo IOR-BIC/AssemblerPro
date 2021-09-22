@@ -24,18 +24,26 @@ PURPOSE. See the above copyright notice for more information.
 #include "appDecl.h"
 #include "appVMEProsthesisEdit.h"
 
-#include "mmaMaterial.h"
-#include "albaTransform.h"
 #include "albaGUI.h"
-#include "albaVMEOutput.h"
-#include "albaVMESurface.h"
-
-#include "vtkTransformPolyDataFilter.h"
-#include "vtkTransform.h"
-#include "vtkLookupTable.h"
 #include "albaProsthesesDBManager.h"
+#include "albaProsthesesDBManager.h"
+#include "albaTransform.h"
+#include "albaVMEOutput.h"
+#include "albaVMEProsthesis.h"
+#include "albaVMESurface.h"
+#include "appGUIDialogComponent.h"
+#include "appGUIDialogMatrix.h"
 #include "appGUIDialogProsthesis.h"
-
+#include "mmaMaterial.h"
+#include "vtkAppendPolyData.h"
+#include "vtkLookupTable.h"
+#include "vtkLookupTable.h"
+#include "vtkPolyData.h"
+#include "vtkSource.h"
+#include "vtkTransform.h"
+#include "vtkTransform.h"
+#include "vtkTransformPolyDataFilter.h"
+#include "vtkTransformPolyDataFilter.h"
 
 //-------------------------------------------------------------------------
 albaCxxTypeMacro(appVMEProsthesisEdit)
@@ -122,38 +130,7 @@ void appVMEProsthesisEdit::UpdateGui()
 				m_ProsthesisComboBox->Select(m_SelectedProsthesis);
 		}
 
-// 		//
-// 		if (m_GroupGui)
-// 		{			
-// // 			for (int i = 0; i < m_ComponentGui.size(); i++)
-// // 			{
-// // 				m_ContentGui->Remove(m_ComponentGui[i]);
-// // 			}
-// 
-// 			for (int i = 0; i < m_GroupGui->GetChildren().size(); i++)
-// 			{
-// 				m_GroupGui->Remove(m_GroupGui->GetChildren()[i]);
-// 			}
-// 
-// 			for (int i = 0; i < m_ComponentGui.size(); i++)
-// 			{
-// 				//if (m_ContentGui->FindWindowById(m_ComponentGui[i]->GetId()) == NULL)
-// 				{
-// 					m_ComponentGui[i]->FitGui();
-// 					m_ComponentGui[i]->Update();
-// 					m_GroupGui->Add(m_ComponentGui[i]);
-// 				}
-// 			}
-// 
-// 			m_GroupGui->FitGui();
-// 			m_GroupGui->FitInside();
-// 		}
-// 
-// 		m_Gui->FitGui();
-// 		m_Gui->FitInside();
-
-
-//
+		//
 		m_GroupGui->FitGui();
 		m_GroupGui->FitInside();
 		m_ContentGui->FitGui();
@@ -172,37 +149,28 @@ void appVMEProsthesisEdit::OnEvent(albaEventBase *alba_event)
 	// events to be sent up or down in the tree are simply forwarded
 	if (albaEvent *e = albaEvent::SafeDownCast(alba_event))
 	{
+		albaID eventId = e->GetId();
+		int compNum = m_ComponentGui.size();
+
 		switch (e->GetId())
 		{
-		case ID_PROSTHESIS_SELECTION: 
-		{
-			std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
-			SetProsthesis(DBprosthesis[m_SelectedProsthesis]);
-			UpdateGui();
-			FitParentGui();
-		}
-		break;
-		
-		case ID_PROSTHESIS_EDIT:
-		{
-			EditProsthesis(m_Prosthesis); 
-		}
-		break;
+		case ID_START: break;
 
-		case ID_GROUP_CREATE:
-		{
-			NewGroup();
-			FitParentGui();
-		}
-		break;
+		case ID_PROSTHESIS_SELECTION: SelectProsthesis(); break;		
+		case ID_PROSTHESIS_CHANGE: ChangeProsthesis(); break;
+		case ID_PROSTHESIS_EDIT: EditProsthesis(m_Prosthesis); break;
 
-		case ID_START:
-		{
-	
-		}
-		break;
-			default:
-			albaVME::OnEvent(alba_event);
+		case ID_GROUP_CREATE: CreateNewComponentGroup(); break;
+
+		default:
+			if (eventId >= ID_LAST && eventId < ID_LAST + ID_LAST_COMP_ID*compNum)
+			{
+				int baseId = eventId - ID_LAST;
+				int comp = baseId / ID_LAST_COMP_ID;
+				int id = baseId % ID_LAST_COMP_ID;
+				OnComponentEvent(comp, id);
+			}
+			break;
 		}
 	}
 	else
@@ -210,7 +178,33 @@ void appVMEProsthesisEdit::OnEvent(albaEventBase *alba_event)
 		Superclass::OnEvent(alba_event);
 	}
 }
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::OnComponentEvent(int compGroup, int id)
+{
+	Superclass::OnComponentEvent(compGroup, id);
 
+	switch (id)
+	{
+	case ID_NAME_COMPONENT: RenameComponentGroup(compGroup); break;
+	case ID_ADD_COMPONENT: AddNewComponent(compGroup); break;
+	case ID_EDIT_COMPONENT: EditComponent(compGroup); break;
+	case ID_REM_COMPONENT: RemoveComponent(compGroup); break;
+	case ID_MATRIX_COMPONENT: EditComponentMatrix(compGroup); break;
+
+	default:
+		break;
+	}
+}
+
+/// Prosthesis
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::SelectProsthesis()
+{
+	std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
+	SetProsthesis(DBprosthesis[m_SelectedProsthesis]);
+	UpdateGui();
+	FitParentGui();
+}
 //----------------------------------------------------------------------------
 void appVMEProsthesisEdit::EditProsthesis(albaProDBProsthesis *prosthesis)
 {
@@ -235,8 +229,9 @@ void appVMEProsthesisEdit::EditProsthesis(albaProDBProsthesis *prosthesis)
 	}
 }
 
+/// Groups
 //----------------------------------------------------------------------------
-void appVMEProsthesisEdit::NewGroup()
+void appVMEProsthesisEdit::CreateNewComponentGroup()
 {
 	wxString name = wxString::Format("NewComponentGroup(%d)", m_ComponentGui.size() + 1);
 
@@ -260,4 +255,162 @@ void appVMEProsthesisEdit::NewGroup()
 	AddComponentGroup(newDBGroup);
 
 	UpdateGui();
+	FitParentGui();
+}
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::CreateComponentGui(int currGroup, albaProDBCompGroup * componentGroup)
+{
+	//GUI Stuffs
+	int baseID = ID_LAST + m_ComponentGui.size()*ID_LAST_COMP_ID;
+
+	std::vector<albaProDBComponent *> *components = componentGroup->GetComponents();
+
+	appGUI *compGui = new appGUI(this);
+
+	//show all by default
+	m_ShowComponents[currGroup] = true;
+	m_NameComponents[currGroup] = componentGroup->GetName();
+	//compGui->Bool(baseID + ID_SHOW_COMPONENT, componentGroup->GetName(), &m_ShowComponents[currGroup], 1, "Show/Hide");
+
+	compGui->ComponentButton(baseID + ID_SHOW_COMPONENT, baseID + ID_NAME_COMPONENT, baseID + ID_REM_COMPONENT, &m_ShowComponents[currGroup], &m_NameComponents[currGroup]);
+
+	wxListBox *listBox = compGui->ListBox(baseID + ID_SELECT_COMPONENT, "");
+
+	for (int comp = 0; comp < components->size(); comp++)
+	{
+		listBox->Append(components->at(comp)->GetName().GetCStr());
+	}
+	compGui->Divider(1);
+
+	listBox->SetSelection(0);
+
+	m_ComponentListBox.push_back(listBox);
+	m_ComponentGui.push_back(compGui);
+
+	std::vector<int> btnIDs{ baseID + ID_ADD_COMPONENT, baseID + ID_REM_COMPONENT, baseID + ID_EDIT_COMPONENT };
+	std::vector<const char*> btnLabels{ "Add","Del","Edit" };
+
+	compGui->MultipleButtons(3, 3, btnIDs, btnLabels);
+	compGui->Button(baseID + ID_MATRIX_COMPONENT, "Matrix");
+	compGui->Divider(1);
+
+
+	// Add to Gui
+	m_GroupGui->Add(compGui);
+	compGui->FitGui();
+	compGui->Update();
+
+	//UpdateGui();
+}
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::RenameComponentGroup(int compGroup)
+{
+	std::vector<albaProDBCompGroup *> *compGroups = m_Prosthesis->GetCompGroups();
+	albaProDBCompGroup *group = compGroups->at(compGroup);
+
+	if (group)
+	{
+		group->SetName(m_NameComponents[compGroup]);
+		UpdateGui();
+	}
+}
+
+/// Components
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::AddNewComponent(int compGroup)
+{
+	std::vector<albaProDBCompGroup *> * compGroups = m_Prosthesis->GetCompGroups();
+	albaProDBCompGroup *group = compGroups->at(compGroup);
+
+	std::vector<albaProDBComponent *> *components = group->GetComponents();
+	int compId = m_ComponentListBox[compGroup]->GetSelection();
+
+	if (compGroups->size() > 0)
+	{
+		albaProDBComponent *newComponent = new albaProDBComponent();
+		newComponent->SetName(wxString::Format("NewComponent(%d)", components->size() + 1));
+
+		appGUIDialogComponent cd(_("Add Component"));
+		cd.SetComponent(newComponent);
+		cd.Show();
+
+		if (cd.OkClosed())
+		{
+			wxString name = newComponent->GetName().GetCStr();
+			m_ComponentListBox[compGroup]->Append(name);
+
+			components->push_back(newComponent);
+		}
+
+		UpdateGui();
+
+		delete newComponent;
+	}
+}
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::RemoveComponent(int compGroup)
+{
+	std::vector<albaProDBCompGroup *> *compGroups = m_Prosthesis->GetCompGroups();
+	albaProDBCompGroup *group = compGroups->at(compGroup);
+
+	std::vector<albaProDBComponent *> *components = group->GetComponents();
+	int compId = m_ComponentListBox[compGroup]->GetSelection();
+
+	if (compGroups->size() > 0)
+	{
+		albaProDBComponent *component = components->at(compId);
+
+		components->erase(components->begin() + compId);
+		m_ComponentListBox[compGroup]->Delete(compId);
+
+		UpdateGui();
+	}
+}
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::EditComponent(int compGroup)
+{
+	std::vector<albaProDBCompGroup *> *compGroups = m_Prosthesis->GetCompGroups();
+	albaProDBCompGroup *group = compGroups->at(compGroup);
+
+	std::vector<albaProDBComponent *> *components = group->GetComponents();
+	int compId = m_ComponentListBox[compGroup]->GetSelection();
+
+	if (compGroups->size() > 0)
+	{
+		albaProDBComponent *component = components->at(compId);
+
+		appGUIDialogComponent cd(_("Edit Component"));
+		cd.SetComponent(component);
+		cd.Show();
+
+		if (cd.OkClosed())
+		{
+			m_ComponentListBox[compGroup]->Clear();
+			for (int i = 0; i < components->size(); i++)
+				m_ComponentListBox[compGroup]->Append(components->at(i)->GetName().GetCStr());
+
+			m_ComponentListBox[compGroup]->Select(compId);
+		}
+
+		UpdateGui();
+	}
+}
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::EditComponentMatrix(int compGroup)
+{
+	std::vector<albaProDBCompGroup *> *compGroups = m_Prosthesis->GetCompGroups();
+	albaProDBCompGroup *group = compGroups->at(compGroup);
+
+	std::vector<albaProDBComponent *> *components = group->GetComponents();
+	int compId = m_ComponentListBox[compGroup]->GetSelection();
+
+	if (compGroups->size() > 0)
+	{
+		appGUIDialogMatrix cm(_("Edit Matrix"));
+		cm.SetComponent(components->at(compId));
+		cm.Show();
+	}
+
+	m_AppendPolydata->Update();
+	GetLogicManager()->CameraUpdate();
 }

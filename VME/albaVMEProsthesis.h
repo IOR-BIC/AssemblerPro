@@ -75,14 +75,14 @@ public:
 		ID_START = albaVME::ID_LAST,
 		ID_PROSTHESIS_NAME,
 		ID_PROSTHESIS_CHANGE,
-		ID_LAST
+		ID_LAST,
 	};
 
 	enum PROSTHESIS_COMP_GUI_ID
 	{
 		ID_SHOW_COMPONENT,
 		ID_SELECT_COMPONENT,
-		ID_LAST_COMP_ID
+		ID_LAST_COMP_ID,
 	};
 
 protected:
@@ -96,14 +96,17 @@ protected:
 	/*virtual*/ albaGUI *CreateGui();
 
 	void UpdateGui();
+	void FitParentGui();
+
+	void ChangeProsthesis();
 
 	void AddComponentGroup(albaProDBCompGroup *componentGroup);
-
+	virtual void CreateComponentGui(int currGroup, albaProDBCompGroup * componentGroup);
 	void ClearComponentGroups();
 
 	virtual void OnComponentEvent(int compGroup, int id);
 
-	void FitParentGui();
+
 
 	//Components vtkData
 	std::vector <vtkTransformPolyDataFilter *> m_TransformFilters;
@@ -115,9 +118,9 @@ protected:
 	appGUI *m_ContentGui;
 
 	int m_ShowComponents[100]; //need to use an array because vector pointers can change at runtime
+	wxString m_NameComponents[100];
 	std::vector <wxListBox *> m_ComponentListBox;
-
-
+	
 	vtkAppendPolyData *m_AppendPolydata;
 	albaProDBProsthesis *m_Prosthesis;
 	albaString m_ProsthesisName;

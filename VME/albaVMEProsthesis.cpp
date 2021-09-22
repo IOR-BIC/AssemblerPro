@@ -21,20 +21,21 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 
 #include "appDecl.h"
-#include "albaVMEProsthesis.h"
+#include "appGUIDialogProsthesisSelection.h"
 
-#include "mmaMaterial.h"
-#include "albaTransform.h"
 #include "albaGUI.h"
+#include "albaProsthesesDBManager.h"
+#include "albaTransform.h"
 #include "albaVMEOutput.h"
+#include "albaVMEProsthesis.h"
 #include "albaVMESurface.h"
 
-#include "vtkTransformPolyDataFilter.h"
-#include "vtkTransform.h"
-#include "vtkLookupTable.h"
+#include "mmaMaterial.h"
 #include "vtkAppendPolyData.h"
-#include "albaProsthesesDBManager.h"
+#include "vtkLookupTable.h"
 #include "vtkPolyData.h"
+#include "vtkTransform.h"
+#include "vtkTransformPolyDataFilter.h"
 #include "wx/listctrl.h"
 
 
@@ -135,6 +136,23 @@ void albaVMEProsthesis::UpdateGui()
 		m_Gui->Update();
 	}
 }
+//----------------------------------------------------------------------------
+void albaVMEProsthesis::FitParentGui()
+{
+	albaGUI* parent = (albaGUI*)m_Gui->GetParent();
+	if (parent)
+	{
+		parent->FitGui();
+		parent->Update();
+	}
+
+	albaGUI* grandParent = (albaGUI*)m_Gui->GetParent();
+	if (grandParent)
+	{
+		grandParent->FitGui();
+		grandParent->Update();
+	}
+}
 
 //----------------------------------------------------------------------------
 void albaVMEProsthesis::AddComponentGroup(albaProDBCompGroup *componentGroup)
@@ -181,22 +199,29 @@ void albaVMEProsthesis::AddComponentGroup(albaProDBCompGroup *componentGroup)
 	compTraFilter->SetTransform(compTra);
 	m_AppendPolydata->AddInput(compTraFilter->GetOutput());
 
+	CreateComponentGui(currGroup, componentGroup);
+}
+//----------------------------------------------------------------------------
+void albaVMEProsthesis::CreateComponentGui(int currGroup, albaProDBCompGroup * componentGroup)
+{
 	//GUI Stuffs
 	int baseID = ID_LAST + m_ComponentGui.size()*ID_LAST_COMP_ID;
 
-	albaGUI *compGui=new albaGUI(this);
+	std::vector<albaProDBComponent *> *components = componentGroup->GetComponents();
+	
+	albaGUI *compGui = new albaGUI(this);
 
 	//show all by default
 	m_ShowComponents[currGroup] = true;
-	compGui->Bool(baseID +ID_SHOW_COMPONENT, componentGroup->GetName(), &m_ShowComponents[currGroup], 1, "Show/Hide");
-	wxListBox *listBox = compGui->ListBox(baseID+ID_SELECT_COMPONENT, "");
+	compGui->Bool(baseID + ID_SHOW_COMPONENT, componentGroup->GetName(), &m_ShowComponents[currGroup], 1, "Show/Hide");
+	wxListBox *listBox = compGui->ListBox(baseID + ID_SELECT_COMPONENT, "");
 
 	for (int comp = 0; comp < components->size(); comp++)
 	{
 		listBox->Append(components->at(comp)->GetName().GetCStr());
 	}
 	compGui->Divider(1);
-	
+
 	listBox->SetSelection(0);
 
 	m_ComponentListBox.push_back(listBox);
@@ -209,7 +234,6 @@ void albaVMEProsthesis::AddComponentGroup(albaProDBCompGroup *componentGroup)
 
 	UpdateGui();
 }
-
 //----------------------------------------------------------------------------
 void albaVMEProsthesis::ClearComponentGroups()
 {
@@ -249,7 +273,7 @@ void albaVMEProsthesis::SetProsthesis(albaProDBProsthesis *prosthesis)
 		if (m_AppendPolydata == NULL)
 			vtkNEW(m_AppendPolydata);
 
-		//remove current components
+		// Remove current components
 		ClearComponentGroups();
 
 		m_Prosthesis = prosthesis;
@@ -269,6 +293,22 @@ void albaVMEProsthesis::SetProsthesis(albaProDBProsthesis *prosthesis)
 		UpdateGui();
 	}
 }
+//----------------------------------------------------------------------------
+void albaVMEProsthesis::ChangeProsthesis()
+{
+	appGUIDialogProsthesisSelection pd(_("Select Prosthesis"));
+	pd.SetProducer(m_Prosthesis->GetProducer());
+	pd.Show();
+
+	if (pd.OkClosed())
+	{
+		albaProDBProsthesis *prosthesis = pd.GetProsthesis();
+
+		SetProsthesis(prosthesis);
+		UpdateGui();
+		FitParentGui();
+	}
+}
 
 //-------------------------------------------------------------------------
 void albaVMEProsthesis::OnEvent(albaEventBase *alba_event)
@@ -280,22 +320,17 @@ void albaVMEProsthesis::OnEvent(albaEventBase *alba_event)
 		int compNum = m_ComponentGui.size();
 		switch (eventId)
 		{
-		case ID_PROSTHESIS_CHANGE: 
-			break;
+		case ID_START: break;
+		case ID_PROSTHESIS_CHANGE: ChangeProsthesis(); break;
 
-			case ID_START:
+		default:
+			if (eventId >= ID_LAST && eventId < ID_LAST + ID_LAST_COMP_ID*compNum)
 			{
-
+				int baseId = eventId - ID_LAST;
+				int comp = baseId / ID_LAST_COMP_ID;
+				int id = baseId % ID_LAST_COMP_ID;
+				OnComponentEvent(comp, id);
 			}
-			break;
-			default:
-				if (eventId >= ID_LAST && eventId < ID_LAST + ID_LAST_COMP_ID*compNum)
-				{
-					int baseId = eventId - ID_LAST;
-					int comp = baseId / ID_LAST_COMP_ID;
-					int id = baseId % ID_LAST_COMP_ID;
-					OnComponentEvent(comp, id);
-				}
 			break;
 		}
 	}
@@ -304,7 +339,6 @@ void albaVMEProsthesis::OnEvent(albaEventBase *alba_event)
 		Superclass::OnEvent(alba_event);
 	}
 }
-
 //----------------------------------------------------------------------------
 void albaVMEProsthesis::OnComponentEvent(int compGroup, int id)
 {
@@ -359,23 +393,6 @@ void albaVMEProsthesis::OnComponentEvent(int compGroup, int id)
 		break;
 		default:
 			break;
-	}
-}
-
-//----------------------------------------------------------------------------
-void albaVMEProsthesis::FitParentGui()
-{
-	albaGUI* parent = (albaGUI*)m_Gui->GetParent();
-	if (parent)
-	{
-		parent->FitGui();
-		parent->Update();
-	}
-	albaGUI* grandParent = (albaGUI*)m_Gui->GetParent();
-	if (grandParent)
-	{
-		grandParent->FitGui();
-		grandParent->Update();
 	}
 }
 

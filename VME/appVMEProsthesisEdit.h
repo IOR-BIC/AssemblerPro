@@ -23,6 +23,11 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 // forward declarations :
 //----------------------------------------------------------------------------
+class mmaMaterial;
+class vtkAppendPolyData;
+class vtkOutlineSource;
+class vtkTransform;
+class vtkTransformPolyDataFilter;
 
 /** appVMEProsthesisEdit - 
 */
@@ -41,13 +46,23 @@ public:
 	//----------------------------------------------------------------------------
 	// Widgets ID's
 	//----------------------------------------------------------------------------
-	enum PROSTHESIS_COMPONENT_GUI_ID
+	enum PROSTHESIS_EDIT_GUI_ID
 	{
 		ID_START = ID_LAST,
 		ID_PROSTHESIS_SELECTION,
 		ID_PROSTHESIS_EDIT,
 		ID_GROUP_CREATE,
-		ID_GROUP_REMOVE,
+		ID_LAST,
+	};
+
+	enum PROSTHESIS_COMP_EDIT_GUI_ID
+	{
+		ID_ADD_COMPONENT = ID_LAST_COMP_ID,
+		ID_NAME_COMPONENT,
+		ID_REM_COMPONENT,
+		ID_EDIT_COMPONENT,
+		ID_MATRIX_COMPONENT,
+		ID_LAST_COMP_ID
 	};
 
 protected:
@@ -58,12 +73,23 @@ protected:
 
 	/** Internally used to create a new instance of the GUI.*/
 	/*virtual*/ albaGUI *CreateGui();
+	virtual void CreateComponentGui(int currGroup, albaProDBCompGroup * componentGroup);
 
 	void UpdateGui();
 
+	virtual void OnComponentEvent(int compGroup, int id);
+
+	void SelectProsthesis();
 	void EditProsthesis(albaProDBProsthesis *prosthesis);
 
-	void NewGroup();
+	void CreateNewComponentGroup();
+	void RenameComponentGroup(int compGroup);
+
+	void AddNewComponent(int compGroup);
+	void RemoveComponent(int compGroup);
+	void EditComponent(int compGroup);
+	void EditComponentMatrix(int compGroup);
+
 	albaProsthesesDBManager *m_DBManager;
 
 	wxComboBox *m_ProsthesisComboBox;
