@@ -62,6 +62,7 @@ public:
 		ID_REM_COMPONENT,
 		ID_EDIT_COMPONENT,
 		ID_MATRIX_COMPONENT,
+		ID_REM_COMPONENT_GROUP,
 		ID_LAST_COMP_ID
 	};
 
@@ -84,6 +85,7 @@ protected:
 
 	void CreateNewComponentGroup();
 	void RenameComponentGroup(int compGroup);
+	void DeleteComponentGroup(int compGroup);
 
 	void AddNewComponent(int compGroup);
 	void RemoveComponent(int compGroup);

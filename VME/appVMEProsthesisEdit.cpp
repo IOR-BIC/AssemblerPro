@@ -185,6 +185,8 @@ void appVMEProsthesisEdit::OnComponentEvent(int compGroup, int id)
 
 	switch (id)
 	{
+	case ID_REM_COMPONENT_GROUP: DeleteComponentGroup(compGroup); break;
+
 	case ID_NAME_COMPONENT: RenameComponentGroup(compGroup); break;
 	case ID_ADD_COMPONENT: AddNewComponent(compGroup); break;
 	case ID_EDIT_COMPONENT: EditComponent(compGroup); break;
@@ -272,7 +274,7 @@ void appVMEProsthesisEdit::CreateComponentGui(int currGroup, albaProDBCompGroup 
 	m_NameComponents[currGroup] = componentGroup->GetName();
 	//compGui->Bool(baseID + ID_SHOW_COMPONENT, componentGroup->GetName(), &m_ShowComponents[currGroup], 1, "Show/Hide");
 
-	compGui->ComponentButton(baseID + ID_SHOW_COMPONENT, baseID + ID_NAME_COMPONENT, baseID + ID_REM_COMPONENT, &m_ShowComponents[currGroup], &m_NameComponents[currGroup]);
+	compGui->ComponentButton(baseID + ID_SHOW_COMPONENT, baseID + ID_NAME_COMPONENT, baseID + ID_REM_COMPONENT_GROUP, &m_ShowComponents[currGroup], &m_NameComponents[currGroup]);
 
 	wxListBox *listBox = compGui->ListBox(baseID + ID_SELECT_COMPONENT, "");
 
@@ -312,6 +314,34 @@ void appVMEProsthesisEdit::RenameComponentGroup(int compGroup)
 	{
 		group->SetName(m_NameComponents[compGroup]);
 		UpdateGui();
+	}
+}
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::DeleteComponentGroup(int compGroup)
+{
+	std::vector<albaProDBCompGroup *> *compGroups = m_Prosthesis->GetCompGroups();
+	albaProDBCompGroup *group = compGroups->at(compGroup);
+
+	if (group)
+	{
+		for (int c = 0; c < group->GetComponents()->size(); c++)
+		{
+			RemoveComponent(c);
+		}
+
+		compGroups->erase(compGroups->begin() + compGroup);
+
+		//
+		ClearComponentGroups();
+
+		for (int g = 0; g < compGroups->size(); g++)
+		{
+			AddComponentGroup(compGroups->at(g));
+		}
+
+		UpdateGui();
+		FitParentGui();
+		GetLogicManager()->CameraUpdate();
 	}
 }
 
