@@ -63,6 +63,7 @@
 #define ATTR_IMG "Img"
 #define ATTR_SITE "Site"
 #define ATTR_SIDE "Side"
+#define ATTR_BENDINGANGLE "BendingAngle"
 #define ATTR_TYPE "Type"
 #define ATTR_PRODUCER "Producer"
 #define ATTR_FILE "File"
@@ -667,6 +668,8 @@ int albaProDBProsthesis::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 	m_Side = GetSideByString(GetElementAttribute(node, ATTR_SIDE));
 	m_Type = GetElementAttribute(node, ATTR_TYPE);
 	m_Producer = GetElementAttribute(node, ATTR_PRODUCER);
+	albaString bendingAngle = GetElementAttribute(node, ATTR_BENDINGANGLE);
+	m_BendingAngle = atof(bendingAngle.GetCStr());
 
 	if (m_Name == "")
 	{
@@ -710,6 +713,7 @@ void albaProDBProsthesis::Store(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument *doc,
 	prosthesisNode->setAttribute(albaXMLString(ATTR_TYPE), albaXMLString(m_Type));
 	prosthesisNode->setAttribute(albaXMLString(ATTR_PRODUCER), albaXMLString(m_Producer));
 	prosthesisNode->setAttribute(albaXMLString(ATTR_SIDE), albaXMLString(GetSideAsStr(m_Side)));
+	prosthesisNode->setAttribute(albaXMLString(ATTR_BENDINGANGLE), albaXMLString(albaString(m_BendingAngle)));
 	node->appendChild(prosthesisNode);
 	for (int i = 0; i < m_CompGroups.size(); i++)
 		m_CompGroups[i]->Store(doc, prosthesisNode);

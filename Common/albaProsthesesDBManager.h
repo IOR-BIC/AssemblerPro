@@ -154,6 +154,9 @@ public:
 	void SetProducer(albaString val) { m_Producer = val; }
 	albaProDBProsthesis::PRO_SIDES GetSide() const { return m_Side; }
 	void SetSide(albaProDBProsthesis::PRO_SIDES val) { m_Side = val; }
+	double GetBendingAngle() const { return m_BendingAngle; }
+	void SetBendingAngle(double val) { m_BendingAngle = val; }
+
 
 	// Inherited via ProStorable
 	virtual int Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node) override;
@@ -170,6 +173,7 @@ protected:
 	albaString m_ImgFileName;
 	albaString m_Producer;
 	albaString m_Type;
+	double m_BendingAngle;
 	PRO_SIDES m_Side;
 
 	std::vector<albaProDBCompGroup *> m_CompGroups;

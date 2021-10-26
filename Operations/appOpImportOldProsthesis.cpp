@@ -44,6 +44,7 @@ appOpImportOldProsthesis::~appOpImportOldProsthesis()
 //----------------------------------------------------------------------------
 bool appOpImportOldProsthesis::Accept(albaVME *node)
 {
+	return true;
 }
 
 //----------------------------------------------------------------------------
@@ -55,8 +56,8 @@ albaOp* appOpImportOldProsthesis::Copy()
 //----------------------------------------------------------------------------
 void appOpImportOldProsthesis::OpRun()
 {
-	albaString wildc = "MSF file (*.msf)|*.msf|Zip file (*.vtk)|*.vtk";
-	wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
+	albaString wildc = "MSF file (*.msf)|*.msf";
+	wxString imagePath = albaGetOpenFile(albaGetLastUserFolder().c_str(), wildc, "Select file").c_str();
 	
 	OpStop(OP_RUN_OK);
 }
