@@ -216,6 +216,7 @@ void appOpImportOldProsthesis::OpRun()
 	newProsthesis->SetName(prosthesisName);
 	newProsthesis->SetBendingAngle(bendingAngle);
 	newProsthesis->SetProducer(producer);
+	newProsthesis->SetSide(side);
 	newProsthesis->SetType(modelType);
 		
 	albaVMEIterator * iter = root->NewIterator();
