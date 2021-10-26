@@ -126,6 +126,7 @@ public:
 
 	/** Returns the components list*/
 	std::vector<albaProDBComponent *> *GetComponents() { return &m_Components; }
+	void AddComponent(albaProDBComponent *component);
 protected:
 	albaString m_Name;
 	std::vector<albaProDBComponent *> m_Components;
@@ -168,6 +169,7 @@ public:
 
 	/** returns the vector of components */
 	std::vector<albaProDBCompGroup *> *GetCompGroups() { return &m_CompGroups; }
+	void AddCompGroup(albaProDBCompGroup *group);
 protected:
 	albaString m_Name;
 	albaString m_ImgFileName;
@@ -212,9 +214,19 @@ public:
 	int GetComponentFileCount(albaString fileName);
 
 	std::vector<albaProDBProsthesis *> SearchProstheses(albaString producer, albaString type, albaString side);
-	std::vector<albaProDBProducer *>& GetProducers() { return m_Producers; };
-	std::vector<albaProDBType *>& GetTypes() { return m_Types; };
 	std::vector<albaProDBProsthesis *>& GetProstheses() { return m_Prostheses; };
+	bool HasProsthesis(albaString prosthesis, albaProDBProsthesis::PRO_SIDES side);
+	void DeleteProsthesis(albaString prosthesis, albaProDBProsthesis::PRO_SIDES side);
+	void AddProsthesis(albaProDBProsthesis *prosthesis);
+
+	std::vector<albaProDBProducer *>& GetProducers() { return m_Producers; };
+	bool HasProducer(albaString producer);
+	void AddProducer(albaProDBProducer *producer);
+
+	std::vector<albaProDBType *>& GetTypes() { return m_Types; };
+	bool HasType(albaString type);
+	void AddType(albaProDBType *type);
+
 
 
 

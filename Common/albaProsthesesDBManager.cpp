@@ -422,6 +422,69 @@ std::vector<albaProDBProsthesis *> albaProsthesesDBManager::SearchProstheses(alb
 }
 
 //----------------------------------------------------------------------------
+bool albaProsthesesDBManager::HasProsthesis(albaString prosthesis, albaProDBProsthesis::PRO_SIDES side)
+{
+	for (int i = 0; i < m_Prostheses.size(); i++)
+	{
+		if (m_Prostheses[i]->GetName() == prosthesis && m_Prostheses[i]->GetSide() == side)
+			return true;
+	}
+	return false;
+}
+
+//----------------------------------------------------------------------------
+void albaProsthesesDBManager::DeleteProsthesis(albaString prosthesis, albaProDBProsthesis::PRO_SIDES side)
+{
+	for (int i = 0; i < m_Prostheses.size(); i++)
+	{
+		if (m_Prostheses[i]->GetName() == prosthesis && m_Prostheses[i]->GetSide() == side)
+			m_Prostheses.erase(m_Prostheses.begin() + i);
+	}
+}
+
+//----------------------------------------------------------------------------
+void albaProsthesesDBManager::AddProsthesis(albaProDBProsthesis *prosthesis)
+{
+	m_Prostheses.push_back(prosthesis);
+}
+
+//----------------------------------------------------------------------------
+bool albaProsthesesDBManager::HasProducer(albaString producer)
+{
+
+	//TODO Remove component files!!!
+	for (int i = 0; i < m_Producers.size(); i++)
+	{
+		if (m_Producers[i]->GetName() == producer)
+			return true;
+	}
+	return false;
+}
+
+//----------------------------------------------------------------------------
+void albaProsthesesDBManager::AddProducer(albaProDBProducer *producer)
+{
+	m_Producers.push_back(producer);
+}
+
+//----------------------------------------------------------------------------
+bool albaProsthesesDBManager::HasType(albaString type)
+{
+	for (int i = 0; i < m_Types.size(); i++)
+	{
+		if (m_Types[i]->GetName() == type)
+			return true;
+	}
+	return false;
+}
+
+//----------------------------------------------------------------------------
+void albaProsthesesDBManager::AddType(albaProDBType *type)
+{
+	m_Types.push_back(type);
+}
+
+//----------------------------------------------------------------------------
 int albaProDBCompGroup::Load(XERCES_CPP_NAMESPACE_QUALIFIER DOMNode *node)
 {
 	//<Components Name="Stem">
@@ -473,7 +536,7 @@ vtkPolyData * albaProDBComponent::GetVTKData()
 	fileData+=m_Filename;
 
 	std::string fileMemory;
-	albaDecryptFileInMemory(fileData, fileMemory, "fattinonfostepervivercomebruti");// dbManager->GetPassPhrase());
+	albaDecryptFileInMemory(fileData, fileMemory, dbManager->GetPassPhrase());
 	if (fileMemory.empty())
 	{
 		//albaLogMessage("Decryption Error! On file:%s", fileData.GetCStr());
@@ -498,13 +561,10 @@ vtkPolyData * albaProDBComponent::GetVTKData()
 //----------------------------------------------------------------------------
 void albaProDBComponent::SetVTKData(vtkPolyData *vtkData)
 {
-	//TODO save the vtkfile, use sha256 to create an hash, if the hash does not already exist create the correspondent cry, delete the vtk file.
-	//Check if is possible to do everything on memory. 
-
 	albaProsthesesDBManager * prosthesesDBManager = GetLogicManager()->GetProsthesesDBManager();
 	
 	
-	if (m_Filename != NULL)
+	if (!m_Filename.IsEmpty())
 		prosthesesDBManager->RemoveComponentFile(m_Filename);
 	
 	vtkALBASmartPointer<vtkDataSetWriter> writer;
@@ -773,6 +833,12 @@ void albaProDBCompGroup::Clear()
 }
 
 //----------------------------------------------------------------------------
+void albaProDBCompGroup::AddComponent(albaProDBComponent *component)
+{
+	m_Components.push_back(component);
+}
+
+//----------------------------------------------------------------------------
 void albaProDBProsthesis::Clear()
 {
 
@@ -816,4 +882,10 @@ char * albaProDBProsthesis::GetSideAsStr(PRO_SIDES side)
 			return "Error";
 			break;
 	}
+}
+
+//----------------------------------------------------------------------------
+void albaProDBProsthesis::AddCompGroup(albaProDBCompGroup *group)
+{
+	m_CompGroups.push_back(group);
 }
