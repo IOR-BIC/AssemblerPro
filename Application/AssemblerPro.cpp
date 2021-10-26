@@ -34,6 +34,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "appOpCreateProsthesisVME.h"
 #include "appOpAddLandmark.h"
 #include "appVMEProsthesisEdit.h"
+#include "appOpImportOldProsthesis.h"
 
 #include "appUtils.h"
 
@@ -125,6 +126,8 @@ bool AssemblerPro::OnInit()
 	m_Logic->Plug(new appOpCreateProsthesisVME(), "");
 
 	m_Logic->Plug(new appOpAddLandmark(), "");
+
+	m_Logic->Plug(new appOpImportOldProsthesis(), "");
 
 	//////////////////////////////////////////////////////////////////////////
 	//Views
