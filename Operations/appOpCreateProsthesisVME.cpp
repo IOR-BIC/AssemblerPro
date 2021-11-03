@@ -50,6 +50,13 @@ bool appOpCreateProsthesisVME::Accept(albaVME *node)
 }
 
 //----------------------------------------------------------------------------
+char** appOpCreateProsthesisVME::GetIcon()
+{
+#include "pic/MENU_OP_CREATE_PROSTHESIS.xpm"
+	return MENU_OP_CREATE_PROSTHESIS_xpm;
+}
+
+//----------------------------------------------------------------------------
 albaOp* appOpCreateProsthesisVME::Copy()
 {
 	appOpCreateProsthesisVME *cp = new appOpCreateProsthesisVME(m_Label);

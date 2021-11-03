@@ -60,6 +60,13 @@ bool appOpImportOldProsthesis::Accept(albaVME *node)
 }
 
 //----------------------------------------------------------------------------
+char** appOpImportOldProsthesis::GetIcon()
+{
+#include "pic/MENU_OP_IMPORT_PROSTHESIS.xpm"
+	return MENU_OP_IMPORT_PROSTHESIS_xpm;
+}
+
+//----------------------------------------------------------------------------
 albaOp* appOpImportOldProsthesis::Copy()
 {
 	appOpImportOldProsthesis *cp = new appOpImportOldProsthesis(m_Label);

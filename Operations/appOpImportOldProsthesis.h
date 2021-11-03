@@ -34,7 +34,7 @@ class APP_OPERATIONS_EXPORT appOpImportOldProsthesis : public albaOp
 {
 public:
 	/** Constructor. */
-	appOpImportOldProsthesis(wxString label = "Op Import old Prosthesis");
+	appOpImportOldProsthesis(wxString label = "Import old Prosthesis");
 
 	/** Destructor. */
 	~appOpImportOldProsthesis();
@@ -53,6 +53,9 @@ public:
 
 	/** Execute the operation. */
 	/*virtual*/ void OpDo();
+
+	/** Return an xpm-icon that can be used to represent this operation */
+	virtual char** GetIcon();
 
 protected:
 

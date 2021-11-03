@@ -100,6 +100,9 @@ bool AssemblerPro::OnInit()
 	// Import Prosthesis DB
 	m_Logic->Plug(new appOpImportProsthesisDB("Import Prosthesis DB"), "");
 
+	// Import Old Prosthesis
+	m_Logic->Plug(new appOpImportOldProsthesis(), "");
+
 	//////////////////////////////////////////////////////////////////////////
 	//Exporters
 	//////////////////////////////////////////////////////////////////////////
@@ -115,19 +118,19 @@ bool AssemblerPro::OnInit()
 	//m_Logic->Plug(new appOpEmpty("Empty"), "");
 
 	// Create Prosthesis Op
-	m_Logic->Plug(new appOpCreateProsthesis("Create Prosthesis"), "");
-
-	// Test Prosthesis GUI Op
-	m_Logic->Plug(new appOpTestProsthesisGUI("Test Prosthesis GUI"), "");
+	m_Logic->Plug(new appOpCreateProsthesisVME());
 
 	// Search Prosthesis Op
-	m_Logic->Plug(new appOpSearchProsthesis("Search Prosthesis"), "");
+	m_Logic->Plug(new appOpSearchProsthesis("Search Prosthesis"));
 
-	m_Logic->Plug(new appOpCreateProsthesisVME(), "");
+	/// Extras
+	// Create Prosthesis Op
+	m_Logic->Plug(new appOpCreateProsthesis("Create Prosthesis"), "Extra");
 
-	m_Logic->Plug(new appOpAddLandmark(), "");
+	// Test Prosthesis GUI Op
+	m_Logic->Plug(new appOpTestProsthesisGUI("Test Prosthesis GUI"), "Extra");
 
-	m_Logic->Plug(new appOpImportOldProsthesis(), "");
+
 
 	//////////////////////////////////////////////////////////////////////////
 	//Views
@@ -226,8 +229,6 @@ void AssemblerPro::InitializeIcons()
 	albaADDPIC(OP_CREATE_PROSTHESIS);
 #include "pic/OP_SEARCH_PROSTHESIS.xpm"
 	albaADDPIC(OP_SEARCH_PROSTHESIS);
-#include "pic/OP_ADD_LANDMARK.xpm"
-	albaADDPIC(OP_ADD_LANDMARK);
 }
 
 //--------------------------------------------------------------------------------
