@@ -54,7 +54,7 @@ appOpImportOldProsthesis::~appOpImportOldProsthesis()
 }
 
 //----------------------------------------------------------------------------
-bool appOpImportOldProsthesis::Accept(albaVME *node)
+bool appOpImportOldProsthesis::InternalAccept(albaVME *node)
 {
 	return true;
 }
