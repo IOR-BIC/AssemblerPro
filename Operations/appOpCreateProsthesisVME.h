@@ -45,9 +45,6 @@ public:
 	/** Return a copy of the operation */
 	/*virtual*/ albaOp* Copy();
 
-	/** Return true for the acceptable vme type. */
-	/*virtual*/ bool Accept(albaVME *node);
-
 	/** Builds operation's interface. */
 	/*virtual*/ void OpRun();
 
@@ -56,5 +53,7 @@ public:
 
 protected:
 
+	/** Return true for the acceptable vme type. */
+	bool InternalAccept(albaVME *node);
 };
 #endif

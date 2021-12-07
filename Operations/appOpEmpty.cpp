@@ -44,7 +44,7 @@ appOpEmpty::~appOpEmpty()
 }
 
 //----------------------------------------------------------------------------
-bool appOpEmpty::Accept(albaVME *node)
+bool appOpEmpty::InternalAccept(albaVME *node)
 {
 	//return node->IsA("...");
 	return m_Enabled;

@@ -44,7 +44,7 @@ appOpCreateProsthesisVME::~appOpCreateProsthesisVME()
 }
 
 //----------------------------------------------------------------------------
-bool appOpCreateProsthesisVME::Accept(albaVME *node)
+bool appOpCreateProsthesisVME::InternalAccept(albaVME *node)
 {
 	return true;
 }

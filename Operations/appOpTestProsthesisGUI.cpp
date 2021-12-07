@@ -71,7 +71,7 @@ appOpTestProsthesisGUI::~appOpTestProsthesisGUI()
 }
 
 //----------------------------------------------------------------------------
-bool appOpTestProsthesisGUI::Accept(albaVME *node)
+bool appOpTestProsthesisGUI::InternalAccept(albaVME *node)
 {
 	//return node->IsA("...");
 	return true;

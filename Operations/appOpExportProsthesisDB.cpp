@@ -49,7 +49,7 @@ appOpExportProsthesisDB::~appOpExportProsthesisDB()
 }
 
 //----------------------------------------------------------------------------
-bool appOpExportProsthesisDB::Accept(albaVME *node)
+bool appOpExportProsthesisDB::InternalAccept(albaVME *node)
 {
 	//return node->IsA("...");
 	return true;
