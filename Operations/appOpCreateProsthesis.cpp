@@ -46,7 +46,7 @@ appOpCreateProsthesis::~appOpCreateProsthesis()
 }
 
 //----------------------------------------------------------------------------
-bool appOpCreateProsthesis::Accept(albaVME *node)
+bool appOpCreateProsthesis::InternalAccept(albaVME *node)
 {
 	//return node->IsA("...");
 	return true;

@@ -49,7 +49,7 @@ appOpSearchProsthesis::~appOpSearchProsthesis()
 }
 
 //----------------------------------------------------------------------------
-bool appOpSearchProsthesis::Accept(albaVME *node)
+bool appOpSearchProsthesis::InternalAccept(albaVME *node)
 {
 	//return node->IsA("...");
 	return true;

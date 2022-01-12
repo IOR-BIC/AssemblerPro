@@ -165,7 +165,7 @@ void albaVMEProsthesis::AddComponentGroup(albaProDBCompGroup *componentGroup)
 
 	vtkTransform *compTra;
 	vtkNEW(compTra);
-	compTra->PostMultiply();
+	compTra->PreMultiply();
 	m_Transforms.push_back(compTra);
 
 	int currGroup = m_Transforms.size()-1;

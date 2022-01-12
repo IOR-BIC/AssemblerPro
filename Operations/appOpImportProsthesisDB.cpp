@@ -42,7 +42,7 @@ appOpImportProsthesisDB::~appOpImportProsthesisDB()
 }
 
 //----------------------------------------------------------------------------
-bool appOpImportProsthesisDB::Accept(albaVME *node)
+bool appOpImportProsthesisDB::InternalAccept(albaVME *node)
 {
 	//return node->IsA("...");
 	return true;

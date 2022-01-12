@@ -13,6 +13,7 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE. See the above copyright notice for more information.
 =========================================================================*/
 
+
 #include "appDefines.h" 
 //----------------------------------------------------------------------------
 // NOTE: Every CPP file in the ALBA must include "albaDefines.h" as first.
@@ -70,26 +71,57 @@ void appSideBar::InitMainPanel()
 	m_Notebook = new wxNotebook(m_Parent, m_Id);
 	m_Notebook->SetFont(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
 
-	// Tree Panel
-	m_Tree = new albaGUICheckTree(m_Notebook, -1, false, true);
+	if (m_Style == DOUBLE_NOTEBOOK)
+	{
+		m_SideSplittedPanel = new wxSplitterWindow(m_Notebook, -1, wxDefaultPosition, wxSize(-1, -1),/*wxSP_3DSASH |*/ wxSP_FULLSASH);
+		m_Tree = new albaGUICheckTree(m_SideSplittedPanel, -1, false, true);
+	}
+	else
+	{
+		m_Tree = new albaGUICheckTree(m_Notebook, -1, false, true);
+	}
+
 	m_Tree->SetListener(m_Listener);
 	m_Tree->SetSize(-1, 300);
 	m_Tree->SetTitle(" vme hierarchy: ");
-	m_Notebook->AddPage(m_Tree, _("Data tree"), true);
+
+	if (m_Style == DOUBLE_NOTEBOOK)
+		m_Notebook->AddPage(m_SideSplittedPanel, _("Data tree"), true);
+	else
+		m_Notebook->AddPage(m_Tree, _("Data tree"), true);
 
 	// View property panel
 	m_ViewPropertyPanel = new albaGUIHolder(m_Notebook, -1, false, true);
 	m_ViewPropertyPanel->SetTitle(_("No view selected:"));
 	m_Notebook->AddPage(m_ViewPropertyPanel, _("View settings"));
 
-	// Operation panel
+	// Op panel
 	m_OpPanel = new albaGUIPanelStack(m_Notebook, -1);
 	albaGUINamedPanel *empty_op = new albaGUINamedPanel(m_OpPanel, -1, false, true);
 	empty_op->SetTitle(_(" No operation running:"));
 	m_OpPanel->Push(empty_op);
 	m_Notebook->AddPage(m_OpPanel, _("Operation"));
 
-	//
+	if (m_Style == DOUBLE_NOTEBOOK)
+	{
+		m_VmeNotebook = new wxNotebook(m_SideSplittedPanel, -1);
+		m_VmeNotebook->SetFont(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
+
+		m_VmePanel = new albaGUIHolder(m_VmeNotebook, -1, false, true);
+		m_VmeNotebook->AddPage(m_VmePanel, _("VME"));
+
+		m_VmePipePanel = new albaGUIHolder(m_VmeNotebook, -1, false, true);
+		m_VmeNotebook->AddPage(m_VmePipePanel, _(" Visual props "));
+
+		m_SideSplittedPanel->SetMinimumPaneSize(50);
+		m_SideSplittedPanel->SplitHorizontally(m_Tree, m_VmeNotebook);
+	}
+	else
+	{
+		m_VmePanel = new albaGUIHolder(m_Notebook, -1, false, true);
+		m_Notebook->AddPage(m_VmePanel, _("VME"));
+	}
+
 	m_Parent->AddDockPane(m_Notebook, wxPaneInfo()
 		.Name("sidebar")
 		.Caption(wxT("Control Panel"))
@@ -103,47 +135,15 @@ void appSideBar::InitMainPanel()
 //----------------------------------------------------------------------------
 void appSideBar::InitLeftPanel()
 {
-	// Left Notebook  
+	// Left panel  
 	m_LeftNotebook = new wxNotebook(m_Parent, MENU_VIEW_INFO_SIDEBAR);
 	m_LeftNotebook->SetFont(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
 
-	// Info panel
-	// 	m_InfoPanel = new albaGUIHolder(m_LeftNotebook, -1, false, true);
-	// 	m_LeftNotebook->AddPage(m_InfoPanel, _("Info"));
+	// Prosthesis property panel
+	m_ProsthesisPropertyPanel = new albaGUIHolder(m_LeftNotebook, -1, false, true);
+	m_ProsthesisPropertyPanel->SetTitle(_("No view selected:"));
+	m_LeftNotebook->AddPage(m_ProsthesisPropertyPanel, _("Info"));
 
-	if (m_Style == DOUBLE_NOTEBOOK)
-	{
-		m_SideSplittedPanel = new wxSplitterWindow(m_LeftNotebook, -1, wxDefaultPosition, wxSize(-1, -1),/*wxSP_3DSASH |*/ wxSP_FULLSASH);
-
-		m_VmeNotebook = new wxNotebook(m_SideSplittedPanel, -1);
-		m_VmeNotebook->SetFont(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
-
-		m_VmePanel = new albaGUIHolder(m_VmeNotebook, -1, false, true);
-		m_VmeNotebook->AddPage(m_VmePanel, _("VME"));
-
-		m_VisualNotebook = new wxNotebook(m_SideSplittedPanel, -1);
-		m_VisualNotebook->SetFont(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
-
-		m_VmePipePanel = new albaGUIHolder(m_VisualNotebook, -1, false, true);
-		m_VisualNotebook->AddPage(m_VmePipePanel, _("Visual props"));
-
-		m_SideSplittedPanel->SetMinimumPaneSize(50);
-		m_SideSplittedPanel->SplitHorizontally(m_VmeNotebook, m_VisualNotebook);
-
-		m_LeftNotebook->AddPage(m_SideSplittedPanel, _("Info Panel"), true);
-	}
-	else
-	{
-		// VME panel
-		m_VmePanel = new albaGUIHolder(m_LeftNotebook, -1, false, true);
-		m_LeftNotebook->AddPage(m_VmePanel, _("VME"));
-
-		// VME panel
-		m_VmePipePanel = new albaGUIHolder(m_LeftNotebook, -1, false, true);
-		m_LeftNotebook->AddPage(m_VmePipePanel, _(" Visual props "));
-	}
-
-	//
 	m_Parent->AddDockPane(m_LeftNotebook, wxPaneInfo()
 		.Name("sidebarLeft")
 		.Caption(wxT("Info Panel"))
@@ -165,7 +165,7 @@ void appSideBar::OpShowGui(bool push_gui, albaGUIPanel *panel)
 	m_Notebook->Show(true);
 	if (push_gui)
 	{
-		m_Notebook->SetSelection(2);
+		m_Notebook->SetSelection(1);
 		m_OpPanel->Push(panel);
 	}
 }
@@ -254,9 +254,8 @@ void appSideBar::VmeSelected(albaVME *vme)
 	m_SelectedVme = vme;
 	UpdateVmePanel();
 	m_Tree->VmeSelected(vme);
-	m_Tree->SetFocus();
 
-	m_LeftNotebook->SetSelection(0);
+	m_Tree->SetFocus();
 }
 
 //----------------------------------------------------------------------------
@@ -337,10 +336,27 @@ void appSideBar::UpdateVmePanel()
 	{
 		m_VmePipePanel->Put(vme_pipe_gui);
 	}
-	if (m_AppendingGUI)
-		m_VmePanel->Put(m_AppendingGUI);
+
+	if (m_SelectedVme && m_SelectedVme->IsA("appVMEProsthesisEdit"))
+	{
+		if (m_AppendingGUI)
+			m_ProsthesisPropertyPanel->Put(m_AppendingGUI);
+		else
+			m_ProsthesisPropertyPanel->Put(new albaGUI(NULL));
+	}
 	else
-		m_VmePanel->Put(new albaGUI(NULL));
+	{
+		if (m_AppendingGUI)
+			m_VmePanel->Put(m_AppendingGUI);
+		else
+			m_VmePanel->Put(new albaGUI(NULL));
+	}
+}
+
+//----------------------------------------------------------------------------
+void appSideBar::UpdateProsthesisPanel()
+{
+
 }
 
 //----------------------------------------------------------------------------
@@ -358,3 +374,4 @@ void appSideBar::FindVME()
 	fd.SetTree(tree);
 	fd.ShowModal();
 }
+

@@ -44,9 +44,16 @@ appOpCreateProsthesisVME::~appOpCreateProsthesisVME()
 }
 
 //----------------------------------------------------------------------------
-bool appOpCreateProsthesisVME::Accept(albaVME *node)
+bool appOpCreateProsthesisVME::InternalAccept(albaVME *node)
 {
 	return true;
+}
+
+//----------------------------------------------------------------------------
+char** appOpCreateProsthesisVME::GetIcon()
+{
+#include "pic/MENU_OP_CREATE_PROSTHESIS.xpm"
+	return MENU_OP_CREATE_PROSTHESIS_xpm;
 }
 
 //----------------------------------------------------------------------------
@@ -58,14 +65,19 @@ albaOp* appOpCreateProsthesisVME::Copy()
 //----------------------------------------------------------------------------
 void appOpCreateProsthesisVME::OpRun()
 {
+	albaVME *root = m_Input->GetRoot();
+
 	//albaVMEProsthesis *pro;
 	appVMEProsthesisEdit *pro;
 	albaNEW(pro);
 	pro->SetName("New Prosthesis");
 	albaProsthesesDBManager * prosthesesDBManager = GetLogicManager()->GetProsthesesDBManager();
 	pro->SetProsthesis(prosthesesDBManager->GetProstheses().at(0));
-	pro->ReparentTo(m_Input);
+	pro->ReparentTo(root);
 
+	root->SetLink("VMEProsthesis", pro);
+
+	GetLogicManager()->VmeSelect(pro);
 	GetLogicManager()->VmeShow(pro, true);
 	
 	OpStop(OP_RUN_OK);

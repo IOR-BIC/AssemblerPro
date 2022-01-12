@@ -32,6 +32,7 @@ PURPOSE. See the above copyright notice for more information.
 
 #include "wx\image.h"
 #include "wx\window.h"
+#include "wx\statline.h"
 
 enum PRODUCER_DIALOG_ID
 {
@@ -149,11 +150,16 @@ void appGUIDialogProducer::CreateProducerDialog()
 
 			m_MainBoxSizer->Add(m_ImageSizer, 0, wxALL | wxALIGN_CENTER, 0);
 
+			wxBoxSizer *immBtnBoxSizer = new wxBoxSizer(wxHORIZONTAL);
+
 			// BUTTON - Change Producer Brand Image
 			albaGUIButton *immBtn = new albaGUIButton(this, ID_PRODUCER_IMM, "Change Image", wxPoint(-1, -1));
 			immBtn->SetListener(this);
-			m_MainBoxSizer->Add(immBtn, 0, wxALIGN_RIGHT, 0);
+			
+			immBtnBoxSizer->Add(immBtn, 0, wxALIGN_RIGHT, 5);
 
+			m_MainBoxSizer->Add(immBtnBoxSizer, 0, wxALL | wxALIGN_RIGHT, 5);
+			
 			delete previewBitmap;
 			delete previewImage;
 		}
@@ -181,15 +187,24 @@ void appGUIDialogProducer::CreateProducerDialog()
 
 		infoBoxSizer->Add(labelSizer2, 0, wxALL | wxEXPAND, 5);
 
-		// TEXT - Empty Separator
-		infoBoxSizer->Add(new albaGUILab(this, -1, " "), 0, wxALIGN_LEFT, 5);
-
 		m_MainBoxSizer->Add(infoBoxSizer, 0, wxALL, 5);
+
+		//////////////////////////////////////////////////////////////////////////
+		
+		// LINE
+		m_MainBoxSizer->Add(new wxStaticLine(this, -1, wxPoint(-1, -1), wxSize(panelWidth+20, 1)), 0, wxALL, 5);
+
+		// Buttons
+		wxBoxSizer *btnBoxSizer = new wxBoxSizer(wxHORIZONTAL);
 
 		// BUTTON - Ok
 		m_OkBtn = new albaGUIButton(this, ID_DIALOG_OK_PRESSED, "OK", wxPoint(-1, -1));
 		m_OkBtn->SetListener(this);
-		m_MainBoxSizer->Add(m_OkBtn, 0, wxALIGN_RIGHT, 0);
+		//m_MainBoxSizer->Add(m_OkBtn, 0, wxALIGN_RIGHT, 5);
+
+		btnBoxSizer->Add(m_OkBtn, 0, wxALIGN_RIGHT, 15);
+
+		m_MainBoxSizer->Add(btnBoxSizer, 0, wxALL | wxALIGN_RIGHT, 5);
 
 		//////////////////////////////////////////////////////////////////////////
 

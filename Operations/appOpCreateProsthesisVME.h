@@ -34,7 +34,7 @@ class APP_OPERATIONS_EXPORT appOpCreateProsthesisVME : public albaOp
 {
 public:
 	/** Constructor. */
-	appOpCreateProsthesisVME(wxString label = "Op Create Prosthesis VME");
+	appOpCreateProsthesisVME(wxString label = "Create Prosthesis VME");
 
 	/** Destructor. */
 	~appOpCreateProsthesisVME();
@@ -45,13 +45,15 @@ public:
 	/** Return a copy of the operation */
 	/*virtual*/ albaOp* Copy();
 
-	/** Return true for the acceptable vme type. */
-	/*virtual*/ bool Accept(albaVME *node);
-
 	/** Builds operation's interface. */
 	/*virtual*/ void OpRun();
 
+	/** Return an xpm-icon that can be used to represent this operation */
+	virtual char** GetIcon();
+
 protected:
 
+	/** Return true for the acceptable vme type. */
+	bool InternalAccept(albaVME *node);
 };
 #endif
