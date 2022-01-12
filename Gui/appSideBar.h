@@ -42,12 +42,10 @@ class albaGUIMDIFrame;
 //----------------------------------------------------------------------------
 // appSideBar :
 //----------------------------------------------------------------------------
-/**
-*/
 class ALBA_EXPORT appSideBar : public albaAbsSideBar
 {
 public:
-	appSideBar(albaGUIMDIFrame* parent, int id, albaObserver *Listener, long style = SINGLE_NOTEBOOK);
+	appSideBar(albaGUIMDIFrame* parent, int id, albaObserver *Listener, long style = DOUBLE_NOTEBOOK);
 
 	~appSideBar();
 
@@ -116,6 +114,7 @@ protected:
 	void InitLeftPanel();
 
 	void UpdateVmePanel();
+	void UpdateProsthesisPanel();
 
 	albaGUIMDIFrame* m_Parent;
 	int m_Id;
@@ -123,11 +122,11 @@ protected:
 
 	wxNotebook        *m_Notebook;
 	wxNotebook        *m_VmeNotebook;
-	wxNotebook        *m_VisualNotebook;
 	wxSplitterWindow *m_SideSplittedPanel;
 
 	albaGUIPanelStack	*m_OpPanel;
 	albaGUIHolder	*m_ViewPropertyPanel;
+	albaGUIHolder	*m_ProsthesisPropertyPanel;
 	albaGUICheckTree  *m_Tree;
 
 	albaGUIHolder  *m_VmePanel;
@@ -145,6 +144,5 @@ protected:
 
 	wxNotebook	*m_LeftNotebook;
 	albaGUIHolder  *m_InfoPanel;
-
 };
 #endif

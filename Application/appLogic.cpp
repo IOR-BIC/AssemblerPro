@@ -85,6 +85,8 @@ void appLogic::Init(int argc, char **argv)
 
 	// Create and Open View
 	ViewCreate(VIEW_SURFACE);
+
+	InitProsthesisVME();
 }
 //----------------------------------------------------------------------------
 void appLogic::InitAboutDialog()
@@ -118,6 +120,15 @@ void appLogic::InitProsthesisDBManager()
 // 	m_ProsthesisDBManager->LoadDBFromFile(imagesPath);
 
 	//m_ProsthesisDBManager->Clear();
+}
+
+//----------------------------------------------------------------------------
+void appLogic::InitProsthesisVME()
+{
+	albaVMERoot *root = this->m_VMEManager->GetRoot();
+
+	if (root && root->GetLink("VMEProsthesis") == NULL)
+		RunOp(GetOp(OP_CREATE_PROSTHESIS));
 }
 
 /// EVENTS
@@ -169,6 +180,10 @@ void appLogic::OnEvent(albaEventBase *alba_event)
 			ShowVMEOnView();
 		}
 		break;
+		case MENU_FILE_NEW:
+			OnFileNew();
+			InitProsthesisVME();
+			break;
 		case MENU_FILE_OPEN:
 		{
 			m_OpeningMSF = true;
@@ -185,6 +200,7 @@ void appLogic::OnEvent(albaEventBase *alba_event)
 			UpdateFrameTitle();
 			m_OpeningMSF = false;
 
+			InitProsthesisVME();
 			ShowVMEOnView();
 		}
 		break;

@@ -65,14 +65,19 @@ albaOp* appOpCreateProsthesisVME::Copy()
 //----------------------------------------------------------------------------
 void appOpCreateProsthesisVME::OpRun()
 {
+	albaVME *root = m_Input->GetRoot();
+
 	//albaVMEProsthesis *pro;
 	appVMEProsthesisEdit *pro;
 	albaNEW(pro);
 	pro->SetName("New Prosthesis");
 	albaProsthesesDBManager * prosthesesDBManager = GetLogicManager()->GetProsthesesDBManager();
 	pro->SetProsthesis(prosthesesDBManager->GetProstheses().at(0));
-	pro->ReparentTo(m_Input);
+	pro->ReparentTo(root);
 
+	root->SetLink("VMEProsthesis", pro);
+
+	GetLogicManager()->VmeSelect(pro);
 	GetLogicManager()->VmeShow(pro, true);
 	
 	OpStop(OP_RUN_OK);
