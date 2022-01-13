@@ -32,10 +32,9 @@ PURPOSE. See the above copyright notice for more information.
 #include "appOpSearchProsthesis.h"
 #include "appOpTestProsthesisGUI.h"
 #include "appOpCreateProsthesisVME.h"
-#include "appOpAddLandmark.h"
 #include "appVMEProsthesisEdit.h"
 #include "appOpImportOldProsthesis.h"
-
+#include "appOpDBManager.h"
 #include "appUtils.h"
 
 #include "albaOpTransform.h"
@@ -130,7 +129,8 @@ bool AssemblerPro::OnInit()
 	// Test Prosthesis GUI Op
 	m_Logic->Plug(new appOpTestProsthesisGUI("Test Prosthesis GUI"), "Extra");
 
-
+	// Test Prosthesis GUI Op
+	m_Logic->Plug(new appOpDBManager("DB Manager"), "Extra");
 
 	//////////////////////////////////////////////////////////////////////////
 	//Views
