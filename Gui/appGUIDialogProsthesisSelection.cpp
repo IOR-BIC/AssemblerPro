@@ -329,8 +329,9 @@ void appGUIDialogProsthesisSelection::UpdateDialog()
 			previewBitmap = new wxBitmap(previewImage);
 
 			m_ProducerImageButton = new albaGUIPicButton(this, previewBitmap, -1);
-			m_ProducerImageSizer->Add(m_ProducerImageButton);
+			m_ProducerImageSizer->Add(m_ProducerImageButton, 0, wxALL | wxALIGN_CENTER, 0);
 			
+			m_ProducerImageButton->Fit();
 			m_ProducerImageSizer->Fit(this);
 
 			delete previewBitmap;

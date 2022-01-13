@@ -307,6 +307,8 @@ void albaVMEProsthesis::ChangeProsthesis()
 		SetProsthesis(prosthesis);
 		UpdateGui();
 		FitParentGui();
+
+		GetLogicManager()->VmeVisualModeChanged(this);
 	}
 }
 

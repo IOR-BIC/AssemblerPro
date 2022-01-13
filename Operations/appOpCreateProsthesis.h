@@ -20,15 +20,13 @@ PURPOSE. See the above copyright notice for more information.
 // Include :
 //----------------------------------------------------------------------------
 #include "appOperationsDefines.h"
+#include "appDecl.h"
 #include "albaOp.h"
-#include "albaProsthesesDBManager.h"
+#include "appVMEProsthesisEdit.h"
 
 //----------------------------------------------------------------------------
 // Forward references :
 //----------------------------------------------------------------------------
-class albaProsthesesDBManager;
-class albaProDBProsthesis;
-class appGUIDialogProsthesis;
 
 //----------------------------------------------------------------------------
 // Class Name: appOpCreateProsthesis
@@ -36,9 +34,8 @@ class appGUIDialogProsthesis;
 class APP_OPERATIONS_EXPORT appOpCreateProsthesis : public albaOp
 {
 public:
-	
 	/** Constructor. */
-	appOpCreateProsthesis(wxString label = "Create New Prosthesis");
+	appOpCreateProsthesis(wxString label = "Create Prosthesis VME");
 
 	/** Destructor. */
 	~appOpCreateProsthesis();
@@ -49,21 +46,28 @@ public:
 	/** Return a copy of the operation */
 	/*virtual*/ albaOp* Copy();
 
+	/** Builds operation's interface. */
+	/*virtual*/ void OpRun();
+
+	void CreateDBProsthesis(appVMEProsthesisEdit * VmeProsthesis);
+
+	appVMEProsthesisEdit * CreateVMEProshesis();
+
 	/** Return an xpm-icon that can be used to represent this operation */
 	virtual char** GetIcon();
 
-	/** Builds operation's interface. */
-	/*virtual*/ void OpRun();
-	
 protected:
 
 	/** Return true for the acceptable vme type. */
 	bool InternalAccept(albaVME *node);
 
-	/** This method is called at the end of the operation and result contain the wxOK or wxCANCEL. */
-	/*virtual*/ void OpStop(int result);	
+	albaProsthesesDBManager * m_ProsthesesDBManager;
 
-	albaProsthesesDBManager *m_DBManager;
-	albaProDBProsthesis *m_CurrentProsthesis;
+	appVMEProsthesisEdit *GetVMEProsthesisFromTree();
+
+	appVMEProsthesisEdit *m_VmeProsthesis;
+
+	bool m_VMEProsthesisIsCreated;;
 };
+
 #endif

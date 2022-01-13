@@ -26,15 +26,14 @@ PURPOSE. See the above copyright notice for more information.
 #include "appDecl.h"
 
 #include "appOpCreateProsthesis.h"
+#include "appOpDBManager.h"
 #include "appOpEmpty.h"
 #include "appOpExportProsthesisDB.h"
+#include "appOpImportOldProsthesis.h"
 #include "appOpImportProsthesisDB.h"
 #include "appOpSearchProsthesis.h"
-#include "appOpCreateProsthesisVME.h"
-#include "appVMEProsthesisEdit.h"
-#include "appOpImportOldProsthesis.h"
-#include "appOpDBManager.h"
 #include "appUtils.h"
+#include "appVMEProsthesisEdit.h"
 
 #include "albaOpTransform.h"
 #include "albaPipeFactoryVME.h"
@@ -116,17 +115,13 @@ bool AssemblerPro::OnInit()
 	//m_Logic->Plug(new appOpEmpty("Empty"), "");
 
 	// Create Prosthesis Op
-	m_Logic->Plug(new appOpCreateProsthesisVME());
+	m_Logic->Plug(new appOpCreateProsthesis());
 
 	// Search Prosthesis Op
-	m_Logic->Plug(new appOpSearchProsthesis("Search Prosthesis"));
-
-	/// Extras
-	// Create Prosthesis Op
-	m_Logic->Plug(new appOpCreateProsthesis("Create Prosthesis"), "Extra");
+	m_Logic->Plug(new appOpSearchProsthesis());
 
 	// DB Manager Op
-	m_Logic->Plug(new appOpDBManager("DB Manager"), "Extra");
+	m_Logic->Plug(new appOpDBManager(), "Extra");
 
 	//////////////////////////////////////////////////////////////////////////
 	//Views

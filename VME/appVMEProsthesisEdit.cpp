@@ -206,6 +206,8 @@ void appVMEProsthesisEdit::SelectProsthesis()
 	SetProsthesis(DBprosthesis[m_SelectedProsthesis]);
 	UpdateGui();
 	FitParentGui();
+
+	GetLogicManager()->VmeVisualModeChanged(this);
 }
 //----------------------------------------------------------------------------
 void appVMEProsthesisEdit::EditProsthesis(albaProDBProsthesis *prosthesis)
@@ -295,8 +297,7 @@ void appVMEProsthesisEdit::CreateComponentGui(int currGroup, albaProDBCompGroup 
 	compGui->MultipleButtons(3, 3, btnIDs, btnLabels);
 	compGui->Button(baseID + ID_MATRIX_COMPONENT, "Matrix");
 	compGui->Divider(1);
-
-
+	
 	// Add to Gui
 	m_GroupGui->Add(compGui);
 	compGui->FitGui();
@@ -443,4 +444,22 @@ void appVMEProsthesisEdit::EditComponentMatrix(int compGroup)
 
 	m_AppendPolydata->Update();
 	GetLogicManager()->CameraUpdate();
+}
+
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::Reset()
+{
+	ClearComponentGroups();
+
+	vtkDEL(m_AppendPolydata);
+
+	UpdateGui();
+}
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::SetSelection(int selection)
+{
+	vtkDEL(m_AppendPolydata);
+
+	m_SelectedProsthesis = selection;
+	SelectProsthesis();
 }

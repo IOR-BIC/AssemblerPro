@@ -17,14 +17,13 @@ PROJECT(appOperations)
 
 # Set your list of sources here.
 SET(PROJECT_SRCS
-appOpEmpty.cpp	appOpEmpty.h
-appOpDBManager.cpp	appOpDBManager.h
-appOpCreateProsthesis.cpp 	appOpCreateProsthesis.h
-appOpCreateProsthesisVME.cpp appOpCreateProsthesisVME.h
-appOpSearchProsthesis.cpp	appOpSearchProsthesis.h
-appOpImportProsthesisDB.cpp	appOpImportProsthesisDB.h
+appOpEmpty.cpp							 appOpEmpty.h
+appOpDBManager.cpp					 appOpDBManager.h
+appOpCreateProsthesis.cpp 	 appOpCreateProsthesis.h
+appOpSearchProsthesis.cpp	   appOpSearchProsthesis.h
+appOpImportProsthesisDB.cpp	 appOpImportProsthesisDB.h
 appOpImportOldProsthesis.cpp appOpImportOldProsthesis.h
-appOpExportProsthesisDB.cpp	appOpExportProsthesisDB.h
+appOpExportProsthesisDB.cpp	 appOpExportProsthesisDB.h
 )
 
 SET(PROJECT_LIBS ${PROJECT_LIBS})

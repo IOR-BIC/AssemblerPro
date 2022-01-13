@@ -43,6 +43,9 @@ public:
 	/** return an xpm-icon that can be used to represent this node */
 	static char ** GetIcon();
 
+	void Reset();
+	void SetSelection(int selection);
+
 	//----------------------------------------------------------------------------
 	// Widgets ID's
 	//----------------------------------------------------------------------------

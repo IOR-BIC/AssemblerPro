@@ -21,12 +21,14 @@ PURPOSE. See the above copyright notice for more information.
 
 #include "appOpCreateProsthesis.h"
 #include "appDecl.h"
-#include "appGUIDialogProsthesis.h"
-#include "appLogic.h"
 
+#include "albaAbsLogicManager.h"
 #include "albaGUI.h"
+#include "albaVME.h"
+#include "albaVMEProsthesis.h"
+#include "appVMEProsthesisEdit.h"
 #include "albaProsthesesDBManager.h"
-#include "albaServiceClient.h"
+#include "appGUIDialogProsthesis.h"
 
 //----------------------------------------------------------------------------
 albaCxxTypeMacro(appOpCreateProsthesis);
@@ -37,9 +39,11 @@ appOpCreateProsthesis::appOpCreateProsthesis(wxString label) :albaOp(label)
 	m_OpType = OPTYPE_OP;
 	m_Canundo = true;
 
-	m_CurrentProsthesis = NULL;
-}
+	m_ProsthesesDBManager = NULL;
 
+	m_VmeProsthesis = NULL;
+	m_VMEProsthesisIsCreated = false;
+}
 //----------------------------------------------------------------------------
 appOpCreateProsthesis::~appOpCreateProsthesis()
 {
@@ -48,7 +52,6 @@ appOpCreateProsthesis::~appOpCreateProsthesis()
 //----------------------------------------------------------------------------
 bool appOpCreateProsthesis::InternalAccept(albaVME *node)
 {
-	//return node->IsA("...");
 	return true;
 }
 
@@ -65,29 +68,82 @@ albaOp* appOpCreateProsthesis::Copy()
 	appOpCreateProsthesis *cp = new appOpCreateProsthesis(m_Label);
 	return cp;
 }
+
 //----------------------------------------------------------------------------
 void appOpCreateProsthesis::OpRun()
 {
-	m_DBManager = ((appLogic*)GetLogicManager())->GetProsthesesDBManager();
+	m_ProsthesesDBManager = GetLogicManager()->GetProsthesesDBManager();
+	m_VmeProsthesis = GetVMEProsthesisFromTree();
 
-	// Create New Prosthesis
-	m_CurrentProsthesis = new albaProDBProsthesis();
-	m_CurrentProsthesis->SetName("newProsthesis");
-	m_CurrentProsthesis->SetProducer("");
-	m_CurrentProsthesis->SetImgFileName("");
-	m_CurrentProsthesis->SetType("");
-	m_CurrentProsthesis->SetSide(albaProDBProsthesis::PRO_LEFT);
+	if (m_VmeProsthesis == NULL)
+		m_VmeProsthesis = CreateVMEProshesis();
+
+	if (m_VMEProsthesisIsCreated == false)
+		CreateDBProsthesis(m_VmeProsthesis);
+
+	GetLogicManager()->VmeSelect(m_VmeProsthesis);
+	GetLogicManager()->VmeShow(m_VmeProsthesis, true);
+
+	OpStop(OP_RUN_OK);
+}
+
+//----------------------------------------------------------------------------
+appVMEProsthesisEdit *appOpCreateProsthesis::GetVMEProsthesisFromTree()
+{
+	return appVMEProsthesisEdit::SafeDownCast(m_Input->GetRoot()->GetLink("VMEProsthesis"));
+}
+//----------------------------------------------------------------------------
+appVMEProsthesisEdit * appOpCreateProsthesis::CreateVMEProshesis()
+{
+	appVMEProsthesisEdit *newVmeProsthesis = NULL;
+	albaNEW(newVmeProsthesis);
+	newVmeProsthesis->SetName("New Prosthesis");
+
+	newVmeProsthesis->SetProsthesis(m_ProsthesesDBManager->GetProstheses().at(0));
+	newVmeProsthesis->ReparentTo(m_Input->GetRoot());
+
+	m_Input->GetRoot()->SetLink("VMEProsthesis", newVmeProsthesis);
+
+	m_VMEProsthesisIsCreated = true;
+
+	return newVmeProsthesis;
+}
+//----------------------------------------------------------------------------
+void appOpCreateProsthesis::CreateDBProsthesis(appVMEProsthesisEdit *VmeProsthesis)
+{
+	GetLogicManager()->VmeSelect(NULL);
+	GetLogicManager()->VmeShow(VmeProsthesis, false);
+
+	// Create New DB Prosthesis
+	albaProDBProsthesis *proDB = new albaProDBProsthesis();
+	proDB->SetName("New Prosthesis");
+	proDB->SetProducer("");
+	proDB->SetImgFileName("");
+	proDB->SetType("");
+	proDB->SetSide(albaProDBProsthesis::PRO_LEFT);
+
+	albaProDBCompGroup *proDBCompGroup = new albaProDBCompGroup();
+	proDBCompGroup->SetName("New Group");
+	proDB->AddCompGroup(proDBCompGroup);
+
+	albaProDBComponent *proDBComp = new albaProDBComponent();
+	proDBComp->SetName("New Component");
+	proDBCompGroup->AddComponent(proDBComp);
 
 	// Show dialog
 	appGUIDialogProsthesis md(_("Add Prosthesis"));
-	md.SetProsthesis(m_CurrentProsthesis);
+	md.SetProsthesis(proDB);
 	md.ShowModal();
 
 	if (md.OkClosed())
 	{
 		// Add New Prosthesis to DB
-		m_DBManager->GetProstheses().push_back(m_CurrentProsthesis);
-		m_DBManager->SaveDB();
+		m_ProsthesesDBManager->GetProstheses().push_back(proDB);
+		m_ProsthesesDBManager->SaveDB();
+
+		VmeProsthesis->Reset();
+		VmeProsthesis->SetSelection(m_ProsthesesDBManager->GetProstheses().size() - 1);
+		//VmeProsthesis->SetProsthesis(proDB);
 
 		wxString message = wxString::Format("Added New Prosthesis!");
 		wxMessageBox(message);
@@ -95,13 +151,6 @@ void appOpCreateProsthesis::OpRun()
 	else
 	{
 		// Reload DB
-		m_DBManager->LoadDB();
+		m_ProsthesesDBManager->LoadDB();
 	}
-
-	OpStop(OP_RUN_OK);
-}
-//----------------------------------------------------------------------------
-void appOpCreateProsthesis::OpStop(int result)
-{
-	albaEventMacro(albaEvent(this, result));
 }

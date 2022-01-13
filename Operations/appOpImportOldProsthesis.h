@@ -34,7 +34,7 @@ class APP_OPERATIONS_EXPORT appOpImportOldProsthesis : public albaOp
 {
 public:
 	/** Constructor. */
-	appOpImportOldProsthesis(wxString label = "Import old Prosthesis");
+	appOpImportOldProsthesis(wxString label = "Import Old Prosthesis");
 
 	/** Destructor. */
 	~appOpImportOldProsthesis();
