@@ -85,6 +85,7 @@ protected:
 
 	void ExportDB();
 
+	bool IsIn(wxArrayString as, wxString string);
 	bool MakeZip(const albaString &zipname, wxArrayString *files);
 
 	wxString m_DBName;

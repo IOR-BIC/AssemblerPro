@@ -301,7 +301,7 @@ void appOpExportProsthesisDB::ExportDB()
 						wxString dataPath = DBPath;
 						dataPath.Append("/"+ m_ProsthesisVect[m]->GetCompGroups()->at(g)->GetComponents()->at(c)->GetDataFileName());
 
-						if (wxFileExists(dataPath))
+						if (wxFileExists(dataPath) && !IsIn(files, dataPath))
 							files.Add(dataPath); // Add cry files to ZIP
 					}
 				}
@@ -324,6 +324,15 @@ void appOpExportProsthesisDB::ExportDB()
 
 		wxRemoveFile(xmlFileName.GetCStr());
 	}
+}
+
+//----------------------------------------------------------------------------
+bool appOpExportProsthesisDB::IsIn(wxArrayString as, wxString string)
+{
+	for (int s = 0; s < as.size(); s++)
+		if(as[s] == string) return true;
+
+	return false;
 }
 
 //----------------------------------------------------------------------------
