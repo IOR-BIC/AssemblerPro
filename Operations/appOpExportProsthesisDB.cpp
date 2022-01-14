@@ -22,10 +22,17 @@ PURPOSE. See the above copyright notice for more information.
 #include "appOpExportProsthesisDB.h"
 #include "appDecl.h"
 #include "appGUI.h"
+#include "appUtils.h"
 
 #include "albaGUI.h"
 #include "albaGUICheckListBox.h"
 #include "albaVME.h"
+#include "albaProsthesesDBManager.h"
+
+#include <wx/zipstrm.h>
+#include <wx/zstream.h>
+#include <wx/ffile.h>
+#include <wx/wfstream.h>
 
 //----------------------------------------------------------------------------
 albaCxxTypeMacro(appOpExportProsthesisDB);
@@ -39,8 +46,15 @@ appOpExportProsthesisDB::appOpExportProsthesisDB(wxString label) :albaOp(label)
 	m_DBName = "";
 	m_DBVersion = "1.0";
 
-	m_SelectAllProducers = 0;
-	m_SelectAllModels = 0;
+	m_ProducerCheckBox = NULL;
+	m_TypeCheckBox = NULL;
+	m_SideCheckBox = NULL;
+	m_ProsthesisCheckBox = NULL;
+
+	m_SelectAllProducers = 1;
+	m_SelectAllTypes = 1;
+	m_SelectAllSides = 1;
+	m_SelectAllModels = 1;
 }
 
 //----------------------------------------------------------------------------
@@ -71,9 +85,12 @@ albaOp* appOpExportProsthesisDB::Copy()
 //----------------------------------------------------------------------------
 void appOpExportProsthesisDB::OpRun()
 {
+	m_ProsthesesDBManager = GetLogicManager()->GetProsthesesDBManager();
+
 	if (!m_TestMode)
 	{
 		CreateGui();
+		UpdateGui();
 	}
 	
 	//OpStop(OP_RUN_OK);
@@ -81,10 +98,19 @@ void appOpExportProsthesisDB::OpRun()
 //----------------------------------------------------------------------------
 void appOpExportProsthesisDB::OpStop(int result)
 {
+	if (result == OP_RUN_OK)
+	{
+		ExportDB();
+	}
+
 	if (!m_TestMode)
 	{
 		HideGui();
 	}
+
+	m_ProducerVect.clear();
+	m_TypeVect.clear();
+	m_ProsthesisVect.clear();
 
 	albaEventMacro(albaEvent(this, result));
 }
@@ -111,6 +137,12 @@ void appOpExportProsthesisDB::OnEvent(albaEventBase *alba_event)
 				OpStop(OP_RUN_CANCEL);
 				break;
 
+			case ID_PRODUCER_SELECTION:
+			case ID_TYPE_SELECTION:
+			case ID_SIDE_SELECTION:
+				UpdateGui();
+				break;
+
 			default:
 				Superclass::OnEvent(alba_event);
 				break;
@@ -133,25 +165,23 @@ void appOpExportProsthesisDB::CreateGui()
 	m_Gui->String(NULL, "Version", &m_DBVersion);
 	m_Gui->Divider(1);
 
-	albaGUICheckListBox *m_ProducerCheckBox = m_Gui->CheckList(NULL, "Producer");
-	m_ProducerCheckBox->AddItem(NULL, "Prod1", false);
-	m_ProducerCheckBox->AddItem(NULL, "Prod2", false);
-	m_ProducerCheckBox->AddItem(NULL, "Prod3", false);
-	m_Gui->Bool(NULL, "Select All", &m_SelectAllProducers);
-
+	m_ProducerCheckBox = m_Gui->CheckList(ID_PRODUCER_SELECTION, "Producer");
+	//m_Gui->Bool(NULL, "Select All", &m_SelectAllProducers);
 	m_Gui->Divider(1);
 
-	albaGUICheckListBox *m_ModelCheckBox = m_Gui->CheckList(NULL, "Models", 180);
-	m_ModelCheckBox->AddItem(NULL, "Mod1", false);
-	m_ModelCheckBox->AddItem(NULL, "Mod2", false);
-	m_ModelCheckBox->AddItem(NULL, "Mod3", false);
-	m_ModelCheckBox->AddItem(NULL, "Mod4", false);
-	m_ModelCheckBox->AddItem(NULL, "Mod5", false);
-	m_ModelCheckBox->AddItem(NULL, "Mod6", false);
-	m_ModelCheckBox->AddItem(NULL, "Mod7", false);
-	m_ModelCheckBox->AddItem(NULL, "Mod8", false);
-	m_ModelCheckBox->AddItem(NULL, "Mod9", false);
-	m_Gui->Bool(NULL, "Select All", &m_SelectAllModels);
+	m_TypeCheckBox = m_Gui->CheckList(ID_TYPE_SELECTION, "Type");
+	//m_Gui->Bool(NULL, "Select All", &m_SelectAllTypes);
+	m_Gui->Divider(1);
+
+	m_SideCheckBox = m_Gui->CheckList(ID_SIDE_SELECTION, "Side");
+	m_SideCheckBox->AddItem(NULL, "Left", true);
+	m_SideCheckBox->AddItem(NULL, "Right", true);
+	m_SideCheckBox->AddItem(NULL, "Both", true);
+	//m_Gui->Bool(NULL, "Select All", &m_SelectAllSides);
+	m_Gui->Divider(1);
+
+	m_ProsthesisCheckBox = m_Gui->CheckList(ID_MODEL_SELECTION, "Models", 180);
+	//m_Gui->Bool(NULL, "Select All", &m_SelectAllModels);
 
 	//////////////////////////////////////////////////////////////////////////
 	m_Gui->Label("");
@@ -159,5 +189,196 @@ void appOpExportProsthesisDB::CreateGui()
 	m_Gui->OkCancel();
 	m_Gui->Label("");
 
+	//////////////////////////////////////////////////////////////////////////
+	// Update Producer CheckBox
+	std::vector<albaProDBProducer *> DBproducer = m_ProsthesesDBManager->GetProducers();
+
+	m_ProducerCheckBox->Clear();
+	m_ProducerVect.clear();
+
+	for (int p = 0; p < DBproducer.size(); p++)
+	{
+		wxString name = wxString::Format("%s", DBproducer[p]->GetName().GetCStr());
+		m_ProducerCheckBox->AddItem(NULL, name, true);
+		m_ProducerVect.push_back(DBproducer[p]);
+	}
+
+	// Update Type CheckBox
+	std::vector<albaProDBType *> DBtypes = m_ProsthesesDBManager->GetTypes();
+
+	m_TypeCheckBox->Clear();
+	m_TypeVect.clear();
+
+	for (int t = 0; t < DBtypes.size(); t++)
+	{
+		wxString name = wxString::Format("%s", DBtypes[t]->GetName().GetCStr());
+		m_TypeCheckBox->AddItem(NULL, name, true);
+		m_TypeVect.push_back(DBtypes[t]);
+	}
+
 	ShowGui();
+}
+
+//----------------------------------------------------------------------------
+void appOpExportProsthesisDB::UpdateGui()
+{
+	// Update Prosthesis CheckBox
+	std::vector<albaProDBProsthesis *> DBprosthesis = m_ProsthesesDBManager->GetProstheses();
+
+	m_ProsthesisCheckBox->Clear();
+	m_ProsthesisVect.clear();
+	for (int m = 0; m < DBprosthesis.size(); m++)
+	{
+		int p = m_ProducerCheckBox->FindItem(DBprosthesis[m]->GetProducer().GetCStr());
+		int t = m_TypeCheckBox->FindItem(DBprosthesis[m]->GetType().GetCStr());
+		int s = m_SideCheckBox->FindItem(DBprosthesis[m]->GetSideAsStr(DBprosthesis[m]->GetSide()));
+
+		if (m_ProducerCheckBox->IsItemChecked(p) && m_TypeCheckBox->IsItemChecked(t) && m_SideCheckBox->IsItemChecked(s))
+		{
+			wxString name = wxString::Format("%s - %s", DBprosthesis[m]->GetProducer().GetCStr(), DBprosthesis[m]->GetName().GetCStr());
+			m_ProsthesisCheckBox->AddItem(NULL, name, true);
+			m_ProsthesisVect.push_back(DBprosthesis[m]);
+		}
+	}
+
+	m_Gui->Update();
+}
+
+//----------------------------------------------------------------------------
+void appOpExportProsthesisDB::ExportDB()
+{
+	albaString fileNameFullPath = albaGetDocumentsDirectory().c_str();
+	fileNameFullPath.Append("\\newDB.zip");
+
+	albaString wildc = "DB file (*.zip)|*.zip";
+	albaString newFileName = albaGetSaveFile(fileNameFullPath.GetCStr(), wildc, "Save DB", 0, false).c_str();
+
+	if (!newFileName.IsEmpty())
+	{
+		wxString path, name, ext;
+		wxSplitPath(newFileName, &path, &name, &ext);
+
+		albaString xmlFileName = path + "\\" + name + ".xml";
+		albaString zipFileName = path + "\\" + name + ".zip";
+		wxArrayString files;
+
+		wxString DBPath = m_ProsthesesDBManager->GetDBDir();
+		wxString configPath = appUtils::GetConfigDirectory().c_str();
+
+		//files.Add(configPath + "/Wizard/Producer.bmp"); // Add image file to ZIP (default)
+		//files.Add(configPath + "/Wizard/Model.bmp"); // Add image file to ZIP (default)
+
+		// Create AuxDB
+		albaProsthesesDBManager *auxDBManager = new albaProsthesesDBManager();
+
+		// Producer
+		for (int p = 0; p < m_ProducerCheckBox->GetNumberOfItems(); p++)
+		{
+			if (m_ProducerCheckBox->IsItemChecked(p))
+			{
+				auxDBManager->AddProducer(m_ProducerVect[p]);
+
+				albaString imageName = m_ProducerVect[p]->GetImgFileName();
+				if (!imageName.IsEmpty())
+				{
+					wxString imagePath = DBPath + "/" + imageName;
+
+					if (wxFileExists(imagePath))
+						files.Add(imagePath); // Add image files to ZIP
+				}
+			}
+		}
+
+		// Type
+		for (int t = 0; t < m_TypeCheckBox->GetNumberOfItems(); t++)
+		{
+			if (m_TypeCheckBox->IsItemChecked(t))
+				auxDBManager->AddType(m_TypeVect[t]);
+		}
+
+		// Prosthesis
+		for (int m = 0; m < m_ProsthesisCheckBox->GetNumberOfItems(); m++)
+		{
+			if (m_ProsthesisCheckBox->IsItemChecked(m))
+			{
+				auxDBManager->AddProsthesis(m_ProsthesisVect[m]);
+
+				albaString imageName = m_ProsthesisVect[m]->GetImgFileName();
+				if (!imageName.IsEmpty())
+				{
+					wxString imagePath = DBPath + "/" + imageName;
+
+					if (wxFileExists(imagePath))
+						files.Add(imagePath); // Add image files to ZIP
+				}
+
+				for (int g = 0; g < m_ProsthesisVect[m]->GetCompGroups()->size(); g++)
+				{
+					for (int c = 0; c < m_ProsthesisVect[m]->GetCompGroups()->at(g)->GetComponents()->size(); c++)
+					{
+						wxString dataPath = DBPath;
+						dataPath.Append("/"+ m_ProsthesisVect[m]->GetCompGroups()->at(g)->GetComponents()->at(c)->GetDataFileName());
+
+						if (wxFileExists(dataPath))
+							files.Add(dataPath); // Add cry files to ZIP
+					}
+				}
+			}
+		}
+
+		//////////////////////////////////////////////////////////////////////////
+
+		auxDBManager->SaveDBToFile(xmlFileName);
+		auxDBManager->Clear();
+		delete auxDBManager;
+
+		files.Add(xmlFileName.GetCStr()); // Add xml to ZIP
+
+		// Make Zip
+		if (!MakeZip(zipFileName.GetCStr(), &files))
+		{
+			albaMessage(_("Failed to create compressed archive!"), _("Error"));
+		}
+
+		wxRemoveFile(xmlFileName.GetCStr());
+	}
+}
+
+//----------------------------------------------------------------------------
+bool appOpExportProsthesisDB::MakeZip(const albaString &zipname, wxArrayString *files)
+{
+	wxString name, path, short_name, ext;
+	wxFileOutputStream out(zipname.GetCStr());
+	wxZipOutputStream zip(out);
+
+	if (!out || !zip)
+		return false;
+
+	for (size_t i = 0; i < files->GetCount(); i++)
+	{
+		name = files->Item(i);
+		wxSplitPath(name, &path, &short_name, &ext);
+		short_name += ".";
+		short_name += ext;
+
+		if (wxDirExists(name))
+		{
+			if (!zip.PutNextDirEntry(name)) // put the file inside the archive
+				return false;
+		}
+		else
+		{
+			wxFFileInputStream in(name);
+
+			if (in.Ok())
+			{
+				wxDateTime dt(wxFileModificationTime(name)); // get the file modification time
+
+				if (!zip.PutNextEntry(short_name, dt, in.GetLength()) || !zip.Write(in) || !in.Eof()) // put the file inside the archive
+					return false;
+			}
+		}
+	}
+
+	return zip.Close() && out.Close();
 }
