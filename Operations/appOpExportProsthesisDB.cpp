@@ -48,12 +48,10 @@ appOpExportProsthesisDB::appOpExportProsthesisDB(wxString label) :albaOp(label)
 
 	m_ProducerCheckBox = NULL;
 	m_TypeCheckBox = NULL;
-	m_SideCheckBox = NULL;
 	m_ProsthesisCheckBox = NULL;
 
 	m_SelectAllProducers = 1;
 	m_SelectAllTypes = 1;
-	m_SelectAllSides = 1;
 	m_SelectAllModels = 1;
 }
 
@@ -92,8 +90,6 @@ void appOpExportProsthesisDB::OpRun()
 		CreateGui();
 		UpdateGui();
 	}
-	
-	//OpStop(OP_RUN_OK);
 }
 //----------------------------------------------------------------------------
 void appOpExportProsthesisDB::OpStop(int result)
@@ -124,34 +120,25 @@ void appOpExportProsthesisDB::OnEvent(albaEventBase *alba_event)
 {
 	if (albaEvent *e = albaEvent::SafeDownCast(alba_event))
 	{
-		m_Gui->Update();
-		//if (e->GetSender() == m_Gui)
+		switch (e->GetId())
 		{
-			switch (e->GetId())
-			{
-			case wxOK:
-				OpStop(OP_RUN_OK);
-				break;
+		case wxOK:
+			OpStop(OP_RUN_OK);
+			break;
 
-			case wxCANCEL:
-				OpStop(OP_RUN_CANCEL);
-				break;
+		case wxCANCEL:
+			OpStop(OP_RUN_CANCEL);
+			break;
 
-			case ID_PRODUCER_SELECTION:
-			case ID_TYPE_SELECTION:
-			case ID_SIDE_SELECTION:
-				UpdateGui();
-				break;
+		case ID_PRODUCER_SELECTION:
+		case ID_TYPE_SELECTION:
+			UpdateGui();
+			break;
 
-			default:
-				Superclass::OnEvent(alba_event);
-				break;
-			}
+		default:
+			Superclass::OnEvent(alba_event);
+			break;
 		}
-// 		else
-// 		{
-// 			Superclass::OnEvent(alba_event);
-// 		}
 	}
 }
 
@@ -161,27 +148,23 @@ void appOpExportProsthesisDB::CreateGui()
 	// Interface:
 	m_Gui = new appGUI(this);
 
-	m_Gui->String(NULL, "Name", &m_DBName);
-	m_Gui->String(NULL, "Version", &m_DBVersion);
+	//m_Gui->String(NULL, "Name", &m_DBName);
+	//m_Gui->String(NULL, "Version", &m_DBVersion);
+	m_Gui->Label("Filters:");
 	m_Gui->Divider(1);
 
 	m_ProducerCheckBox = m_Gui->CheckList(ID_PRODUCER_SELECTION, "Producer");
 	//m_Gui->Bool(NULL, "Select All", &m_SelectAllProducers);
 	m_Gui->Divider(1);
 
-	m_TypeCheckBox = m_Gui->CheckList(ID_TYPE_SELECTION, "Type");
+	m_TypeCheckBox = m_Gui->CheckList(ID_TYPE_SELECTION, "Type", 30);
 	//m_Gui->Bool(NULL, "Select All", &m_SelectAllTypes);
 	m_Gui->Divider(1);
 
-	m_SideCheckBox = m_Gui->CheckList(ID_SIDE_SELECTION, "Side");
-	m_SideCheckBox->AddItem(NULL, "Left", true);
-	m_SideCheckBox->AddItem(NULL, "Right", true);
-	m_SideCheckBox->AddItem(NULL, "Both", true);
-	//m_Gui->Bool(NULL, "Select All", &m_SelectAllSides);
-	m_Gui->Divider(1);
-
-	m_ProsthesisCheckBox = m_Gui->CheckList(ID_MODEL_SELECTION, "Models", 180);
+	m_Gui->Label("Prosthesis", true);
+	m_ProsthesisCheckBox = m_Gui->CheckList(ID_MODEL_SELECTION, "", 180);
 	//m_Gui->Bool(NULL, "Select All", &m_SelectAllModels);
+	m_Gui->Divider(1);
 
 	//////////////////////////////////////////////////////////////////////////
 	m_Gui->Label("");
@@ -231,9 +214,8 @@ void appOpExportProsthesisDB::UpdateGui()
 	{
 		int p = m_ProducerCheckBox->FindItem(DBprosthesis[m]->GetProducer().GetCStr());
 		int t = m_TypeCheckBox->FindItem(DBprosthesis[m]->GetType().GetCStr());
-		int s = m_SideCheckBox->FindItem(DBprosthesis[m]->GetSideAsStr(DBprosthesis[m]->GetSide()));
 
-		if (m_ProducerCheckBox->IsItemChecked(p) && m_TypeCheckBox->IsItemChecked(t) && m_SideCheckBox->IsItemChecked(s))
+		if (m_ProducerCheckBox->IsItemChecked(p) && m_TypeCheckBox->IsItemChecked(t))
 		{
 			wxString name = wxString::Format("%s - %s", DBprosthesis[m]->GetProducer().GetCStr(), DBprosthesis[m]->GetName().GetCStr());
 			m_ProsthesisCheckBox->AddItem(NULL, name, true);

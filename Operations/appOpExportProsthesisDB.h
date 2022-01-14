@@ -43,7 +43,6 @@ public:
 	{
 		ID_PRODUCER_SELECTION = MINID,
 		ID_TYPE_SELECTION,
-		ID_SIDE_SELECTION,
 		ID_MODEL_SELECTION,
 	};
 
@@ -87,6 +86,7 @@ protected:
 	void ExportDB();
 
 	bool MakeZip(const albaString &zipname, wxArrayString *files);
+
 	wxString m_DBName;
 	wxString m_DBVersion;
 
@@ -94,7 +94,6 @@ protected:
 
 	albaGUICheckListBox *m_ProducerCheckBox;
 	albaGUICheckListBox *m_TypeCheckBox;
-	albaGUICheckListBox *m_SideCheckBox;
 	albaGUICheckListBox *m_ProsthesisCheckBox;
 
 	std::vector<albaProDBProducer*> m_ProducerVect;
@@ -103,7 +102,6 @@ protected:
 
 	int m_SelectAllProducers;
 	int m_SelectAllTypes;
-	int m_SelectAllSides;
 	int m_SelectAllModels;
 };
 #endif
