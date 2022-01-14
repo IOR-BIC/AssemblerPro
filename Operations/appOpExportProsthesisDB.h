@@ -27,6 +27,9 @@ PURPOSE. See the above copyright notice for more information.
 // Forward references :
 //----------------------------------------------------------------------------
 class albaGUICheckListBox;
+class albaProDBProsthesis;
+class albaProDBType;
+class albaProDBProducer;
 
 //----------------------------------------------------------------------------
 // Class Name: appOpExportProsthesisDB
@@ -34,6 +37,16 @@ class albaGUICheckListBox;
 class APP_OPERATIONS_EXPORT appOpExportProsthesisDB : public albaOp
 {
 public:
+
+	//Widgets ID's	
+	enum OP_EXPORTDB
+	{
+		ID_PRODUCER_SELECTION = MINID,
+		ID_TYPE_SELECTION,
+		ID_SIDE_SELECTION,
+		ID_MODEL_SELECTION,
+	};
+
 	/** Constructor. */
 	appOpExportProsthesisDB(wxString label = "Export Prosthesis DB");
 
@@ -69,11 +82,28 @@ protected:
 
 	/** Create the Operation GUI */
 	virtual void CreateGui();
+	void UpdateGui();
 
+	void ExportDB();
+
+	bool MakeZip(const albaString &zipname, wxArrayString *files);
 	wxString m_DBName;
 	wxString m_DBVersion;
 
+	albaProsthesesDBManager *m_ProsthesesDBManager;
+
+	albaGUICheckListBox *m_ProducerCheckBox;
+	albaGUICheckListBox *m_TypeCheckBox;
+	albaGUICheckListBox *m_SideCheckBox;
+	albaGUICheckListBox *m_ProsthesisCheckBox;
+
+	std::vector<albaProDBProducer*> m_ProducerVect;
+	std::vector<albaProDBType*> m_TypeVect;
+	std::vector<albaProDBProsthesis*> m_ProsthesisVect;
+
 	int m_SelectAllProducers;
+	int m_SelectAllTypes;
+	int m_SelectAllSides;
 	int m_SelectAllModels;
 };
 #endif
