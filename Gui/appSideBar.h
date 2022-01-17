@@ -126,19 +126,22 @@ protected:
 
 	albaGUIPanelStack	*m_OpPanel;
 	albaGUIHolder	*m_ViewPropertyPanel;
-	albaGUIHolder	*m_ProsthesisPropertyPanel;
 	albaGUICheckTree  *m_Tree;
 
 	albaGUIHolder  *m_VmePanel;
+	albaGUIHolder	 *m_VMEProsthesisPanel;
 	albaGUIHolder  *m_VmePipePanel;
 
 	albaVME     *m_SelectedVme;
+	albaVME     *m_SelectedVmeProsthesis;
 	albaView     *m_SelectedView;
 	albaObserver *m_Listener;
 
 	albaGUI *m_AppendingGUI;
+	albaGUI *m_AppendingProsthesisGUI;
 
 	albaGUI *m_CurrentVmeGui;
+	albaGUI *m_CurrentVmeProsthesisGui;
 	albaGUI *m_CurrentVmeOutputGui;
 	albaGUI *m_CurrentPipeGui;
 

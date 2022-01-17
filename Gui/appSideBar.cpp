@@ -46,11 +46,14 @@ PURPOSE. See the above copyright notice for more information.
 appSideBar::appSideBar(albaGUIMDIFrame* parent, int id, albaObserver *Listener, long style)
 {
 	m_SelectedVme = NULL;
+	m_SelectedVmeProsthesis = NULL;
 	m_SelectedView = NULL;
 	m_CurrentVmeGui = NULL;
+	m_CurrentVmeProsthesisGui = NULL;
 	m_CurrentVmeOutputGui = NULL;
 	m_CurrentPipeGui = NULL;
 	m_AppendingGUI = NULL;
+	m_AppendingProsthesisGUI = NULL;
 
 	m_LeftNotebook = NULL;
 	m_InfoPanel = NULL;
@@ -140,9 +143,9 @@ void appSideBar::InitLeftPanel()
 	m_LeftNotebook->SetFont(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)));
 
 	// Prosthesis property panel
-	m_ProsthesisPropertyPanel = new albaGUIHolder(m_LeftNotebook, -1, false, true);
-	m_ProsthesisPropertyPanel->SetTitle(_("No view selected:"));
-	m_LeftNotebook->AddPage(m_ProsthesisPropertyPanel, _("Info"));
+	m_VMEProsthesisPanel = new albaGUIHolder(m_LeftNotebook, -1, false, true);
+	m_VMEProsthesisPanel->SetTitle(_("No view selected:"));
+	m_LeftNotebook->AddPage(m_VMEProsthesisPanel, _("Info"));
 
 	m_Parent->AddDockPane(m_LeftNotebook, wxPaneInfo()
 		.Name("sidebarLeft")
@@ -159,6 +162,7 @@ void appSideBar::InitLeftPanel()
 appSideBar::~appSideBar()
 {
 }
+
 //----------------------------------------------------------------------------
 void appSideBar::OpShowGui(bool push_gui, albaGUIPanel *panel)
 {
@@ -219,6 +223,7 @@ void appSideBar::EnableSelect(bool enable)
 {
 	m_Tree->EnableSelect(enable);
 }
+
 //----------------------------------------------------------------------------
 void appSideBar::VmeAdd(albaVME *vme)
 {
@@ -228,7 +233,13 @@ void appSideBar::VmeAdd(albaVME *vme)
 void appSideBar::VmeRemove(albaVME *vme)
 {
 	m_Tree->VmeRemove(vme);
-	if (vme == m_SelectedVme)
+
+	if (vme == m_SelectedVmeProsthesis)
+	{
+		m_SelectedVmeProsthesis = NULL;
+		UpdateProsthesisPanel();
+	}
+	else if (vme == m_SelectedVme)
 	{
 		m_SelectedVme = NULL;
 		UpdateVmePanel();
@@ -238,23 +249,48 @@ void appSideBar::VmeRemove(albaVME *vme)
 void appSideBar::VmeModified(albaVME *vme)
 {
 	m_Tree->VmeModified(vme);
-	if (vme == m_SelectedVme)
+
+	if (vme == m_SelectedVmeProsthesis)
+	{
+		UpdateProsthesisPanel();
+	}
+	else if (vme == m_SelectedVme)
+	{
 		UpdateVmePanel();
+	}
 }
 //----------------------------------------------------------------------------
 void appSideBar::VmeShow(albaVME *vme, bool visibility)
 {
 	m_Tree->VmeShow(vme, visibility);
-	if (vme == m_SelectedVme)
+	
+	if (vme == m_SelectedVmeProsthesis)
+	{
+		UpdateProsthesisPanel();
+	}
+	else if (vme == m_SelectedVme)
+	{
 		UpdateVmePanel();
+	}
 }
 //----------------------------------------------------------------------------
 void appSideBar::VmeSelected(albaVME *vme)
 {
-	m_SelectedVme = vme;
-	UpdateVmePanel();
-	m_Tree->VmeSelected(vme);
+	if (vme && vme->IsA("appVMEProsthesisEdit"))
+	{
+		m_SelectedVmeProsthesis = vme;
+		UpdateProsthesisPanel();
 
+		m_SelectedVme = NULL;
+		UpdateVmePanel();
+	}
+	else
+	{
+		m_SelectedVme = vme;
+		UpdateVmePanel();
+	}
+
+	m_Tree->VmeSelected(vme);
 	m_Tree->SetFocus();
 }
 
@@ -336,27 +372,70 @@ void appSideBar::UpdateVmePanel()
 	{
 		m_VmePipePanel->Put(vme_pipe_gui);
 	}
-
-	if (m_SelectedVme && m_SelectedVme->IsA("appVMEProsthesisEdit"))
-	{
-		if (m_AppendingGUI)
-			m_ProsthesisPropertyPanel->Put(m_AppendingGUI);
-		else
-			m_ProsthesisPropertyPanel->Put(new albaGUI(NULL));
-	}
+	
+	if (m_AppendingGUI)
+		m_VmePanel->Put(m_AppendingGUI);
 	else
-	{
-		if (m_AppendingGUI)
-			m_VmePanel->Put(m_AppendingGUI);
-		else
-			m_VmePanel->Put(new albaGUI(NULL));
-	}
+		m_VmePanel->Put(new albaGUI(NULL));
 }
-
 //----------------------------------------------------------------------------
 void appSideBar::UpdateProsthesisPanel()
 {
+	albaPipe      *vme_pipe = NULL;
+	albaGUI       *vme_gui = NULL;
+	albaGUI       *vme_pipe_gui = NULL;
 
+	if (m_AppendingProsthesisGUI && m_CurrentVmeProsthesisGui)
+		m_AppendingProsthesisGUI->Remove(m_CurrentVmeProsthesisGui);
+
+	m_AppendingProsthesisGUI = NULL;
+
+	if (m_SelectedVmeProsthesis)
+	{
+		vme_gui = m_SelectedVmeProsthesis->GetGui();
+
+		if (m_SelectedView)
+		{
+			vme_pipe = m_SelectedView->GetNodePipe(m_SelectedVmeProsthesis);
+
+			if (vme_pipe)
+				vme_pipe_gui = vme_pipe->GetGui();
+		}
+
+		m_CurrentPipeGui = vme_pipe_gui;
+		m_CurrentVmeProsthesisGui = vme_gui;
+		m_AppendingProsthesisGUI = new albaGUI(NULL);
+
+		if (vme_gui)
+		{
+			m_AppendingProsthesisGUI->AddGui(vme_gui);
+		}
+
+		m_AppendingProsthesisGUI->FitGui();
+		m_AppendingProsthesisGUI->Update();
+	}
+
+	if (m_Style == DOUBLE_NOTEBOOK)
+	{
+		m_VmePipePanel->Put(vme_pipe_gui);
+	}
+
+	if (m_AppendingProsthesisGUI)
+		m_VMEProsthesisPanel->Put(m_AppendingProsthesisGUI);
+	else
+	{
+		albaGUI *empty_gui = new albaGUI(NULL);
+
+		empty_gui->Label("Prosthesis Not Found");
+
+//		empty_gui->Button(OP_CREATE_PROSTHESIS, "Create Prosthesis");
+		
+// 		albaGUIButton *butt = new albaGUIButton(empty_gui, OP_CREATE_PROSTHESIS, "Create Prosthesis", wxDefaultPosition, wxSize(30, 20));
+// 		butt->SetValidator(albaGUIValidator(m_Listener, OP_CREATE_PROSTHESIS, butt));
+// 		empty_gui->Add(butt);
+
+		m_VMEProsthesisPanel->Put(empty_gui);
+	}
 }
 
 //----------------------------------------------------------------------------
