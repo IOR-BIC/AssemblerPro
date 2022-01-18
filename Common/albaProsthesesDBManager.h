@@ -232,6 +232,7 @@ public:
 
 
 // 	void LoadDBFromFile(albaString DBFile) { Clear(); m_DBFilename = DBFile; LoadDB(); };
+ 	void LoadDBFromFile(albaString DBFile, bool append = true) { if(!append) Clear(); m_DBFilename = DBFile; LoadDB(); };
  	void SaveDBToFile(albaString DBFile) { m_DBFilename = DBFile; SaveDB(); };
 // 
 	albaString GetDBDir() const { return m_DBDir; }

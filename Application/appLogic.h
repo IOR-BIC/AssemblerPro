@@ -66,6 +66,9 @@ public:
 
 	albaView* OpenView(int viewId);
 
+	/* Refresh Prosthesis VME*/
+	void RefreshVMEProsthesis();
+
 protected:
   
 	/** Respond to a VME_SHOW event. Show/Hide the vme */
@@ -102,7 +105,7 @@ protected:
 	void InitProsthesisDBManager();
 
 	/* Initialize Prosthesis DB Manager*/
-	void InitProsthesisVME();
+	void InitVMEProsthesis();
 
   bool m_OpeningMSF;
 

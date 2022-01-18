@@ -24,7 +24,18 @@ PURPOSE. See the above copyright notice for more information.
 #include "appGUI.h"
 
 #include "albaGUI.h"
+#include "albaProsthesesDBManager.h"
 #include "albaVME.h"
+
+#include "wx/wfstream.h"
+#include "wx/zipstrm.h"
+#include <wx/busyinfo.h>
+#include <wx/fs_zip.h>
+#include <wx/zstream.h>
+#include <fstream>
+#include <iosfwd>
+#include <xmemory>
+#include "appLogic.h"
 
 //----------------------------------------------------------------------------
 albaCxxTypeMacro(appOpImportProsthesisDB);
@@ -34,8 +45,10 @@ appOpImportProsthesisDB::appOpImportProsthesisDB(wxString label) :albaOp(label)
 {
 	m_OpType = OPTYPE_OP;
 	m_Canundo = true;
-}
 
+	m_ProsthesesDBManager = NULL;
+	m_AuxProsthesesDBManager = NULL;
+}
 //----------------------------------------------------------------------------
 appOpImportProsthesisDB::~appOpImportProsthesisDB()
 {
@@ -44,7 +57,6 @@ appOpImportProsthesisDB::~appOpImportProsthesisDB()
 //----------------------------------------------------------------------------
 bool appOpImportProsthesisDB::InternalAccept(albaVME *node)
 {
-	//return node->IsA("...");
 	return true;
 }
 
@@ -64,21 +76,38 @@ albaOp* appOpImportProsthesisDB::Copy()
 //----------------------------------------------------------------------------
 void appOpImportProsthesisDB::OpRun()
 {
-	if (!m_TestMode)
+	m_ProsthesesDBManager = GetLogicManager()->GetProsthesesDBManager();
+	m_AuxProsthesesDBManager = new albaProsthesesDBManager();
+
+	int nProsthesis = m_ProsthesesDBManager->GetProstheses().size();
+	int nProducer = m_ProsthesesDBManager->GetProducers().size();
+	int nType = m_ProsthesesDBManager->GetTypes().size();
+
+	// Select File
+	albaString wildc = "ZIP file (*.zip)|*.zip|XML file (*.xml)|*.xml";
+	wxString prosthesisFile = albaGetOpenFile(albaGetLastUserFolder().c_str(), wildc, "Select file").c_str();
+
+	int result = ImportDB(prosthesisFile);
+
+	if (result == OP_RUN_OK)
 	{
-		CreateGui();
+		nProsthesis = m_ProsthesesDBManager->GetProstheses().size() - nProsthesis;
+		nProducer = m_ProsthesesDBManager->GetProducers().size() - nProducer;
+		nType = m_ProsthesesDBManager->GetTypes().size() - nType;
+
+		wxString message = wxString::Format("Added %d Prosthesis, %d Producers, %d Types", nProsthesis, nProducer, nType);
+		albaMessage(message);
+
+		((appLogic*)GetLogicManager())->RefreshVMEProsthesis();
 	}
-	
-	//OpStop(OP_RUN_OK);
+
+	delete m_AuxProsthesesDBManager;
+
+	OpStop(result);
 }
 //----------------------------------------------------------------------------
 void appOpImportProsthesisDB::OpStop(int result)
-{
-	if (!m_TestMode)
-	{
-		HideGui();
-	}
-
+{	
 	albaEventMacro(albaEvent(this, result));
 }
 //----------------------------------------------------------------------------
@@ -87,57 +116,207 @@ void appOpImportProsthesisDB::OpDo()
 }
 
 //----------------------------------------------------------------------------
-void appOpImportProsthesisDB::OnEvent(albaEventBase *alba_event)
+int appOpImportProsthesisDB::ImportDB(wxString dbFile)
 {
-	if (albaEvent *e = albaEvent::SafeDownCast(alba_event))
+	int result = OP_RUN_CANCEL;
+
+	if (wxFileExists(dbFile))
 	{
-		m_Gui->Update();
-		//if (e->GetSender() == m_Gui)
+		wxString path, name, ext;
+		wxSplitPath(dbFile.c_str(), &path, &name, &ext);
+
+		if (ext == "zip")
 		{
-			switch (e->GetId())
-			{
-			case wxOK:
-				OpStop(OP_RUN_OK);
-				break;
-
-			case wxCANCEL:
-				OpStop(OP_RUN_CANCEL);
-				break;
-
-			default:
-				Superclass::OnEvent(alba_event);
-				break;
-			}
+			result = ImportDBFromZip(dbFile);
 		}
-// 		else
-// 		{
-// 			Superclass::OnEvent(alba_event);
-// 		}
+		else if (ext == "xml")
+		{
+			result = ImportDBFromXml(dbFile);
+		}
 	}
+
+	return result;
 }
 
 //----------------------------------------------------------------------------
-void appOpImportProsthesisDB::CreateGui()
+int appOpImportProsthesisDB::ImportDBFromZip(wxString &dbZipFile)
 {
-	// Interface:
-	m_Gui = new appGUI(this);
-
-	m_Gui->HintBox(NULL, "This operation is empty.", "Hint");
-
-//	((appGUI*)m_Gui)->HyperLink(NULL, "Link", "https://github.com/IOR-BIC");
-
-// 	((appGUI*)m_Gui)->Separator(0, wxSize(1, 100));
-//	((appGUI*)m_Gui)->Separator(2, wxSize(250, 1));
+	wxString dest = m_ProsthesesDBManager->GetDBDir().GetCStr();
 	
-	// ToDO: add your custom widgets...
+	// Open the zip file to read the prosthesis information
+	std::vector<albaString> filesVect = ExtractZipFiles(dbZipFile, dest);
+	if (filesVect.size() == 0)
+	{
+		wxMessageBox("Error Open DB!");
+		return OP_RUN_CANCEL;
+	}
 
-	//m_Gui->Label("Press a button");
+	// Import xml Files
+	int result = OP_RUN_OK;
+	
+	for (int i = 0; i < filesVect.size(); i++)
+	{
+		wxString path, name, ext;
+		wxSplitPath(filesVect[i].GetCStr(), &path, &name, &ext);
 
-	//////////////////////////////////////////////////////////////////////////
-	m_Gui->Label("");
-	m_Gui->Divider(1);
-	m_Gui->OkCancel();
-	m_Gui->Label("");
+		if (ext == "xml")
+		{
+			wxString xmlFile = filesVect[i].GetCStr();
+			result = ImportDBFromXml(xmlFile);
 
-	ShowGui();
+			// Destroy xml file
+			wxRemoveFile(xmlFile);
+		}
+	}
+
+	return result;
+}
+//----------------------------------------------------------------------------
+int appOpImportProsthesisDB::ImportDBFromXml(wxString &dbXmlFile)
+{	
+	m_AuxProsthesesDBManager->SetDBDir(m_ProsthesesDBManager->GetDBDir());
+	m_AuxProsthesesDBManager->LoadDBFromFile(dbXmlFile);
+
+	// Producers
+	for (int p =0; p < m_AuxProsthesesDBManager->GetProducers().size(); p++)
+	{
+		albaProDBProducer *producer = m_AuxProsthesesDBManager->GetProducers()[p];
+
+		if (!IsInDB(producer))
+			m_ProsthesesDBManager->AddProducer(producer);
+	}
+
+	// Types
+	for (int t = 0; t < m_AuxProsthesesDBManager->GetTypes().size(); t++)
+	{
+		albaProDBType *type = m_AuxProsthesesDBManager->GetTypes()[t];
+
+		if (!IsInDB(type))
+			m_ProsthesesDBManager->AddType(type);
+	}
+
+	// Prosthesis
+	for (int p = 0; p < m_AuxProsthesesDBManager->GetProstheses().size(); p++)
+	{
+		albaProDBProsthesis *prosthesis = m_AuxProsthesesDBManager->GetProstheses()[p];
+
+		if (!IsInDB(prosthesis))
+			m_ProsthesesDBManager->AddProsthesis(prosthesis);
+	}
+
+	m_ProsthesesDBManager->SaveDB();
+
+	return OP_RUN_OK;
+}
+//----------------------------------------------------------------------------
+std::vector<albaString> appOpImportProsthesisDB::ExtractZipFiles(const wxString &ZipFile, const wxString &TargetDir)
+{
+	bool ret = true;
+	std::vector<albaString> listFiles;
+
+	wxFileSystem::AddHandler(new wxZipFSHandler);
+	wxFileSystem fs;
+	std::auto_ptr<wxZipEntry> entry(new wxZipEntry);
+
+	do {
+		wxFileInputStream in(ZipFile);
+		if (!in)
+		{
+			wxLogError(_T("Can not open file '") + ZipFile + _T("'."));
+			ret = false;
+			break;
+		}
+		wxZipInputStream zip(in);
+
+		while (entry.reset(zip.GetNextEntry()), entry.get() != NULL)
+		{
+			// Access meta-data
+			wxString name = entry->GetName();
+			name = TargetDir + name;
+
+			// Read 'zip' to access the entry's data
+			if (entry->IsDir())
+			{
+				int perm = entry->GetMode();
+				wxFileName::Mkdir(name, perm, wxPATH_MKDIR_FULL);
+			}
+			else // it is a file
+			{
+				zip.OpenEntry(*entry.get());
+				if (!zip.CanRead())
+				{
+					wxLogError(_T("Can not read zip entry '") + entry->GetName() + _T("'."));
+					ret = false;
+					break;
+				}
+				wxFileOutputStream file(name);
+				if (!file)
+				{
+					wxLogError(_T("Can not create file '") + name + _T("'."));
+					ret = false;
+					break;
+				}
+				else
+				{
+					listFiles.push_back(name);
+				}
+
+				zip.Read(file);
+			}
+		}
+	} while (false);
+
+	return listFiles;
+}
+
+// Utilities
+//----------------------------------------------------------------------------
+bool appOpImportProsthesisDB::IsInDB(albaProDBProducer *producer)
+{
+	bool result = false;
+
+	for (int p = 0; p < m_ProsthesesDBManager->GetProducers().size(); p++)
+	{
+		albaProDBProducer *pro = m_ProsthesesDBManager->GetProducers()[p];
+
+		if (producer->GetName() == pro->GetName() /*|| producer->GetWebSite() == pro->GetWebSite() || producer->GetImgFileName() == pro->GetImgFileName()*/)
+			return true;
+	}
+
+	return result;
+}
+//----------------------------------------------------------------------------
+bool appOpImportProsthesisDB::IsInDB(albaProDBType *type)
+{
+	bool result = false;
+
+	for (int t = 0; t < m_ProsthesesDBManager->GetTypes().size(); t++)
+	{
+		albaProDBType *typ = m_ProsthesesDBManager->GetTypes()[t];
+
+		if (type->GetName() == typ->GetName())
+			return true;
+	}
+
+	return result;
+}
+//----------------------------------------------------------------------------
+bool appOpImportProsthesisDB::IsInDB(albaProDBProsthesis *prosthesis)
+{
+	bool result = false;
+
+	for (int p = 0; p < m_ProsthesesDBManager->GetProstheses().size(); p++)
+	{
+		albaProDBProsthesis *pro = m_ProsthesesDBManager->GetProstheses()[p];
+
+		if (prosthesis->GetName() == pro->GetName() 
+				|| prosthesis->GetSide() == pro->GetSide()
+			//|| prosthesis->GetProducer() == pro->GetProducer()
+			//|| prosthesis->GetType() == pro->GetType()
+			//|| prosthesis->GetBendingAngle() == pro->GetBendingAngle()
+			)
+			return true;
+	}
+
+	return result;
 }

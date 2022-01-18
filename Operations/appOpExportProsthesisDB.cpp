@@ -310,8 +310,7 @@ void appOpExportProsthesisDB::ExportDB()
 
 		//////////////////////////////////////////////////////////////////////////
 
-		auxDBManager->SaveDBToFile(xmlFileName);
-		auxDBManager->Clear();
+		auxDBManager->SaveDBToFile(xmlFileName);	
 		delete auxDBManager;
 
 		files.Add(xmlFileName.GetCStr()); // Add xml to ZIP

@@ -463,3 +463,9 @@ void appVMEProsthesisEdit::SetSelection(int selection)
 	m_SelectedProsthesis = selection;
 	SelectProsthesis();
 }
+
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::Resfresh()
+{
+	SetSelection(m_SelectedProsthesis);
+}

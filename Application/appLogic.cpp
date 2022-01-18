@@ -44,6 +44,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "vtkObject.h"
 #include "vtkPointData.h"
 #include "vtkPoints.h"
+#include "appVMEProsthesisEdit.h"
 
 #define IDM_WINDOWNEXT 4004
 #define IDM_WINDOWPREV 4006
@@ -86,7 +87,7 @@ void appLogic::Init(int argc, char **argv)
 	// Create and Open View
 	ViewCreate(VIEW_SURFACE);
 
-	InitProsthesisVME();
+	InitVMEProsthesis();
 }
 //----------------------------------------------------------------------------
 void appLogic::InitAboutDialog()
@@ -123,12 +124,21 @@ void appLogic::InitProsthesisDBManager()
 }
 
 //----------------------------------------------------------------------------
-void appLogic::InitProsthesisVME()
+void appLogic::InitVMEProsthesis()
 {
 	albaVMERoot *root = this->m_VMEManager->GetRoot();
 
 	if (root && root->GetLink("VMEProsthesis") == NULL)
 		RunOp(GetOp(OP_CREATE_PROSTHESIS));
+}
+//----------------------------------------------------------------------------
+void appLogic::RefreshVMEProsthesis()
+{
+	albaVMERoot *root = this->m_VMEManager->GetRoot();
+	appVMEProsthesisEdit *prosthesis = (appVMEProsthesisEdit*) root->GetLink("VMEProsthesis");
+
+	if (prosthesis != NULL)
+		prosthesis->Resfresh();
 }
 
 /// EVENTS
@@ -182,7 +192,7 @@ void appLogic::OnEvent(albaEventBase *alba_event)
 		break;
 		case MENU_FILE_NEW:
 			OnFileNew();
-			InitProsthesisVME();
+			InitVMEProsthesis();
 			break;
 		case MENU_FILE_OPEN:
 		{
@@ -200,7 +210,7 @@ void appLogic::OnEvent(albaEventBase *alba_event)
 			UpdateFrameTitle();
 			m_OpeningMSF = false;
 
-			InitProsthesisVME();
+			InitVMEProsthesis();
 			ShowVMEOnView();
 		}
 		break;

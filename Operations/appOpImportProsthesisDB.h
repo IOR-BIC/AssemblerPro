@@ -22,6 +22,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "appOperationsDefines.h"
 #include "appDecl.h"
 #include "albaOp.h"
+#include "albaProsthesesDBManager.h"
 
 //----------------------------------------------------------------------------
 // Forward references :
@@ -54,8 +55,7 @@ public:
 	/** Execute the operation. */
 	/*virtual*/ void OpDo();
 
-	/** Receive events coming from the user interface.*/
-	void OnEvent(albaEventBase *alba_event);
+	int ImportDB(wxString dbFile);
 
 protected:
 
@@ -65,7 +65,16 @@ protected:
 	/** This method is called at the end of the operation and result contain the wxOK or wxCANCEL. */
 	/*virtual*/ void OpStop(int result);	
 
-	/** Create the Operation GUI */
-	virtual void CreateGui();
+	int ImportDBFromZip(wxString &dbZipFile);
+	int ImportDBFromXml(wxString &dbXmlFile);
+	
+	std::vector<albaString> ExtractZipFiles(const wxString &ZipFile, const wxString &TargetDir);
+
+	bool IsInDB(albaProDBProducer *producer);
+	bool IsInDB(albaProDBType *type);
+	bool IsInDB(albaProDBProsthesis *prosthesis);
+
+	albaProsthesesDBManager *m_ProsthesesDBManager;
+	albaProsthesesDBManager *m_AuxProsthesesDBManager;
 };
 #endif

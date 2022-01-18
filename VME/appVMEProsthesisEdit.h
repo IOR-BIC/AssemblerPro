@@ -45,6 +45,7 @@ public:
 
 	void Reset();
 	void SetSelection(int selection);
+	void Resfresh();
 
 	//----------------------------------------------------------------------------
 	// Widgets ID's
