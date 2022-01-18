@@ -22,9 +22,11 @@ PURPOSE. See the above copyright notice for more information.
 #include "appOpDBManager.h"
 #include "appDecl.h"
 #include "appGUI.h"
+#include "appLogic.h"
 
 #include "albaGUI.h"
 #include "albaVME.h"
+#include "albaServiceClient.h"
 
 //----------------------------------------------------------------------------
 albaCxxTypeMacro(appOpDBManager);
@@ -58,6 +60,13 @@ bool appOpDBManager::InternalAccept(albaVME *node)
 }
 
 //----------------------------------------------------------------------------
+char** appOpDBManager::GetIcon()
+{
+#include "pic/MENU_OP_MANAGE_PRODUCER.xpm"
+	return MENU_OP_MANAGE_PRODUCER_xpm;
+}
+
+//----------------------------------------------------------------------------
 albaOp* appOpDBManager::Copy()
 {
 	appOpDBManager *cp = new appOpDBManager(m_Label);
@@ -81,6 +90,8 @@ void appOpDBManager::OpStop(int result)
 	{
 		HideGui();
 	}
+
+	((appLogic*)GetLogicManager())->RefreshVMEProsthesis();
 
 	albaEventMacro(albaEvent(this, result));
 }

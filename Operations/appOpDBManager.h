@@ -69,6 +69,9 @@ public:
 	/** Receive events coming from the user interface.*/
 	void OnEvent(albaEventBase *alba_event);
 
+	/** Return an xpm-icon that can be used to represent this operation */
+	virtual char** GetIcon();
+
 protected:
 	
 	/** Return true for the acceptable vme type. */

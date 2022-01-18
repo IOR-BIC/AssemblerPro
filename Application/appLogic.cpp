@@ -388,11 +388,11 @@ void appLogic::CreateMenu()
 
 	// Import menu item
 	m_ImportMenu = new wxMenu;
-	//file_menu->Append(0, _("Import"), m_ImportMenu);
+	file_menu->Append(0, _("Import"), m_ImportMenu);
 
 	// Export menu item
 	m_ExportMenu = new wxMenu;
-	//file_menu->Append(0, _("Export"), m_ExportMenu);
+	file_menu->Append(0, _("Export"), m_ExportMenu);
 
 	// Print menu item
 	file_menu->AppendSeparator();

@@ -37,14 +37,13 @@ PURPOSE. See the above copyright notice for more information.
 #include "vtkPolyDataReader.h"
 #include "vtkALBASmartPointer.h"
 
-
 //----------------------------------------------------------------------------
 albaCxxTypeMacro(appOpImportOldProsthesis);
 
 //----------------------------------------------------------------------------
 appOpImportOldProsthesis::appOpImportOldProsthesis(wxString label) :albaOp(label)
 {
-	m_OpType = OPTYPE_OP;
+	m_OpType = OPTYPE_IMPORTER;
 	m_Canundo = false;
 }
 

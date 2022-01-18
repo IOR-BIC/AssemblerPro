@@ -21,14 +21,16 @@ PURPOSE. See the above copyright notice for more information.
 
 #include "appOpCreateProsthesis.h"
 #include "appDecl.h"
+#include "appGUIDialogProsthesis.h"
+#include "appLogic.h"
+#include "appVMEProsthesisEdit.h"
 
 #include "albaAbsLogicManager.h"
 #include "albaGUI.h"
+#include "albaProsthesesDBManager.h"
+#include "albaServiceClient.h"
 #include "albaVME.h"
 #include "albaVMEProsthesis.h"
-#include "appVMEProsthesisEdit.h"
-#include "albaProsthesesDBManager.h"
-#include "appGUIDialogProsthesis.h"
 
 //----------------------------------------------------------------------------
 albaCxxTypeMacro(appOpCreateProsthesis);
@@ -153,4 +155,6 @@ void appOpCreateProsthesis::CreateDBProsthesis(appVMEProsthesisEdit *VmeProsthes
 		// Reload DB
 		m_ProsthesesDBManager->LoadDB();
 	}
+
+	((appLogic*)GetLogicManager())->RefreshVMEProsthesis();
 }

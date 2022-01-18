@@ -5,7 +5,7 @@ static char * MENU_OP_IMPORT_PROSTHESIS_xpm[] = {
 ".	c #646464",
 "+	c #A2A2A2",
 "@	c #000000",
-"#	c #797979",
+"#	c #00C115",
 "    ...    ",
 "   .+++.   ",
 "    .++.   ",

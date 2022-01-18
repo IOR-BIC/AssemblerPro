@@ -35,7 +35,7 @@ class APP_OPERATIONS_EXPORT appOpCreateProsthesis : public albaOp
 {
 public:
 	/** Constructor. */
-	appOpCreateProsthesis(wxString label = "Create Prosthesis VME");
+	appOpCreateProsthesis(wxString label = "Create Prosthesis");
 
 	/** Destructor. */
 	~appOpCreateProsthesis();

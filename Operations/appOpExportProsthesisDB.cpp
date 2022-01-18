@@ -40,7 +40,7 @@ albaCxxTypeMacro(appOpExportProsthesisDB);
 //----------------------------------------------------------------------------
 appOpExportProsthesisDB::appOpExportProsthesisDB(wxString label) :albaOp(label)
 {
-	m_OpType = OPTYPE_OP;
+	m_OpType = OPTYPE_EXPORTER;
 	m_Canundo = true;
 
 	m_DBName = "";
