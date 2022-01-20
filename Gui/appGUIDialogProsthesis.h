@@ -75,6 +75,8 @@ protected:
 	wxString m_ProsthesisImageName;
 	wxString m_ProsthesisImageFullName;
 	wxString m_ProsthesisType;
+	double m_ProsthesisBendingAngle;
+
 	albaProDBProsthesis::PRO_SIDES m_ProsthesisSide;
 	bool m_IsChanged;
 
@@ -89,6 +91,7 @@ protected:
 	wxString m_ImagePath;
 
 	wxTextCtrl *m_NameTextCtrl;
+	wxTextCtrl *m_BendingAngleTextCtrl;
 
 	wxComboBox *m_ProducerComboBox;
 	albaGUIButton *m_ProducerEditBtn;

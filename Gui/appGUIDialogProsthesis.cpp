@@ -51,6 +51,7 @@ enum PROSTHESIS_DIALOG_ID
 	ID_DIALOG_TYPE_DEL,
 	ID_DIALOG_TYPE_EDIT,
 	ID_DIALOG_SIDE,
+	ID_DIALOG_BENDING_ANGLE,
 	ID_DIALOG_CANCEL_PRESSED,
 	ID_DIALOG_OK_PRESSED,
 };
@@ -78,6 +79,7 @@ appGUIDialogProsthesis::appGUIDialogProsthesis(const wxString& title, long style
 	m_ProsthesisImageName = "";
 	m_ProsthesisImageFullName = "";
 	m_ProsthesisType = "";
+	m_ProsthesisBendingAngle = 0.0;
 	m_ProsthesisSide = albaProDBProsthesis::PRO_LEFT;
 	m_IsChanged = false;
 
@@ -113,6 +115,7 @@ void appGUIDialogProsthesis::OnEvent(albaEventBase *alba_event)
 	case ID_DIALOG_TYPE_ADD: AddType(); break;
 	case ID_DIALOG_TYPE_DEL: RemoveType(); break;
 	case ID_DIALOG_SIDE: break;
+	case ID_DIALOG_BENDING_ANGLE: break;
 
 	case ID_DIALOG_OK_PRESSED:
 	{
@@ -125,6 +128,7 @@ void appGUIDialogProsthesis::OnEvent(albaEventBase *alba_event)
 		m_CurrentProsthesis->SetProducer(m_ProducerNameList[m_SelectedProducer]);
 		m_CurrentProsthesis->SetType(m_TypeNameList[m_SelectedType]);
 		m_CurrentProsthesis->SetSide(m_ProsthesisSide);
+		m_CurrentProsthesis->SetBendingAngle(m_ProsthesisBendingAngle);
 		m_IsChanged = true;
 
 		this->Close();
@@ -280,6 +284,21 @@ void appGUIDialogProsthesis::CreateDialog()
 		infoBoxSizer->Add(sideBoxSizer, 0, wxALL | wxEXPAND, 0);
 
 		//////////////////////////////////////////////////////////////////////////
+		wxBoxSizer *bendingAngleBoxSizer = new wxBoxSizer(wxHORIZONTAL);
+
+		// TEXT - Bending Angle
+		wxStaticBoxSizer *labelSizerba = new wxStaticBoxSizer(wxVERTICAL, this, "Bending Angle");
+		m_BendingAngleTextCtrl = new wxTextCtrl(this, ID_DIALOG_BENDING_ANGLE, "", wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
+		m_BendingAngleTextCtrl->SetValidator(albaGUIValidator(this, ID_DIALOG_BENDING_ANGLE, m_BendingAngleTextCtrl, &m_ProsthesisBendingAngle, MINDOUBLE, MAXDOUBLE, 5));
+		m_BendingAngleTextCtrl->SetEditable(true);
+		m_BendingAngleTextCtrl->SetMaxLength(5);
+		labelSizerba->Add(m_BendingAngleTextCtrl, 0, wxALL | wxEXPAND, 0);
+
+		bendingAngleBoxSizer->Add(labelSizerba, 0, wxALL | wxEXPAND, 5);
+
+		infoBoxSizer->Add(bendingAngleBoxSizer, 0, wxALL | wxEXPAND, 0);
+
+		//////////////////////////////////////////////////////////////////////////
 		
 		// TEXT - Empty Separator
 		infoBoxSizer->Add(new albaGUILab(this, -1, " "), 0, wxALIGN_LEFT, 5);
@@ -397,6 +416,7 @@ void appGUIDialogProsthesis::SetProsthesis(albaProDBProsthesis *prosthesis)
 		m_ProsthesisImageFullName = DBDir + m_CurrentProsthesis->GetImgFileName();
 		m_ProsthesisType = m_CurrentProsthesis->GetType();
 		m_ProsthesisSide = m_CurrentProsthesis->GetSide();
+		m_ProsthesisBendingAngle = m_CurrentProsthesis->GetBendingAngle();
 
 		// Load Info
 		m_NameTextCtrl->SetValue(m_ProsthesisName);
