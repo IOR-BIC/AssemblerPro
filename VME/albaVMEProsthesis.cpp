@@ -38,7 +38,6 @@ PURPOSE. See the above copyright notice for more information.
 #include "vtkTransformPolyDataFilter.h"
 #include "wx/listctrl.h"
 
-
 //-------------------------------------------------------------------------
 albaCxxTypeMacro(albaVMEProsthesis)
 
@@ -263,6 +262,54 @@ void albaVMEProsthesis::ClearComponentGroups()
 	UpdateGui();
 }
 
+//-------------------------------------------------------------------------
+void albaVMEProsthesis::SelectComponent(int compGroup)
+{
+	std::vector<albaProDBCompGroup *> * compGroups = m_Prosthesis->GetCompGroups();
+	albaProDBCompGroup *group = compGroups->at(compGroup);
+	int groups = compGroups->size();
+	std::vector<albaProDBComponent *> *components = group->GetComponents();
+	int compId = m_ComponentListBox[compGroup]->GetSelection();
+
+	if (groups > 0)
+	{
+		//update current VTK data 
+		albaProDBComponent * currentComp = components->at(compId);
+		m_TransformFilters[compGroup]->SetInput(currentComp->GetVTKData());
+
+
+		//update current following transforms
+		for (int i = compGroup + 1; i < groups; i++)
+		{
+			vtkTransform *compTra = m_Transforms[i];
+			compTra->SetMatrix(m_Transforms[i - 1]->GetMatrix());
+
+			albaProDBComponent * prevComp = currentComp;
+
+
+			albaProDBCompGroup *currentGroup = compGroups->at(i);
+			int prevSelComp = m_ComponentListBox[i]->GetSelection();
+			currentComp = currentGroup->GetComponents()->at(prevSelComp);
+
+			compTra->Concatenate(prevComp->GetMatrix().GetVTKMatrix());
+
+			compTra->Update();
+		}
+	}
+	m_AppendPolydata->Update();
+	GetLogicManager()->CameraUpdate();
+}
+//-------------------------------------------------------------------------
+void albaVMEProsthesis::ShowComponent(int compGroup)
+{
+	if (m_ShowComponents[compGroup])
+		m_AppendPolydata->AddInput(m_TransformFilters[compGroup]->GetOutput());
+	else
+		m_AppendPolydata->RemoveInput(m_TransformFilters[compGroup]->GetOutput());
+	m_AppendPolydata->Update();
+	GetLogicManager()->CameraUpdate();
+}
+
 //----------------------------------------------------------------------------
 void albaVMEProsthesis::SetProsthesis(albaProDBProsthesis *prosthesis)
 {
@@ -346,55 +393,11 @@ void albaVMEProsthesis::OnComponentEvent(int compGroup, int id)
 {
 	switch (id)
 	{
-		case ID_SHOW_COMPONENT:
-		{
-			if (m_ShowComponents[compGroup])
-				m_AppendPolydata->AddInput(m_TransformFilters[compGroup]->GetOutput());
-			else
-				m_AppendPolydata->RemoveInput(m_TransformFilters[compGroup]->GetOutput());
-			m_AppendPolydata->Update();
-			GetLogicManager()->CameraUpdate();
-		}
+	case ID_SHOW_COMPONENT: ShowComponent(compGroup); break;
+	case ID_SELECT_COMPONENT: SelectComponent(compGroup); break;
+
+	default:
 		break;
-		case ID_SELECT_COMPONENT:
-		{
-			std::vector<albaProDBCompGroup *> * compGroups = m_Prosthesis->GetCompGroups();
-			albaProDBCompGroup *group = compGroups->at(compGroup);
-			int groups = compGroups->size();
-			std::vector<albaProDBComponent *> *components = group->GetComponents();
-			int compId = m_ComponentListBox[compGroup]->GetSelection();
-
-			if (groups > 0)
-			{
-				//update current VTK data 
-				albaProDBComponent * currentComp = components->at(compId);
-				m_TransformFilters[compGroup]->SetInput(currentComp->GetVTKData());
-
-
-				//update current following transforms
-				for (int i = compGroup + 1; i < groups; i++)
-				{
-					vtkTransform *compTra = m_Transforms[i];
-					compTra->SetMatrix(m_Transforms[i - 1]->GetMatrix());
-
-					albaProDBComponent * prevComp = currentComp;
-
-
-					albaProDBCompGroup *currentGroup = compGroups->at(i);
-					int prevSelComp = m_ComponentListBox[i]->GetSelection();
-					currentComp = currentGroup->GetComponents()->at(prevSelComp);
-
-					compTra->Concatenate(prevComp->GetMatrix().GetVTKMatrix());
-
-					compTra->Update();
-				}
-			}
-			m_AppendPolydata->Update();
-			GetLogicManager()->CameraUpdate();
-		}
-		break;
-		default:
-			break;
 	}
 }
 

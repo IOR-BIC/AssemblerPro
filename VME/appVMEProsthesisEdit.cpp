@@ -4,7 +4,7 @@ Module:    appVMEProsthesisEdit.cpp
 Language:  C++
 Date:      $Date: 2021-01-01 12:00:00 $
 Version:   $Revision: 1.0.0.0 $
-Authors:   Gianluigi Crimi
+Authors:   Gianluigi Crimi, Nicola Vanella
 ==========================================================================
 Copyright (c) BIC-IOR 2021 (https://github.com/IOR-BIC)
 
@@ -23,27 +23,29 @@ PURPOSE. See the above copyright notice for more information.
 
 #include "appDecl.h"
 #include "appVMEProsthesisEdit.h"
+#include "appGUIDialogComponent.h"
+#include "appGUIDialogMatrix.h"
+#include "appGUIDialogProsthesis.h"
+#include "appGUITransformMouse.h"
+#include "appInteractorCompositorMouse.h"
+#include "appInteractorGenericMouse.h"
 
 #include "albaGUI.h"
-#include "albaProsthesesDBManager.h"
 #include "albaProsthesesDBManager.h"
 #include "albaTransform.h"
 #include "albaVMEOutput.h"
 #include "albaVMEProsthesis.h"
+#include "albaVMERefSys.h"
 #include "albaVMESurface.h"
-#include "appGUIDialogComponent.h"
-#include "appGUIDialogMatrix.h"
-#include "appGUIDialogProsthesis.h"
+
 #include "mmaMaterial.h"
 #include "vtkAppendPolyData.h"
-#include "vtkLookupTable.h"
 #include "vtkLookupTable.h"
 #include "vtkPolyData.h"
 #include "vtkSource.h"
 #include "vtkTransform.h"
-#include "vtkTransform.h"
 #include "vtkTransformPolyDataFilter.h"
-#include "vtkTransformPolyDataFilter.h"
+#include "albaEventBroadcaster.h"
 
 //-------------------------------------------------------------------------
 albaCxxTypeMacro(appVMEProsthesisEdit)
@@ -53,12 +55,27 @@ appVMEProsthesisEdit::appVMEProsthesisEdit()
 {
 	m_DBManager = NULL;
 	
+	m_ComponentRefSys = NULL;
+
 	m_ProsthesisComboBox = NULL;
 	m_SelectedProsthesis = 0;
+
+	m_TransformMode = false;
+
+	m_Position[0] = m_Position[1] = m_Position[2] = 0;
+	m_Orientation[0] = m_Orientation[1] = m_Orientation[2] = 0;
+
+	m_ComponentsTransformMouse = NULL;
+	m_InteractorGenericMouse = NULL;
 }
 //-------------------------------------------------------------------------
 appVMEProsthesisEdit::~appVMEProsthesisEdit()
 {
+// 	for (int i = 0; i < m_ComponentsTransform.size(); i++)
+// 		cppDEL(m_ComponentsTransform[i]);
+// 	m_ComponentsTransform.clear();
+
+	cppDEL(m_ComponentsTransformMouse);
 }
 
 //-------------------------------------------------------------------------
@@ -83,6 +100,7 @@ int appVMEProsthesisEdit::InternalInitialize()
 	return ALBA_ERROR;
 }
 
+/// GUI
 //-------------------------------------------------------------------------
 albaGUI* appVMEProsthesisEdit::CreateGui()
 {
@@ -104,9 +122,22 @@ albaGUI* appVMEProsthesisEdit::CreateGui()
 		m_Gui->Divider(0);
 		m_Gui->Button(ID_GROUP_CREATE, "New Component Group");
 
+		m_Gui->Label("");
+		m_Gui->Divider(1);
+		m_Gui->Label("Transform", true);
+		m_Gui->Vector(ID_TRA_TRANSFORM, "Position", m_Position);
+		m_Gui->Vector(ID_ROT_TRANSFORM, "Orientation", m_Orientation);
+		m_Gui->Button(ID_RESET_TRANSFORM, "Reset");
+		m_Gui->HintBox(NULL, "Mouse Right Button = Rotate\nMouse Mid Button = Move\nMouse Right + CTRL = Front Rotate");
+		m_Gui->Label("");
 		m_Gui->Divider();
 		m_Gui->FitGui();
 	}
+
+	m_Gui->Enable(ID_TRA_TRANSFORM, false);
+	m_Gui->Enable(ID_ROT_TRANSFORM, false);
+	m_Gui->Enable(ID_RESET_TRANSFORM, false);
+
 	return m_Gui;
 }
 //-------------------------------------------------------------------------
@@ -114,11 +145,11 @@ void appVMEProsthesisEdit::UpdateGui()
 {
 	if (m_Gui)
 	{
-		std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
-
-		//
+		// Fill Prosthesis Name List
 		if (m_ProsthesisComboBox)
 		{
+			std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
+
 			m_ProsthesisComboBox->Clear();
 			for (int m = 0; m < DBprosthesis.size(); m++)
 			{
@@ -130,7 +161,7 @@ void appVMEProsthesisEdit::UpdateGui()
 				m_ProsthesisComboBox->Select(m_SelectedProsthesis);
 		}
 
-		//
+		// Update
 		m_GroupGui->FitGui();
 		m_GroupGui->FitInside();
 		m_ContentGui->FitGui();
@@ -142,13 +173,63 @@ void appVMEProsthesisEdit::UpdateGui()
 		m_Gui->Update();
 	}
 }
+//-------------------------------------------------------------------------
+void appVMEProsthesisEdit::EnableGui(bool enable)
+{
+	if (m_Gui)
+	{
+		m_Gui->Enable(ID_PROSTHESIS_SELECTION, enable);
+		m_Gui->Enable(ID_PROSTHESIS_CHANGE, enable);
+		m_Gui->Enable(ID_PROSTHESIS_EDIT, enable);
 
+		for (int g = 0; g < m_Prosthesis->GetCompGroups()->size(); g++)
+		{
+			EnableComponentGui(g, enable);
+		}
+
+		m_Gui->Enable(ID_GROUP_CREATE, enable);
+
+		m_Gui->Enable(ID_TRA_TRANSFORM, enable);
+		m_Gui->Enable(ID_ROT_TRANSFORM, enable);
+		m_Gui->Enable(ID_RESET_TRANSFORM, enable);
+	}
+}
+//-------------------------------------------------------------------------
+void appVMEProsthesisEdit::EnableComponentGui(int compGroup, bool enable)
+{
+	if (compGroup >= 0 && compGroup < m_Prosthesis->GetCompGroups()->size())
+	{
+		for (int e = ID_ADD_COMPONENT; e < ID_LAST_COMP_ID; e++)
+		{
+			int baseID = ID_LAST + (compGroup*ID_LAST_COMP_ID) + e;
+			m_ComponentGui[compGroup]->Enable(baseID, enable);
+		}
+	}
+}
+
+/// Events
 //-------------------------------------------------------------------------
 void appVMEProsthesisEdit::OnEvent(albaEventBase *alba_event)
 {
 	// events to be sent up or down in the tree are simply forwarded
 	if (albaEvent *e = albaEvent::SafeDownCast(alba_event))
 	{
+
+		if (e->GetSender() == m_ComponentsTransformMouse)
+		{
+			if (e->GetId() == ID_TRANSFORM)
+			{
+				if (e->GetArg() == albaInteractorGenericMouse::MOUSE_DOWN)
+					PrepareUndoOp();
+				else if (e->GetArg() == albaInteractorGenericMouse::MOUSE_MOVE)
+					PostMultiplyEventMatrix(e);
+				else //albaInteractorGenericMouse::MOUSE_UP
+					CompleteAndPushUndoOp();
+			}
+			else
+				Superclass::OnEvent(e);
+		}
+
 		albaID eventId = e->GetId();
 		int compNum = m_ComponentGui.size();
 
@@ -159,8 +240,11 @@ void appVMEProsthesisEdit::OnEvent(albaEventBase *alba_event)
 		case ID_PROSTHESIS_SELECTION: SelectProsthesis(); break;		
 		case ID_PROSTHESIS_CHANGE: ChangeProsthesis(); break;
 		case ID_PROSTHESIS_EDIT: EditProsthesis(m_Prosthesis); break;
-
 		case ID_GROUP_CREATE: CreateNewComponentGroup(); break;
+
+		case ID_TRA_TRANSFORM: 
+		case ID_ROT_TRANSFORM: TransformFromGUI(); break;
+		case ID_RESET_TRANSFORM: ResetTransform(); break;
 
 		default:
 			if (eventId >= ID_LAST && eventId < ID_LAST + ID_LAST_COMP_ID*compNum)
@@ -187,10 +271,13 @@ void appVMEProsthesisEdit::OnComponentEvent(int compGroup, int id)
 	{
 	case ID_REM_COMPONENT_GROUP: DeleteComponentGroup(compGroup); break;
 
+	case ID_SHOW_COMPONENT: ShowComponent(compGroup); break;
+	case ID_SELECT_COMPONENT: SelectComponent(compGroup); break;
 	case ID_NAME_COMPONENT: RenameComponentGroup(compGroup); break;
 	case ID_ADD_COMPONENT: AddNewComponent(compGroup); break;
 	case ID_EDIT_COMPONENT: EditComponent(compGroup); break;
 	case ID_REM_COMPONENT: RemoveComponent(compGroup); break;
+	case ID_TRANSFORM_COMPONENT: TransformComponent(compGroup); break;
 	case ID_MATRIX_COMPONENT: EditComponentMatrix(compGroup); break;
 
 	default:
@@ -293,9 +380,9 @@ void appVMEProsthesisEdit::CreateComponentGui(int currGroup, albaProDBCompGroup 
 
 	std::vector<int> btnIDs{ baseID + ID_ADD_COMPONENT, baseID + ID_REM_COMPONENT, baseID + ID_EDIT_COMPONENT };
 	std::vector<const char*> btnLabels{ "Add","Del","Edit" };
-
 	compGui->MultipleButtons(3, 3, btnIDs, btnLabels);
-	compGui->Button(baseID + ID_MATRIX_COMPONENT, "Matrix");
+
+	compGui->TwoButtons(baseID + ID_TRANSFORM_COMPONENT, baseID + ID_MATRIX_COMPONENT, "Transform", "Matrix");
 	compGui->Divider(1);
 	
 	// Add to Gui
@@ -308,8 +395,7 @@ void appVMEProsthesisEdit::CreateComponentGui(int currGroup, albaProDBCompGroup 
 //----------------------------------------------------------------------------
 void appVMEProsthesisEdit::RenameComponentGroup(int compGroup)
 {
-	std::vector<albaProDBCompGroup *> *compGroups = m_Prosthesis->GetCompGroups();
-	albaProDBCompGroup *group = compGroups->at(compGroup);
+	albaProDBCompGroup *group = m_Prosthesis->GetCompGroups()->at(compGroup);
 
 	if (group)
 	{
@@ -351,13 +437,12 @@ void appVMEProsthesisEdit::DeleteComponentGroup(int compGroup)
 void appVMEProsthesisEdit::AddNewComponent(int compGroup)
 {
 	std::vector<albaProDBCompGroup *> * compGroups = m_Prosthesis->GetCompGroups();
-	albaProDBCompGroup *group = compGroups->at(compGroup);
-
-	std::vector<albaProDBComponent *> *components = group->GetComponents();
-	int compId = m_ComponentListBox[compGroup]->GetSelection();
 
 	if (compGroups->size() > 0)
 	{
+		std::vector<albaProDBComponent *> *components = compGroups->at(compGroup)->GetComponents();
+		int compId = m_ComponentListBox[compGroup]->GetSelection();
+
 		albaProDBComponent *newComponent = new albaProDBComponent();
 		newComponent->SetName(wxString::Format("NewComponent(%d)", components->size() + 1));
 
@@ -382,13 +467,11 @@ void appVMEProsthesisEdit::AddNewComponent(int compGroup)
 void appVMEProsthesisEdit::RemoveComponent(int compGroup)
 {
 	std::vector<albaProDBCompGroup *> *compGroups = m_Prosthesis->GetCompGroups();
-	albaProDBCompGroup *group = compGroups->at(compGroup);
-
-	std::vector<albaProDBComponent *> *components = group->GetComponents();
-	int compId = m_ComponentListBox[compGroup]->GetSelection();
 
 	if (compGroups->size() > 0)
 	{
+		std::vector<albaProDBComponent *> *components = compGroups->at(compGroup)->GetComponents();
+		int compId = m_ComponentListBox[compGroup]->GetSelection();
 		albaProDBComponent *component = components->at(compId);
 
 		components->erase(components->begin() + compId);
@@ -401,13 +484,11 @@ void appVMEProsthesisEdit::RemoveComponent(int compGroup)
 void appVMEProsthesisEdit::EditComponent(int compGroup)
 {
 	std::vector<albaProDBCompGroup *> *compGroups = m_Prosthesis->GetCompGroups();
-	albaProDBCompGroup *group = compGroups->at(compGroup);
-
-	std::vector<albaProDBComponent *> *components = group->GetComponents();
-	int compId = m_ComponentListBox[compGroup]->GetSelection();
 
 	if (compGroups->size() > 0)
 	{
+		std::vector<albaProDBComponent *> *components = compGroups->at(compGroup)->GetComponents();
+		int compId = m_ComponentListBox[compGroup]->GetSelection();
 		albaProDBComponent *component = components->at(compId);
 
 		appGUIDialogComponent cd(_("Edit Component"));
@@ -417,6 +498,7 @@ void appVMEProsthesisEdit::EditComponent(int compGroup)
 		if (cd.OkClosed())
 		{
 			m_ComponentListBox[compGroup]->Clear();
+
 			for (int i = 0; i < components->size(); i++)
 				m_ComponentListBox[compGroup]->Append(components->at(i)->GetName().GetCStr());
 
@@ -427,16 +509,95 @@ void appVMEProsthesisEdit::EditComponent(int compGroup)
 	}
 }
 //----------------------------------------------------------------------------
-void appVMEProsthesisEdit::EditComponentMatrix(int compGroup)
+void appVMEProsthesisEdit::TransformComponent(int compGroup)
 {
 	std::vector<albaProDBCompGroup *> *compGroups = m_Prosthesis->GetCompGroups();
-	albaProDBCompGroup *group = compGroups->at(compGroup);
 
-	std::vector<albaProDBComponent *> *components = group->GetComponents();
-	int compId = m_ComponentListBox[compGroup]->GetSelection();
+	m_CurrCompGroup = -1;
 
 	if (compGroups->size() > 0)
 	{
+		// Get RefSys (if exist)
+		if (m_ComponentRefSys == NULL)
+		{
+			m_ComponentRefSys = (albaVMERefSys*)GetLink("Prosthesis Component RefSys");
+		}
+
+		if (m_ComponentRefSys == NULL)
+		{
+			// Create Component RefSys
+			albaNEW(m_ComponentRefSys);
+			m_ComponentRefSys->SetName("Component RefSys");
+			m_ComponentRefSys->ReparentTo(GetRoot());
+			SetMandatoryLink("Prosthesis Component RefSys", m_ComponentRefSys);
+			//m_ComponentRefSys->GetTagArray()->SetTag(albaTagItem("VISIBLE_IN_THE_TREE", 0.0));
+			//m_ComponentRefSys->Delete();
+
+			m_TransformMode = true;
+		}
+		else
+		{
+			// Enable/Disable Transform Mode
+			m_TransformMode = !m_TransformMode;
+		}
+
+		// Update Component RefSys
+		std::vector<albaProDBComponent *> *components = compGroups->at(compGroup)->GetComponents();
+		int compId = m_ComponentListBox[compGroup]->GetSelection();
+
+		albaMatrix matrix = components->at(compId)->GetMatrix();
+		m_ComponentRefSys->SetAbsMatrix(matrix);
+		m_OldComponentMatrix = matrix;
+
+		// Calculate Scale Factor
+		double b[6];
+		GetOutput()->GetVMELocalBounds(b);
+		double diffX = fabs(b[1] - b[0]);
+		double diffY = fabs(b[3] - b[2]);
+		double diffZ = fabs(b[5] - b[4]);
+		double mainDiagonal = sqrt(diffX*diffX + diffY*diffY + diffZ*diffZ);
+		m_ComponentRefSys->SetScaleFactor(mainDiagonal / 3.0);
+		m_ComponentRefSys->Update();
+
+		m_ComponentRefSys->GetOutput()->GetAbsPose(m_Position, m_Orientation);
+
+		// Update Component Gui
+		EnableGui(!m_TransformMode);
+		m_ComponentGui[compGroup]->Enable(ID_LAST + (compGroup*ID_LAST_COMP_ID) + ID_TRANSFORM_COMPONENT, true);
+		m_Gui->Enable(ID_TRA_TRANSFORM, m_TransformMode);
+		m_Gui->Enable(ID_ROT_TRANSFORM, m_TransformMode);
+		m_Gui->Enable(ID_RESET_TRANSFORM, m_TransformMode);
+
+		// Show/Hide Component RefSys
+		GetLogicManager()->VmeShow(m_ComponentRefSys, m_TransformMode);
+
+		if (m_ComponentsTransformMouse == NULL)
+		{
+			m_ComponentsTransformMouse = new appGUITransformMouse(m_ComponentRefSys, this);
+			m_InteractorGenericMouse = m_ComponentsTransformMouse->CreateBehavior(MOUSE_LEFT_SHIFT);
+			m_InteractorGenericMouse->SetListener(this);
+		}
+		
+		m_InteractorGenericMouse->SetVME(m_ComponentRefSys);
+
+		if (m_TransformMode)
+			m_ComponentsTransformMouse->AttachInteractorToVme();
+		else
+			m_ComponentsTransformMouse->DetachInteractorFromVme();
+
+		m_CurrCompGroup = compGroup;
+	}
+}
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::EditComponentMatrix(int compGroup)
+{
+	std::vector<albaProDBCompGroup *> *compGroups = m_Prosthesis->GetCompGroups();
+
+	if (compGroups->size() > 0)
+	{
+		std::vector<albaProDBComponent *> *components = compGroups->at(compGroup)->GetComponents();
+		int compId = m_ComponentListBox[compGroup]->GetSelection();
+
 		appGUIDialogMatrix cm(_("Edit Matrix"));
 		cm.SetComponent(components->at(compId));
 		cm.Show();
@@ -468,4 +629,123 @@ void appVMEProsthesisEdit::SetSelection(int selection)
 void appVMEProsthesisEdit::Resfresh()
 {
 	SetSelection(m_SelectedProsthesis);
+}
+
+
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::PrepareUndoOp()
+{}
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::CompleteAndPushUndoOp()
+{}
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::PostMultiplyEventMatrix(albaEventBase *alba_event)
+{
+	if (albaEvent *e = albaEvent::SafeDownCast(alba_event))
+	{
+		long arg = e->GetArg();
+
+		if (arg == albaInteractorGenericMouse::MOUSE_MOVE)
+		{
+			// Update Component Matrix
+			if (m_CurrCompGroup >= 0 && m_CurrCompGroup < m_Prosthesis->GetCompGroups()->size())
+			{
+				std::vector<albaProDBComponent *> *components = m_Prosthesis->GetCompGroups()->at(m_CurrCompGroup)->GetComponents();
+
+				int compId = m_ComponentListBox[m_CurrCompGroup]->GetSelection();
+
+				// handle incoming transform events
+				vtkTransform *tr = vtkTransform::New();
+				tr->PostMultiply();
+				tr->SetMatrix(components->at(compId)->GetMatrix().GetVTKMatrix());
+				tr->Concatenate(e->GetMatrix()->GetVTKMatrix());
+				tr->Update();
+
+				albaMatrix absPose;
+				absPose.DeepCopy(tr->GetMatrix());
+				absPose.SetTimeStamp(m_CurrentTime);
+
+				components->at(compId)->SetMatrix(absPose);
+
+				m_ComponentRefSys->SetAbsMatrix(components->at(compId)->GetMatrix());
+				m_ComponentRefSys->Update();
+
+				SelectComponent(m_CurrCompGroup);
+
+				albaTransform::GetPosition(absPose, m_Position);
+				albaTransform::GetOrientation(absPose, m_Orientation);
+
+				m_Gui->Update();
+
+				tr->Delete();
+			}
+		}
+	}
+}
+
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::TransformFromGUI()
+{
+	if (m_TransformMode && m_CurrCompGroup >= 0 && m_CurrCompGroup < m_Prosthesis->GetCompGroups()->size())
+	{
+		vtkALBASmartPointer<vtkTransform> t;
+		t->PostMultiply();
+		double aux_pos[3], aux_rot[3];
+		double prosthesisPose[3], prosthesisOrientation[3];
+		double diff[3];
+
+		std::vector<albaProDBComponent *> *components = m_Prosthesis->GetCompGroups()->at(m_CurrCompGroup)->GetComponents();
+		int compId = m_ComponentListBox[m_CurrCompGroup]->GetSelection();
+		albaMatrix absPose = components->at(compId)->GetMatrix();
+
+		albaTransform::GetPosition(absPose, prosthesisPose);
+		albaTransform::GetOrientation(absPose, prosthesisOrientation);
+
+		m_ComponentRefSys->GetOutput()->GetAbsPose(aux_pos, aux_rot);
+
+		diff[0] = m_Position[0] - prosthesisPose[0];
+		diff[1] = m_Position[1] - prosthesisPose[1];
+		diff[2] = m_Position[2] - prosthesisPose[2];
+
+		t->Translate(-aux_pos[0], -aux_pos[1], -aux_pos[2]);
+		t->RotateY(m_Orientation[1]);
+		t->RotateX(m_Orientation[0]);
+		t->RotateZ(m_Orientation[2]);
+		t->Translate(aux_pos[0] + diff[0], aux_pos[1] + diff[1], aux_pos[2] + diff[2]);
+		t->Update();
+
+		//////////////////////////////////////////////////////////////////////////
+
+		//Apply the orientation to the prosthesis 
+		albaSmartPointer<albaMatrix> m;
+		m->SetVTKMatrix(t->GetMatrix());
+		albaEvent *e = new albaEvent();
+		e->SetArg(albaInteractorGenericMouse::MOUSE_MOVE);
+		e->SetMatrix(m);
+		PostMultiplyEventMatrix((albaEventBase*)e);
+		albaDEL(e);
+	}
+}
+//----------------------------------------------------------------------------
+void appVMEProsthesisEdit::ResetTransform()
+{
+	// Update Component Matrix
+	if (m_TransformMode && m_CurrCompGroup >= 0 && m_CurrCompGroup < m_Prosthesis->GetCompGroups()->size())
+	{
+		std::vector<albaProDBComponent *> *components = m_Prosthesis->GetCompGroups()->at(m_CurrCompGroup)->GetComponents();
+
+		int compId = m_ComponentListBox[m_CurrCompGroup]->GetSelection();
+
+		components->at(compId)->SetMatrix(m_OldComponentMatrix);
+
+		m_ComponentRefSys->SetAbsMatrix(m_OldComponentMatrix);
+		m_ComponentRefSys->Update();
+
+		SelectComponent(m_CurrCompGroup);
+
+		albaTransform::GetPosition(m_OldComponentMatrix, m_Position);
+		albaTransform::GetOrientation(m_OldComponentMatrix, m_Orientation);
+
+		m_Gui->Update();
+	}
 }

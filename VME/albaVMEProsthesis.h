@@ -104,10 +104,11 @@ protected:
 	virtual void CreateComponentGui(int currGroup, albaProDBCompGroup * componentGroup);
 	void ClearComponentGroups();
 
+	void SelectComponent(int compGroup);
+	void ShowComponent(int compGroup);
+
 	virtual void OnComponentEvent(int compGroup, int id);
-
-
-
+		
 	//Components vtkData
 	std::vector <vtkTransformPolyDataFilter *> m_TransformFilters;
 	std::vector <vtkTransform *> m_Transforms; 
