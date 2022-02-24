@@ -46,6 +46,7 @@ albaVMEProsthesis::albaVMEProsthesis()
 {
 	m_AppendPolydata = NULL;
 	m_ProsthesisName = "";
+	m_Prosthesis = NULL;
 
 	m_ContentGui = NULL;
 	m_GroupGui = NULL;
