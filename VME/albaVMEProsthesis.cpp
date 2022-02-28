@@ -345,7 +345,8 @@ void albaVMEProsthesis::SetProsthesis(albaProDBProsthesis *prosthesis)
 void albaVMEProsthesis::ChangeProsthesis()
 {
 	appGUIDialogProsthesisSelection pd(_("Select Prosthesis"));
-	pd.SetProducer(m_Prosthesis->GetProducer());
+	if(m_Prosthesis!=NULL)
+		pd.SetProducer(m_Prosthesis->GetProducer());
 	pd.Show();
 
 	if (pd.OkClosed())

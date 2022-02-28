@@ -101,7 +101,9 @@ appVMEProsthesisEdit * appOpCreateProsthesis::CreateVMEProshesis()
 	albaNEW(newVmeProsthesis);
 	newVmeProsthesis->SetName("New Prosthesis");
 
-	newVmeProsthesis->SetProsthesis(m_ProsthesesDBManager->GetProstheses().at(0));
+	std::vector<albaProDBProsthesis *>& prostheses =m_ProsthesesDBManager->GetProstheses();
+	if(prostheses.size()>0)
+		newVmeProsthesis->SetProsthesis(prostheses.at(0));
 	newVmeProsthesis->ReparentTo(m_Input->GetRoot());
 
 	m_Input->GetRoot()->SetLink("VMEProsthesis", newVmeProsthesis);
