@@ -19,7 +19,6 @@ PROJECT(appGui)
 SET(PROJECT_SRCS
 appGUI.cpp					appGUI.h
 appSideBar.cpp				appSideBar.h
-appGUIDialogProsthesisSelection.cpp	appGUIDialogProsthesisSelection.h
 appGUIDialogProducer.cpp	appGUIDialogProducer.h
 appGUIDialogProsthesis.cpp	appGUIDialogProsthesis.h
 appGUIDialogComponent.cpp	appGUIDialogComponent.h
@@ -27,7 +26,6 @@ appGUIDialogMatrix.cpp		appGUIDialogMatrix.h
 appGUITransformMouse.cpp	appGUITransformMouse.h
 appInteractorGenericMouse.cpp	appInteractorGenericMouse.h
 appInteractorCompositorMouse.cpp	appInteractorCompositorMouse.h
-appGUIHyperLink.cpp			appGUIHyperLink.h
 appGUISeparator.cpp			appGUISeparator.h
 )
 

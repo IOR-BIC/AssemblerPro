@@ -19,7 +19,6 @@ PROJECT(appVME)
 SET(PROJECT_SRCS
 #appEmptyVME.cpp	appEmptyVME.h
 appVMEProsthesisEdit.cpp appVMEProsthesisEdit.h
-albaVMEProsthesis.cpp albaVMEProsthesis.h
 )
 
 SET(PROJECT_LIBS ${PROJECT_LIBS})

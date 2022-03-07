@@ -150,7 +150,7 @@ bool AssemblerPro::OnInit()
 	// Splash Screen
 	albaString splashImageName = "AppSplash.bmp";
 
-	wxString splashDir = appUtils::GetConfigDirectory().c_str();
+	wxString splashDir = albaGetConfigDirectory().c_str();
 	wxBitmap splashBitmap;
 	splashBitmap.LoadFile(splashDir + "\\" + splashImageName, wxBITMAP_TYPE_BMP);
 	m_Logic->ShowSplashScreen(splashBitmap);

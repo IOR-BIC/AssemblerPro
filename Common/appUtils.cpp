@@ -24,49 +24,8 @@ PURPOSE. See the above copyright notice for more information.
 #include "albaDecl.h"
 #include "albaDefines.h"
 
-//----------------------------------------------------------------------------
-wxString appUtils::GetApplicationDirectory()
-{
-#ifndef _DEBUG
-	// RELEASE 
-	wxString applicationDirectory = albaGetApplicationDirectory().c_str();
-	return applicationDirectory;
 
-#else
-	// DEBUG
-	wxString sourceDir = ASB_SOURCE_DIR;
 
-	for (unsigned int i = 0; i < sourceDir.Length(); i++)
-	{
-		if (sourceDir[i] == '/')
-			sourceDir[i] = '\\';
-	}
-
-	return sourceDir;
-
-#endif
-}
-
-//----------------------------------------------------------------------------
-wxString appUtils::GetConfigDirectory()
-{
-	//getting the Config directory
-	wxString config_dir = albaGetApplicationDirectory().c_str();
-
-#ifdef _DEBUG
-	config_dir = ASB_SOURCE_DIR;
-	config_dir += "\\Installer";
-#endif
-	config_dir += "\\Config";
-
-	for (unsigned int i = 0; i < config_dir.Length(); i++)
-	{
-		if (config_dir[i] == '/')
-			config_dir[i] = '\\';
-	}
-
-	return config_dir;
-}
 
 //////////////////////////////////////////////////////////////////////////
 // Accept Methods

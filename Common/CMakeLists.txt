@@ -19,7 +19,6 @@ PROJECT(appCommon)
 # Set your list of sources here.
 SET(PROJECT_SRCS
 appUtils.cpp appUtils.h
-albaProsthesesDBManager.cpp albaProsthesesDBManager.h
 )
 IF (ALBA_USE_CRYPTO)
   SET(PROJECT_LIBS ${PROJECT_LIBS} Crypto)

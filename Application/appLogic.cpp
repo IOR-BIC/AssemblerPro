@@ -80,6 +80,10 @@ void appLogic::Init(int argc, char **argv)
 	if (!wxDirExists(albaGetAppDataDirectory().c_str()))
 		wxMkDir(albaGetAppDataDirectory().c_str());
 
+#ifdef _DEBUG
+	albaSetAppDebugDir(ASB_SOURCE_DIR);
+#endif
+
 	InitAboutDialog();
 	
 	InitProsthesisDBManager();
@@ -102,7 +106,7 @@ void appLogic::InitAboutDialog()
 
 	// About Image
 	wxString imageName = "AppAbout";
-	wxString imagesPath = appUtils::GetConfigDirectory().c_str();
+	wxString imagesPath = albaGetConfigDirectory().c_str();
 	m_AboutDialog->SetImagePath(imagesPath + "/" + imageName + ".bmp");
 }
 
@@ -116,7 +120,7 @@ void appLogic::InitProsthesisDBManager()
 
 	m_ProsthesisDBManager->LoadDB();
 
-	wxString imagesPath = appUtils::GetConfigDirectory().c_str();
+	wxString imagesPath =albaGetConfigDirectory().c_str();
 // 	imagesPath += "/FakeDB.xml";
 // 	m_ProsthesisDBManager->LoadDBFromFile(imagesPath);
 

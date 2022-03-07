@@ -20,7 +20,7 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 
 #include "appGUI.h"
-#include "appGUIHyperLink.h"
+#include "albaGUIHyperLink.h"
 #include "appGUISeparator.h"
 
 #include "albaGUIButton.h"
@@ -78,8 +78,8 @@ void appGUI::HyperLink(int id, wxString label, wxString url)
 {
 	int w_id = GetWidgetId(id);
 
-	appGUIHyperLink  *link = NULL;
-	link = new appGUIHyperLink(this, w_id, label);
+	albaGUIHyperLink  *link = NULL;
+	link = new albaGUIHyperLink(this, w_id, label);
 	link->SetUrl(url);
 
 	Add(link);

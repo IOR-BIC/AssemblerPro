@@ -22,6 +22,7 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 
 #include "appDecl.h"
+#include "appGUI.h"
 #include "appVMEProsthesisEdit.h"
 #include "appGUIDialogComponent.h"
 #include "appGUIDialogMatrix.h"

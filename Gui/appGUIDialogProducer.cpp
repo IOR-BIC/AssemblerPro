@@ -125,7 +125,7 @@ void appGUIDialogProducer::CreateProducerDialog()
 
 		m_MainBoxSizer = new wxBoxSizer(wxVERTICAL);
 		
-		wxString imagesPath = appUtils::GetConfigDirectory().c_str();
+		wxString imagesPath =albaGetConfigDirectory().c_str();
 		wxString imgPath = imagesPath + "/Wizard/Producer.bmp"; // Default
 
 		if (wxFileExists(m_ProducerImageFullName))

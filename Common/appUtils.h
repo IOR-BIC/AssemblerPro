@@ -29,9 +29,6 @@ public:
   /** In DEBUG mode return Application source code directory in WIN32 path format. 
   In RELEASE mode it returns the Application installation directory in WIN32 path format (same as albaGetApplicationDirectory)*/
 
-  static wxString GetApplicationDirectory();
-  static wxString GetConfigDirectory();
-
   /////////////////////////////////////////////////////////////////////////
   // Methods for Op Accept
 };

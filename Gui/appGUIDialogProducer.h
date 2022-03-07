@@ -28,7 +28,7 @@ PURPOSE. See the above copyright notice for more information.
 class albaGUIButton;
 class albaGUILab;
 class albaGUIPicButton;
-class appGUIHyperLink;
+class albaGUIHyperLink;
 
 class ALBA_EXPORT appGUIDialogProducer : public albaGUIDialog
 {

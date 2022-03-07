@@ -166,7 +166,7 @@ void appGUIDialogProsthesis::CreateDialog()
 		wxBoxSizer *mainBoxSizer2 = new wxBoxSizer(wxVERTICAL);
 		wxBoxSizer *mainBoxSizer3 = new wxBoxSizer(wxHORIZONTAL);
 
-		wxString imagesPath = appUtils::GetConfigDirectory().c_str();
+		wxString imagesPath = albaGetConfigDirectory().c_str();
 		wxString imgPath = imagesPath + "/Wizard/Model.bmp"; // Default
 
 		if (wxFileExists(m_ProsthesisImageFullName))
