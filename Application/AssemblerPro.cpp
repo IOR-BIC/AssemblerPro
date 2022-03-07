@@ -30,7 +30,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "appOpEmpty.h"
 #include "appOpExportProsthesisDB.h"
 #include "appOpImportOldProsthesis.h"
-#include "appOpImportProsthesisDB.h"
+#include "albaOpImportProsthesisToDB.h"
 #include "appOpSearchProsthesis.h"
 #include "appUtils.h"
 #include "appVMEProsthesisEdit.h"
@@ -95,7 +95,7 @@ bool AssemblerPro::OnInit()
 	//////////////////////////////////////////////////////////////////////////
 
 	// Import Prosthesis DB
-	m_Logic->Plug(new appOpImportProsthesisDB("Import Prosthesis DB"), "");
+	m_Logic->Plug(new albaOpImportProsthesisToDB("Import Prosthesis DB"), "");
 
 	// Import Old Prosthesis
 	m_Logic->Plug(new appOpImportOldProsthesis(), "");

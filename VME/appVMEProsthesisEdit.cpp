@@ -238,14 +238,29 @@ void appVMEProsthesisEdit::OnEvent(albaEventBase *alba_event)
 		{
 		case ID_START: break;
 
-		case ID_PROSTHESIS_SELECTION: SelectProsthesis(); break;		
-		case ID_PROSTHESIS_CHANGE: ChangeProsthesis(); break;
-		case ID_PROSTHESIS_EDIT: EditProsthesis(m_Prosthesis); break;
-		case ID_GROUP_CREATE: CreateNewComponentGroup(); break;
+		case ID_PROSTHESIS_SELECTION: 
+			SelectProsthesis(); 
+			break;		
+		case ID_PROSTHESIS_CHANGE:
+			ChangeProsthesis();
+			break;
+		case ID_PROSTHESIS_EDIT: 
+			EditProsthesis(m_Prosthesis);
+			m_DBManager->SaveDB();
+			break;
+		case ID_GROUP_CREATE: 
+			CreateNewComponentGroup();
+			m_DBManager->SaveDB();
+			break;
 
 		case ID_TRA_TRANSFORM: 
-		case ID_ROT_TRANSFORM: TransformFromGUI(); break;
-		case ID_RESET_TRANSFORM: ResetTransform(); break;
+		case ID_ROT_TRANSFORM:
+			TransformFromGUI(); 
+			m_DBManager->SaveDB();
+			break;
+		case ID_RESET_TRANSFORM: 
+			ResetTransform();
+			break;
 
 		default:
 			if (eventId >= ID_LAST && eventId < ID_LAST + ID_LAST_COMP_ID*compNum)
@@ -272,14 +287,36 @@ void appVMEProsthesisEdit::OnComponentEvent(int compGroup, int id)
 	{
 	case ID_REM_COMPONENT_GROUP: DeleteComponentGroup(compGroup); break;
 
-	case ID_SHOW_COMPONENT: ShowComponent(compGroup); break;
-	case ID_SELECT_COMPONENT: SelectComponent(compGroup); break;
-	case ID_NAME_COMPONENT: RenameComponentGroup(compGroup); break;
-	case ID_ADD_COMPONENT: AddNewComponent(compGroup); break;
-	case ID_EDIT_COMPONENT: EditComponent(compGroup); break;
-	case ID_REM_COMPONENT: RemoveComponent(compGroup); break;
-	case ID_TRANSFORM_COMPONENT: TransformComponent(compGroup); break;
-	case ID_MATRIX_COMPONENT: EditComponentMatrix(compGroup); break;
+	case ID_SHOW_COMPONENT: 
+		ShowComponent(compGroup); 
+		break;
+	case ID_SELECT_COMPONENT: 
+		SelectComponent(compGroup);
+		break;
+	case ID_NAME_COMPONENT:
+		RenameComponentGroup(compGroup);			
+		m_DBManager->SaveDB();
+		break;
+	case ID_ADD_COMPONENT:
+		AddNewComponent(compGroup);
+		m_DBManager->SaveDB();
+		break;
+	case ID_EDIT_COMPONENT:
+		EditComponent(compGroup);
+		m_DBManager->SaveDB();
+		break;
+	case ID_REM_COMPONENT: 
+		RemoveComponent(compGroup); 
+		m_DBManager->SaveDB();
+		break;
+	case ID_TRANSFORM_COMPONENT: 
+		TransformComponent(compGroup);
+		m_DBManager->SaveDB();
+		break;
+	case ID_MATRIX_COMPONENT:
+		EditComponentMatrix(compGroup); 
+		m_DBManager->SaveDB();
+		break;
 
 	default:
 		break;
@@ -461,7 +498,7 @@ void appVMEProsthesisEdit::AddNewComponent(int compGroup)
 
 		UpdateGui();
 
-		delete newComponent;
+		//delete newComponent;
 	}
 }
 //----------------------------------------------------------------------------
@@ -638,7 +675,9 @@ void appVMEProsthesisEdit::PrepareUndoOp()
 {}
 //----------------------------------------------------------------------------
 void appVMEProsthesisEdit::CompleteAndPushUndoOp()
-{}
+{
+	m_DBManager->SaveDB();
+}
 //----------------------------------------------------------------------------
 void appVMEProsthesisEdit::PostMultiplyEventMatrix(albaEventBase *alba_event)
 {

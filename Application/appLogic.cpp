@@ -86,7 +86,7 @@ void appLogic::Init(int argc, char **argv)
 
 	InitAboutDialog();
 	
-	InitProsthesisDBManager();
+	PlugProsthesisDBManager("d-FUgg&9ogWB,3?UiPb~'sQY@%AsQ");
 
 	// Create and Open View
 	ViewCreate(VIEW_SURFACE);
@@ -110,22 +110,6 @@ void appLogic::InitAboutDialog()
 	m_AboutDialog->SetImagePath(imagesPath + "/" + imageName + ".bmp");
 }
 
-//----------------------------------------------------------------------------
-void appLogic::InitProsthesisDBManager()
-{
-	if (m_ProsthesisDBManager == NULL)
-		m_ProsthesisDBManager = new albaProsthesesDBManager();
-
-	m_ProsthesisDBManager->SetPassPhrase("d-FUgg&9ogWB,3?UiPb~'sQY@%AsQ");
-
-	m_ProsthesisDBManager->LoadDB();
-
-	wxString imagesPath =albaGetConfigDirectory().c_str();
-// 	imagesPath += "/FakeDB.xml";
-// 	m_ProsthesisDBManager->LoadDBFromFile(imagesPath);
-
-	//m_ProsthesisDBManager->Clear();
-}
 
 //----------------------------------------------------------------------------
 void appLogic::InitVMEProsthesis()

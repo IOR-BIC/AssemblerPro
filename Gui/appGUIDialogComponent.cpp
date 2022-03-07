@@ -205,7 +205,7 @@ void appGUIDialogComponent::UpdateComponentDialog()
 //----------------------------------------------------------------------------
 void appGUIDialogComponent::AddVTKFromFile()
 {
-	albaString fileNameFullPath = albaGetDocumentsDirectory().c_str();
+	albaString fileNameFullPath = albaGetLastUserFolder().c_str();
 	albaString wildc = "STL file (*.stl)|*.stl|VTK file (*.vtk)|*.vtk";
 	wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
 
@@ -227,13 +227,23 @@ void appGUIDialogComponent::AddVTKFromFile()
 	 		std::vector<albaVMESurface*> importedSTL;
 	 		importer->GetImportedSTL(importedSTL);
 	 		albaVMESurface *node = importedSTL[0];
-
+			node->GetOutput()->Update();
 			polyData = (vtkPolyData*)node->GetOutput()->GetVTKData();
-			m_CurrentComponent->SetVTKData(polyData);
+			if (polyData == NULL)
+			{
+				albaErrorMessage("Load STL Failed!\nData is not updated.");
+				albaDEL(importer);
+				return;
+			}
+			else
+			{
+				m_CurrentComponent->SetVTKData(polyData);
+				m_ComponentName = name;
+				m_ComponentName.Replace("_", " ");
 
-			albaDEL(importer);
-
-			m_HasVtkData = true;
+				albaDEL(importer);
+				m_HasVtkData = true;
+			}
 		}
 		else if (ext == "vtk")
 		{
@@ -243,10 +253,17 @@ void appGUIDialogComponent::AddVTKFromFile()
 			importer->Update();
 
 			polyData = (vtkPolyData*)importer->GetOutput();
-
-			m_CurrentComponent->SetVTKData(polyData);
-
-			m_HasVtkData = true;
+			if (polyData == NULL)
+			{
+				albaErrorMessage("Load STL Failed!\nData is not updated.");
+				return;
+			}
+			else
+			{
+				m_CurrentComponent->SetVTKData(polyData);
+				m_ComponentName = name;
+				m_HasVtkData = true;
+			}
 		}
 	}
 }

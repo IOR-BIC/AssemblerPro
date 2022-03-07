@@ -102,9 +102,6 @@ protected:
 	void InitAboutDialog();
 
 	/* Initialize Prosthesis DB Manager*/
-	void InitProsthesisDBManager();
-
-	/* Initialize Prosthesis DB Manager*/
 	void InitVMEProsthesis();
 
   bool m_OpeningMSF;
@@ -112,8 +109,6 @@ protected:
 	wxToolBar *m_ViewToolbar;
 	wxToolBar *m_OperationToolbar;
 	wxToolBar *m_ExtraToolbar;
-
-	albaProsthesesDBManager *m_ProsthesisDBManager;
 
 private:
 	//

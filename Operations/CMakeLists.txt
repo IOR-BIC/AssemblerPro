@@ -21,7 +21,6 @@ appOpEmpty.cpp							 appOpEmpty.h
 appOpDBManager.cpp					 appOpDBManager.h
 appOpCreateProsthesis.cpp 	 appOpCreateProsthesis.h
 appOpSearchProsthesis.cpp	   appOpSearchProsthesis.h
-appOpImportProsthesisDB.cpp	 appOpImportProsthesisDB.h
 appOpImportOldProsthesis.cpp appOpImportOldProsthesis.h
 appOpExportProsthesisDB.cpp	 appOpExportProsthesisDB.h
 )
