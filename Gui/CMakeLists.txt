@@ -23,9 +23,6 @@ appGUIDialogProducer.cpp	appGUIDialogProducer.h
 appGUIDialogProsthesis.cpp	appGUIDialogProsthesis.h
 appGUIDialogComponent.cpp	appGUIDialogComponent.h
 appGUIDialogMatrix.cpp		appGUIDialogMatrix.h
-appGUITransformMouse.cpp	appGUITransformMouse.h
-appInteractorGenericMouse.cpp	appInteractorGenericMouse.h
-appInteractorCompositorMouse.cpp	appInteractorCompositorMouse.h
 appGUISeparator.cpp			appGUISeparator.h
 )
 

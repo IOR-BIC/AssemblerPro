@@ -29,9 +29,9 @@ class vtkAppendPolyData;
 class vtkOutlineSource;
 class vtkTransform;
 class vtkTransformPolyDataFilter;
-class appInteractorGenericMouse;
+class albaInteractorGenericMouseFloatVME;
 class albaInteractorCompositorMouse;
-class appGUITransformMouse;
+class albaGUITransformMouseFloatVME;
 
 /** appVMEProsthesisEdit - 
 */
@@ -126,8 +126,8 @@ protected:
 // 	std::vector<appGUITransformMouse*> m_ComponentsTransform;
 // 	std::vector<appInteractorGenericMouse*> m_IsaPickCenterRotation;
 
-	appGUITransformMouse *m_ComponentsTransformMouse;
-	appInteractorGenericMouse *m_InteractorGenericMouse;
+	albaGUITransformMouseFloatVME *m_ComponentsTransformMouse;
+	albaInteractorGenericMouseFloatVME *m_InteractorComponentsGenericMouse;
 
 	int m_CurrCompGroup;
 	double m_Position[3];

@@ -31,9 +31,9 @@ class albaEventBase;
 class albaGUIValidator;
 class albaInteractorCompositorMouse;
 class appGUIComponent;
-class appGUITransformMouse;
+class albaGUITransformMouseFloatVME;
 class appInteractionVolume;
-class appInteractorGenericMouse;
+class albaInteractorGenericMouseFloatVME;
 
 //----------------------------------------------------------------------------
 // Class Name: appGUI

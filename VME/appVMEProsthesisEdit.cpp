@@ -27,9 +27,9 @@ PURPOSE. See the above copyright notice for more information.
 #include "appGUIDialogComponent.h"
 #include "appGUIDialogMatrix.h"
 #include "appGUIDialogProsthesis.h"
-#include "appGUITransformMouse.h"
-#include "appInteractorCompositorMouse.h"
-#include "appInteractorGenericMouse.h"
+#include "albaGUITransformMouseFloatVME.h"
+#include "albaInteractorCompositorMouseFloatVME.h"
+#include "albaInteractorGenericMouseFloatVME.h"
 
 #include "albaGUI.h"
 #include "albaProsthesesDBManager.h"
@@ -67,7 +67,7 @@ appVMEProsthesisEdit::appVMEProsthesisEdit()
 	m_Orientation[0] = m_Orientation[1] = m_Orientation[2] = 0;
 
 	m_ComponentsTransformMouse = NULL;
-	m_InteractorGenericMouse = NULL;
+	m_InteractorComponentsGenericMouse = NULL;
 }
 //-------------------------------------------------------------------------
 appVMEProsthesisEdit::~appVMEProsthesisEdit()
@@ -611,12 +611,12 @@ void appVMEProsthesisEdit::TransformComponent(int compGroup)
 
 		if (m_ComponentsTransformMouse == NULL)
 		{
-			m_ComponentsTransformMouse = new appGUITransformMouse(m_ComponentRefSys, this);
-			m_InteractorGenericMouse = m_ComponentsTransformMouse->CreateBehavior(MOUSE_LEFT_SHIFT);
-			m_InteractorGenericMouse->SetListener(this);
+			m_ComponentsTransformMouse = new albaGUITransformMouseFloatVME(m_ComponentRefSys, this);
+			m_InteractorComponentsGenericMouse = m_ComponentsTransformMouse->CreateBehavior(MOUSE_LEFT_SHIFT);
+			m_InteractorComponentsGenericMouse->SetListener(this);
 		}
 		
-		m_InteractorGenericMouse->SetVME(m_ComponentRefSys);
+		m_InteractorComponentsGenericMouse->SetVME(m_ComponentRefSys);
 
 		if (m_TransformMode)
 			m_ComponentsTransformMouse->AttachInteractorToVme();
