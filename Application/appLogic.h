@@ -27,6 +27,7 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 class albaOp;
 class albaGUIApplicationSettings;
+class appVMEProsthesisEdit;
 
 //----------------------------------------------------------------------------
 // Class Name: appLogic
@@ -68,6 +69,8 @@ public:
 
 	/* Refresh Prosthesis VME*/
 	void RefreshVMEProsthesis();
+
+	appVMEProsthesisEdit *GetVMEProthesis();
 
 protected:
   

@@ -122,11 +122,19 @@ void appLogic::InitVMEProsthesis()
 //----------------------------------------------------------------------------
 void appLogic::RefreshVMEProsthesis()
 {
-	albaVMERoot *root = this->m_VMEManager->GetRoot();
-	appVMEProsthesisEdit *prosthesis = (appVMEProsthesisEdit*) root->GetLink("VMEProsthesis");
+	appVMEProsthesisEdit *prosthesis = GetVMEProthesis();
 
 	if (prosthesis != NULL)
 		prosthesis->Resfresh();
+}
+
+//----------------------------------------------------------------------------
+appVMEProsthesisEdit * appLogic::GetVMEProthesis()
+{
+	albaVMERoot *root = this->m_VMEManager->GetRoot();
+	appVMEProsthesisEdit *prosthesis = (appVMEProsthesisEdit*)root->GetLink("VMEProsthesis");
+
+	return prosthesis;
 }
 
 /// EVENTS

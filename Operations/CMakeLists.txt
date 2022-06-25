@@ -22,6 +22,7 @@ appOpDBManager.cpp					 appOpDBManager.h
 appOpCreateProsthesis.cpp 	 appOpCreateProsthesis.h
 appOpSearchProsthesis.cpp	   appOpSearchProsthesis.h
 appOpImportOldProsthesis.cpp appOpImportOldProsthesis.h
+appOpExportOldProsthesis.cpp appOpExportOldProsthesis.h
 appOpExportProsthesisDB.cpp	 appOpExportProsthesisDB.h
 )
 

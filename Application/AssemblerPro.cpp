@@ -30,6 +30,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "appOpEmpty.h"
 #include "appOpExportProsthesisDB.h"
 #include "appOpImportOldProsthesis.h"
+#include "appOpExportOldProsthesis.h"
 #include "albaOpImportProsthesisToDB.h"
 #include "appOpSearchProsthesis.h"
 #include "appUtils.h"
@@ -106,6 +107,9 @@ bool AssemblerPro::OnInit()
 
 	// Export Prosthesis DB
 	m_Logic->Plug(new appOpExportProsthesisDB("Export Prosthesis DB"), "");
+
+	// Import Old Prosthesis
+	m_Logic->Plug(new appOpExportOldProsthesis(), "");
 
 	//////////////////////////////////////////////////////////////////////////
 	//Operations
