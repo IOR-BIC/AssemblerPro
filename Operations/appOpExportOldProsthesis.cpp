@@ -275,26 +275,26 @@ void appOpExportOldProsthesis::ExportProsthesis(wxString tmpFolder, albaProDBPro
 	//Producer
 	//<VME Type = "mflVMEGroup" Name = "Adler Ortho">
 	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *firstProducer = doc->createElement(albaXMLString("VME"));
-	firstProducer->setAttribute(albaXMLString("Type"), albaXMLString("mflVMEGroup"));
 	firstProducer->setAttribute(albaXMLString("Name"), albaXMLString(dbPro->GetProducer().GetCStr()));
+	firstProducer->setAttribute(albaXMLString("Type"), albaXMLString("mflVMEGroup"));
 	root->appendChild(firstProducer);
 
 	//again
 	//<VME Type = "mflVMEGroup" Name = "Adler Ortho">  
 	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *secondProducer = doc->createElement(albaXMLString("VME"));
-	secondProducer->setAttribute(albaXMLString("Type"), albaXMLString("mflVMEGroup"));
 	secondProducer->setAttribute(albaXMLString("Name"), albaXMLString(dbPro->GetProducer().GetCStr()));
+	secondProducer->setAttribute(albaXMLString("Type"), albaXMLString("mflVMEGroup"));
 	firstProducer->appendChild(secondProducer);
 
 
 	//Prosthesis
 	albaString name = dbPro->GetName();
-	name += side ? "Right" : "Left";
+	name += side ? " Right" : " Left";
 
 	//<VME Type="mflVMEGroup" Name="Agilis-PE Right"> 
 	XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *prosthesis = doc->createElement(albaXMLString("VME"));
+	prosthesis->setAttribute(albaXMLString("Name"), albaXMLString(name));
 	prosthesis->setAttribute(albaXMLString("Type"), albaXMLString("mflVMEGroup"));
-	prosthesis->setAttribute(albaXMLString("Name"), albaXMLString(dbPro->GetProducer().GetCStr()));
 	secondProducer->appendChild(prosthesis);
 
 
@@ -305,7 +305,7 @@ void appOpExportOldProsthesis::ExportProsthesis(wxString tmpFolder, albaProDBPro
 	prosthesis->appendChild(tarray);
 
 	//	<TItem Tag = "MODEL_MIRROR_FLAG" Mult="0" Type="NUM">  <TC>1</TC> </TItem>
-	AddTagItem(doc, tarray, "MODEL_MIRROR_FLAG", 1, "MUM", "1");
+	AddTagItem(doc, tarray, "MODEL_MIRROR_FLAG", 1, "NUM", "1");
 
 	//<TItem Tag="MODEL_COMPONENT_TYPE" Mult="1" Type="STR">
 	//   <TC>Acetabular</TC>
@@ -319,8 +319,8 @@ void appOpExportOldProsthesis::ExportProsthesis(wxString tmpFolder, albaProDBPro
 		albaProDBCompGroup *group = compGroups->at(i);
 		//<VME Type = "mflVMEGroup" Name = "Adler Ortho">  
 		XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *groupNode= doc->createElement(albaXMLString("VME"));
-		groupNode->setAttribute(albaXMLString("Type"), albaXMLString("mflVMEGroup"));
 		groupNode->setAttribute(albaXMLString("Name"), albaXMLString(group->GetName().GetCStr()));
+		groupNode->setAttribute(albaXMLString("Type"), albaXMLString("mflVMEGroup"));
 		prosthesis->appendChild(groupNode);
 
 
@@ -341,8 +341,8 @@ void appOpExportOldProsthesis::ExportProsthesis(wxString tmpFolder, albaProDBPro
 
 			//<VME Type="mflVMEGroup" Name="fixa42 a">
 			XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *componentNode = doc->createElement(albaXMLString("VME"));
-			componentNode->setAttribute(albaXMLString("Type"), albaXMLString("mflVMEGroup"));
 			componentNode->setAttribute(albaXMLString("Name"), albaXMLString(component->GetName().GetCStr()));
+			componentNode->setAttribute(albaXMLString("Type"), albaXMLString("mflVMEGroup"));
 			groupNode->appendChild(componentNode);
 
 			//<TArray NumberOfTags="1">
