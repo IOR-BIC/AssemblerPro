@@ -43,6 +43,10 @@ PURPOSE. See the above copyright notice for more information.
 #include "albaVMEFactory.h" 
 #include "albaVMEProsthesis.h"
 #include "albaViewVTK.h"
+#include "albaOpImporterVTK.h"
+#include "albaOpImporterSTL.h"
+#include "albaOpImporterPLY.h"
+
 
 #include <vtkTimerLog.h>
 
@@ -53,6 +57,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "albaWizard.h"
 #include "appWizardSample.h"
 #endif
+#include "albaOpImporterSTL.h"
 
 //--------------------------------------------------------------------------------
 // Create the Application
@@ -101,6 +106,11 @@ bool AssemblerPro::OnInit()
 	// Import Old Prosthesis
 	m_Logic->Plug(new appOpImportOldProsthesis(), "");
 
+	m_Logic->Plug(new albaOpImporterSTL("STL"));
+	m_Logic->Plug(new albaOpImporterVTK("VTK"));
+	m_Logic->Plug(new albaOpImporterPLY("PLY"));
+
+
 	//////////////////////////////////////////////////////////////////////////
 	//Exporters
 	//////////////////////////////////////////////////////////////////////////
@@ -117,6 +127,7 @@ bool AssemblerPro::OnInit()
 
 	// Empty Op
 	//m_Logic->Plug(new appOpEmpty("Empty"), "");
+	m_Logic->Plug(new albaOpTransform(), _(""));
 
 	// Create Prosthesis Op
 	m_Logic->Plug(new appOpCreateProsthesis());
@@ -126,6 +137,8 @@ bool AssemblerPro::OnInit()
 
 	// DB Manager Op
 	m_Logic->Plug(new appOpDBManager(), "Extra");
+
+
 
 	//////////////////////////////////////////////////////////////////////////
 	//Views
