@@ -326,13 +326,17 @@ void appOpExportOldProsthesis::ExportProsthesis(wxString tmpFolder, albaProDBPro
 
 		//<TArray NumberOfTags="1">
 		XERCES_CPP_NAMESPACE_QUALIFIER DOMElement *groupTarray = doc->createElement(albaXMLString("TArray"));
-		groupTarray->setAttribute(albaXMLString("NumberOfTags"), albaXMLString("1"));
+		groupTarray->setAttribute(albaXMLString("NumberOfTags"), albaXMLString("2"));
 		groupNode->appendChild(groupTarray);
 
 		//<TItem Tag="HIPOP_MOUNTED_SIZE" Mult="1" Type="STR">
 		//	<TC/>
 		//</TItem>
 		AddTagItem(doc, groupTarray, "HIPOP_MOUNTED_SIZE", 1, "STR", "");
+
+		//<TItem Tag="HIPOP_COMPONENT_VISIBILITY" Mult="1" Type="NUM">    //  <TC>0</TC>    //</TItem>
+		AddTagItem(doc, groupTarray, "HIPOP_COMPONENT_VISIBILITY", 1, "NUM", "0");
+
 		
 		std::vector<albaProDBComponent *> * components = group->GetComponents();
 		for (int j = 0; j < components->size(); j++)
