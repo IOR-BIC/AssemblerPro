@@ -37,6 +37,9 @@ PURPOSE. See the above copyright notice for more information.
 #include "vtkDataSetReader.h"
 #include "wx\filename.h"
 #include "wx\statline.h"
+#include "vtkTransformPolyDataFilter.h"
+#include "vtkTransform.h"
+#include "albaMatrix.h"
 
 enum COMPONENT_DIALOG_ID
 {
@@ -262,6 +265,7 @@ void appGUIDialogComponent::AddVTKFromFile()
 			{
 				m_CurrentComponent->SetVTKData(polyData);
 				m_ComponentName = name;
+				m_ComponentName.Replace("_", " ");
 				m_HasVtkData = true;
 			}
 		}
@@ -285,7 +289,28 @@ void appGUIDialogComponent::AddVTKFromTree(albaVME *node)
 	{
 		vtkPolyData *polyData = NULL;
 		polyData = (vtkPolyData*)node->GetOutput()->GetVTKData();
-		m_CurrentComponent->SetVTKData(polyData);
+
+		albaMatrix * absMatrix = node->GetOutput()->GetAbsMatrix();
+		albaMatrix identityM;
+
+		if (identityM.Equals(absMatrix))
+		{
+			m_CurrentComponent->SetVTKData(polyData);
+		}
+		else
+		{
+			vtkALBASmartPointer <vtkTransform> tra;
+			tra->SetMatrix(absMatrix->GetVTKMatrix());
+
+			vtkALBASmartPointer<vtkTransformPolyDataFilter> traFilter;
+			traFilter->SetInput(polyData);
+			traFilter->SetTransform(tra);
+			traFilter->Update();
+
+			m_CurrentComponent->SetVTKData(traFilter->GetOutput());
+		}
+		m_ComponentName = node->GetName();
+		m_ComponentName.Replace("_", " ");
 
 		m_HasVtkData = true;
 	}
