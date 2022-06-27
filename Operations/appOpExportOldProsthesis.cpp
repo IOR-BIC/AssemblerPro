@@ -59,6 +59,8 @@ PURPOSE. See the above copyright notice for more information.
 #include <xercesc/framework/LocalFileFormatTarget.hpp>
 #include <xercesc/framework/LocalFileInputSource.hpp>
 #include <xercesc/sax/ErrorHandler.hpp>
+#include "wx/wfstream.h"
+#include "wx/zipstrm.h"
 
 //----------------------------------------------------------------------------
 albaCxxTypeMacro(appOpExportOldProsthesis);
@@ -99,10 +101,6 @@ void appOpExportOldProsthesis::OpRun()
 {
 	albaString wildc = "Zip file (*.zip)|*.zip";
 	wxString prosthesisFile = albaGetSaveFile(albaGetLastUserFolder().c_str(), wildc, "Select file").c_str();
-
-
-	wxString path, name, ext;
-	wxSplitPath(prosthesisFile.c_str(), &path, &name, &ext);
 
 	albaString dbDir = GetLogicManager()->GetProsthesesDBManager()->GetDBDir();
 
@@ -160,10 +158,61 @@ void appOpExportOldProsthesis::OpRun()
 		ExportProsthesis(tmpFolder, dbPro, 1);
 	}
 
+	ZIPSave(prosthesisFile, tmpFolder);
+
 	OpStop(OP_RUN_OK);
 }
 
+//----------------------------------------------------------------------------
+void appOpExportOldProsthesis::ZIPSave(albaString filename, albaString folder)
+{
 
+	wxArrayString files;
+	wxDir::GetAllFiles(folder.GetCStr(), &files); // get all files in the temporary directory
+
+	if (!MakeZip(filename.GetCStr(), &files))
+	{
+		albaMessage(_("Failed to create compressed archive!"), _("Error"));
+	}
+}
+//----------------------------------------------------------------------------
+bool appOpExportOldProsthesis::MakeZip(const albaString &zipname, wxArrayString *files)
+{
+	wxString name, path, short_name, ext;
+	wxFileOutputStream out(zipname.GetCStr());
+	wxZipOutputStream zip(out);
+
+	if (!out || !zip)
+		return false;
+
+	for (size_t i = 0; i < files->GetCount(); i++)
+	{
+		name = files->Item(i);
+		wxSplitPath(name, &path, &short_name, &ext);
+		short_name += ".";
+		short_name += ext;
+
+		if (wxDirExists(name))
+		{
+			if (!zip.PutNextDirEntry(name)) // put the file inside the archive
+				return false;
+		}
+		else
+		{
+			wxFFileInputStream in(name);
+
+			if (in.Ok())
+			{
+				wxDateTime dt(wxFileModificationTime(name)); // get the file modification time
+
+				if (!zip.PutNextEntry(short_name, dt, in.GetLength()) || !zip.Write(in) || !in.Eof()) // put the file inside the archive
+					return false;
+			}
+		}
+	}
+
+	return zip.Close() && out.Close();
+}
 
 
 void AddTagItem(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument * doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement * tarray, char *tagName, int mult, char *type, const char *tagContent)

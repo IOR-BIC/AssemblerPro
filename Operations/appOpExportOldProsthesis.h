@@ -68,6 +68,10 @@ protected:
 
 	void AddMatrix(XERCES_CPP_NAMESPACE_QUALIFIER DOMDocument * doc, XERCES_CPP_NAMESPACE_QUALIFIER DOMElement * node, albaMatrix *matrix, const char *nextGroup);
 
+
+	void ZIPSave(albaString filename, albaString folder);
+	bool MakeZip(const albaString &zipname, wxArrayString *files);
+
 	void ConvertFile(albaString source, albaString dest);
 };
 #endif
