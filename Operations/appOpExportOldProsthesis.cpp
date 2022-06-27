@@ -104,7 +104,7 @@ void appOpExportOldProsthesis::OpRun()
 
 	albaString dbDir = GetLogicManager()->GetProsthesesDBManager()->GetDBDir();
 
-	wxString tmpFolder = albaGetApplicationDirectory().c_str();
+	wxString tmpFolder = albaGetAppDataDirectory().c_str();
 	tmpFolder += "\\tmpExport\\";
 
 
@@ -354,13 +354,17 @@ void appOpExportOldProsthesis::ExportProsthesis(wxString tmpFolder, albaProDBPro
 	prosthesis->appendChild(tarray);
 
 	//	<TItem Tag = "MODEL_MIRROR_FLAG" Mult="0" Type="NUM">  <TC>1</TC> </TItem>
-	AddTagItem(doc, tarray, "MODEL_MIRROR_FLAG", 1, "NUM", "1");
+	AddTagItem(doc, tarray, "MODEL_MIRROR_FLAG", 1, "NUM", "0");
 
 	//<TItem Tag="MODEL_COMPONENT_TYPE" Mult="1" Type="STR">
 	//   <TC>Acetabular</TC>
 	//</TItem>
-	AddTagItem(doc, tarray, "MODEL_COMPONENT_TYPE", 1, "STR", "Acetabular");
-	
+
+	if(dbPro->GetType()=="Acetabular")
+		AddTagItem(doc, tarray, "MODEL_COMPONENT_TYPE", 1, "STR", "Acetabular");
+	else
+		AddTagItem(doc, tarray, "MODEL_COMPONENT_TYPE", 1, "STR", "Femoral");
+
 	std::vector<albaProDBCompGroup *> *compGroups = dbPro->GetCompGroups();
 
 	for (int i = 0; i < compGroups->size(); i++)
