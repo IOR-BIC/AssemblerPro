@@ -246,20 +246,21 @@ void appVMEProsthesisEdit::OnEvent(albaEventBase *alba_event)
 			break;
 		case ID_PROSTHESIS_EDIT: 
 			EditProsthesis(m_Prosthesis);
-			m_DBManager->SaveDB();
+			DBModified();
 			break;
 		case ID_GROUP_CREATE: 
 			CreateNewComponentGroup();
-			m_DBManager->SaveDB();
+			DBModified();
 			break;
 
 		case ID_TRA_TRANSFORM: 
 		case ID_ROT_TRANSFORM:
 			TransformFromGUI(); 
-			m_DBManager->SaveDB();
+			DBModified();
 			break;
 		case ID_RESET_TRANSFORM: 
 			ResetTransform();
+			DBModified();
 			break;
 
 		default:
@@ -288,34 +289,34 @@ void appVMEProsthesisEdit::OnComponentEvent(int compGroup, int id)
 	case ID_REM_COMPONENT_GROUP: DeleteComponentGroup(compGroup); break;
 
 	case ID_SHOW_COMPONENT: 
-		ShowComponent(compGroup); 
+		ShowComponent(compGroup, m_ShowComponents[compGroup]);
 		break;
 	case ID_SELECT_COMPONENT: 
-		SelectComponent(compGroup);
+		SelectComponent(compGroup, m_ComponentListBox[compGroup]->GetSelection());
 		break;
 	case ID_NAME_COMPONENT:
 		RenameComponentGroup(compGroup);			
-		m_DBManager->SaveDB();
+		DBModified();
 		break;
 	case ID_ADD_COMPONENT:
 		AddNewComponent(compGroup);
-		m_DBManager->SaveDB();
+		DBModified();
 		break;
 	case ID_EDIT_COMPONENT:
 		EditComponent(compGroup);
-		m_DBManager->SaveDB();
+		DBModified();
 		break;
 	case ID_REM_COMPONENT: 
 		RemoveComponent(compGroup); 
-		m_DBManager->SaveDB();
+		DBModified();
 		break;
 	case ID_TRANSFORM_COMPONENT: 
 		TransformComponent(compGroup);
-		m_DBManager->SaveDB();
+		DBModified();
 		break;
 	case ID_MATRIX_COMPONENT:
 		EditComponentMatrix(compGroup); 
-		m_DBManager->SaveDB();
+		DBModified();
 		break;
 
 	default:
@@ -710,7 +711,7 @@ void appVMEProsthesisEdit::PostMultiplyEventMatrix(albaEventBase *alba_event)
 				m_ComponentRefSys->SetAbsMatrix(components->at(compId)->GetMatrix());
 				m_ComponentRefSys->Update();
 
-				SelectComponent(m_CurrCompGroup);
+				SelectComponent(m_CurrCompGroup, compId);
 
 				albaTransform::GetPosition(absPose, m_Position);
 				albaTransform::GetOrientation(absPose, m_Orientation);
@@ -781,11 +782,18 @@ void appVMEProsthesisEdit::ResetTransform()
 		m_ComponentRefSys->SetAbsMatrix(m_OldComponentMatrix);
 		m_ComponentRefSys->Update();
 
-		SelectComponent(m_CurrCompGroup);
+		SelectComponent(m_CurrCompGroup, compId);
 
 		albaTransform::GetPosition(m_OldComponentMatrix, m_Position);
 		albaTransform::GetOrientation(m_OldComponentMatrix, m_Orientation);
 
 		m_Gui->Update();
 	}
+}
+
+void appVMEProsthesisEdit::DBModified()
+{
+	m_DBManager->SaveDB();
+	m_DBManager->LoadDB();
+	UpdateGui();
 }
