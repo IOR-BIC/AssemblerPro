@@ -286,8 +286,10 @@ void appVMEProsthesisEdit::OnComponentEvent(int compGroup, int id)
 
 	switch (id)
 	{
-	case ID_REM_COMPONENT_GROUP: DeleteComponentGroup(compGroup); break;
-
+	case ID_REM_COMPONENT_GROUP: 
+		DeleteComponentGroup(compGroup);
+		DBModified();
+		break;
 	case ID_SHOW_COMPONENT: 
 		ShowComponent(compGroup, m_ShowComponents[compGroup]);
 		break;
@@ -306,8 +308,12 @@ void appVMEProsthesisEdit::OnComponentEvent(int compGroup, int id)
 		EditComponent(compGroup);
 		DBModified();
 		break;
-	case ID_REM_COMPONENT: 
-		RemoveComponent(compGroup); 
+	case ID_REM_COMPONENT:
+		//remove the entire group on remove of last component
+		if (m_Prosthesis->GetCompGroups()->at(compGroup)->GetComponents()->size() == 0)
+			DeleteComponentGroup(compGroup);
+		else
+			RemoveComponent(compGroup); 
 		DBModified();
 		break;
 	case ID_TRANSFORM_COMPONENT: 
@@ -368,16 +374,19 @@ void appVMEProsthesisEdit::CreateNewComponentGroup()
 	std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
 	std::vector<albaProDBCompGroup *> *DBCompGroups = DBprosthesis[m_SelectedProsthesis]->GetCompGroups();
 
-	albaProDBCompGroup *gaux = DBCompGroups->at(0);
-	albaProDBComponent *caux = gaux->GetComponents()->at(0);
-
 	albaProDBCompGroup *newDBGroup = new albaProDBCompGroup();
 	newDBGroup->SetName(name);
 
 	albaProDBComponent *newComponent = new albaProDBComponent();
 	newComponent->SetName("New Comp");
-	newComponent->SetMatrix(caux->GetMatrix());
-	newComponent->SetVTKData(caux->GetVTKData());
+	if (DBCompGroups->size() > 0)
+	{
+		albaProDBCompGroup *gaux = DBCompGroups->at(0);
+		albaProDBComponent *caux = gaux->GetComponents()->at(0);
+		newComponent->SetMatrix(caux->GetMatrix());
+		newComponent->SetVTKData(caux->GetVTKData());
+	}
+
 	newDBGroup->GetComponents()->push_back(newComponent);
 
 	DBCompGroups->push_back(newDBGroup);
@@ -450,9 +459,9 @@ void appVMEProsthesisEdit::DeleteComponentGroup(int compGroup)
 
 	if (group)
 	{
-		for (int c = 0; c < group->GetComponents()->size(); c++)
+		for (int c = group->GetComponents()->size()-1; c >=0 ; c--)
 		{
-			RemoveComponent(c);
+			RemoveComponent(compGroup);
 		}
 
 		compGroups->erase(compGroups->begin() + compGroup);
@@ -511,10 +520,12 @@ void appVMEProsthesisEdit::RemoveComponent(int compGroup)
 	{
 		std::vector<albaProDBComponent *> *components = compGroups->at(compGroup)->GetComponents();
 		int compId = m_ComponentListBox[compGroup]->GetSelection();
-		albaProDBComponent *component = components->at(compId);
 
 		components->erase(components->begin() + compId);
 		m_ComponentListBox[compGroup]->Delete(compId);
+
+		if (components->size() > 0)
+			SelectComponent(compGroup, MIN(compId, components->size()-1));
 
 		UpdateGui();
 	}
@@ -794,6 +805,5 @@ void appVMEProsthesisEdit::ResetTransform()
 void appVMEProsthesisEdit::DBModified()
 {
 	m_DBManager->SaveDB();
-	m_DBManager->LoadDB();
 	UpdateGui();
 }
