@@ -170,7 +170,7 @@ void appGUIDialogProducer::CreateProducerDialog()
 
 		// TEXT - Producer Name
 		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxVERTICAL, this, "Producer Name");
-		m_ProducerName_textCtrl = new wxTextCtrl(this, ID_PRODUCER_TEXT, *m_ProducerName, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
+		m_ProducerName_textCtrl = new wxTextCtrl(this, ID_PRODUCER_TEXT, m_ProducerName, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
 		m_ProducerName_textCtrl->SetValidator(albaGUIValidator(this, ID_PRODUCER_TEXT, m_ProducerName_textCtrl, &m_ProducerName, true));
 		m_ProducerName_textCtrl->SetEditable(true);
 		m_ProducerName_textCtrl->SetMaxLength(64);
@@ -180,7 +180,7 @@ void appGUIDialogProducer::CreateProducerDialog()
 
 		// TEXT - Producer Web Site
 		wxStaticBoxSizer *labelSizer2 = new wxStaticBoxSizer(wxVERTICAL, this, "Web Site");
-		m_ProducerSite_textCtrl = new wxTextCtrl(this, ID_PRODUCER_TEXT, *m_ProducerWebSite, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
+		m_ProducerSite_textCtrl = new wxTextCtrl(this, ID_PRODUCER_TEXT, m_ProducerWebSite, wxPoint(-1, -1), wxSize(panelWidth, 20), wxALL | wxEXPAND);
 		m_ProducerSite_textCtrl->SetEditable(true);
 		m_ProducerSite_textCtrl->SetMaxLength(64);
 		labelSizer2->Add(m_ProducerSite_textCtrl, 0, wxALL | wxEXPAND, 0);
@@ -240,7 +240,8 @@ void appGUIDialogProducer::UpdateProducerDialog()
 		{
 			if (m_ProducerImageButton != NULL)
 			{
-				m_ImageSizer->Remove(m_ProducerImageButton);
+				int id=m_ImageSizer->GetItem(m_ProducerImageButton)->GetId();
+				m_ImageSizer->Remove(id);
 				delete m_ProducerImageButton;
 			}
 
@@ -249,7 +250,7 @@ void appGUIDialogProducer::UpdateProducerDialog()
 			previewImage->LoadFile(m_ProducerImageFullName, wxBITMAP_TYPE_ANY);
 
 			wxBitmap *previewBitmap;
-			previewBitmap = new wxBitmap(previewImage);
+			previewBitmap = new wxBitmap(*previewImage);
 
 			m_ProducerImageButton = new albaGUIPicButton(this, previewBitmap, -1);
 			m_ImageSizer->Add(m_ProducerImageButton);
@@ -288,7 +289,7 @@ void appGUIDialogProducer::SetProducer(albaProDBProducer *producer)
 //----------------------------------------------------------------------------
 void appGUIDialogProducer::SelectImage()
 {
-	albaString fileNameFullPath = albaGetDocumentsDirectory().c_str();
+	albaString fileNameFullPath = albaGetDocumentsDirectory();
 	albaString wildc = "Image file (*.bmp)|*.bmp";
 	wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
 

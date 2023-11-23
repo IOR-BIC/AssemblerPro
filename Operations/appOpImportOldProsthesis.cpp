@@ -36,6 +36,7 @@ PURPOSE. See the above copyright notice for more information.
 #include "albaCrypt.h"
 #include "vtkPolyDataReader.h"
 #include "vtkALBASmartPointer.h"
+#include "wx/filename.h"
 
 //----------------------------------------------------------------------------
 albaCxxTypeMacro(appOpImportOldProsthesis);
@@ -79,7 +80,7 @@ void appOpImportOldProsthesis::OpRun()
 
 
 	wxString path, name, ext;
-	wxSplitPath(prosthesisFile.c_str(), &path, &name, &ext);
+	wxFileName::SplitPath(prosthesisFile.c_str(), &path, &name, &ext);
 
 	albaVMEStorage *storage;
 	storage = albaVMEStorage::New();

@@ -136,7 +136,7 @@ void appGUIDialogComponent::CreateComponentDialog()
 
 		// TEXT - Component Name
 		wxStaticBoxSizer *labelSizer1 = new wxStaticBoxSizer(wxVERTICAL, this, "Name");
-		m_ComponentName_textCtrl = new wxTextCtrl(this, ID_COMPONENT_DIALOG_TEXT, *m_ComponentName, wxPoint(-1, -1), wxSize(panelWidth, 25), wxALL | wxEXPAND);
+		m_ComponentName_textCtrl = new wxTextCtrl(this, ID_COMPONENT_DIALOG_TEXT, m_ComponentName, wxPoint(-1, -1), wxSize(panelWidth, 25), wxALL | wxEXPAND);
 		m_ComponentName_textCtrl->SetValidator(albaGUIValidator(this, ID_COMPONENT_DIALOG_TEXT, m_ComponentName_textCtrl, &m_ComponentName, true));
 		m_ComponentName_textCtrl->SetEditable(true);
 		m_ComponentName_textCtrl->SetMaxLength(64);
@@ -208,7 +208,7 @@ void appGUIDialogComponent::UpdateComponentDialog()
 //----------------------------------------------------------------------------
 void appGUIDialogComponent::AddVTKFromFile()
 {
-	albaString fileNameFullPath = albaGetLastUserFolder().c_str();
+	albaString fileNameFullPath = albaGetLastUserFolder();
 	albaString wildc = "STL file (*.stl)|*.stl|VTK file (*.vtk)|*.vtk";
 	wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
 

@@ -657,7 +657,7 @@ void appInteractor2DTemplate::FindAndHighlightCurrentPoint(double * pointCoord)
 		{
 			if (m_CurrentPointIndex != i)
 			{
-				int cursor;
+				wxStockCursor cursor;
 				m_CurrentPointIndex = i;
 				m_PointActorVector[i]->GetProperty()->SetColor(m_ColorSelection);
 

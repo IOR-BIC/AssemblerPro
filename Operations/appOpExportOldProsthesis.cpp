@@ -188,7 +188,7 @@ bool appOpExportOldProsthesis::MakeZip(const albaString &zipname, wxArrayString 
 	for (size_t i = 0; i < files->GetCount(); i++)
 	{
 		name = files->Item(i);
-		wxSplitPath(name, &path, &short_name, &ext);
+		wxFileName::SplitPath(name, &path, &short_name, &ext);
 		short_name += ".";
 		short_name += ext;
 
@@ -387,7 +387,9 @@ void appOpExportOldProsthesis::ExportProsthesis(wxString tmpFolder, albaProDBPro
 		//</TItem>
 		AddTagItem(doc, groupTarray, "HIPOP_MOUNTED_SIZE", 1, "STR", "");
 
-		//<TItem Tag="HIPOP_COMPONENT_VISIBILITY" Mult="1" Type="NUM">    //  <TC>0</TC>    //</TItem>
+		//<TItem Tag="HIPOP_COMPONENT_VISIBILITY" Mult="1" Type="NUM">
+    //  <TC>0</TC>
+    //</TItem>
 		AddTagItem(doc, groupTarray, "HIPOP_COMPONENT_VISIBILITY", 1, "NUM", "0");
 
 		

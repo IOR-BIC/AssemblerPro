@@ -88,6 +88,7 @@ protected:
 	wxComboBox *m_ImageComboBox;
 	wxImage	*m_Image;
 	albaGUIPicButton *m_ImageButton;
+	int m_ImageButtonId;
 	wxString m_ImagePath;
 
 	wxTextCtrl *m_NameTextCtrl;

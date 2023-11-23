@@ -66,6 +66,7 @@ appGUIDialogProsthesis::appGUIDialogProsthesis(const wxString& title, long style
 	m_ImageComboBox = NULL;
 	m_Image = NULL;
 	m_ImageButton = NULL;
+	m_ImageButtonId = 0;
 	m_NameTextCtrl = NULL;
 	m_ProducerComboBox = NULL;
 	m_TypeComboBox = NULL;
@@ -187,7 +188,7 @@ void appGUIDialogProsthesis::CreateDialog()
 
 			imageWidth = previewImage->GetWidth();
 
-			m_ImageSizer->Add(m_ImageButton, 0, wxALL | wxALIGN_LEFT, 0);
+			m_ImageButtonId=m_ImageSizer->Add(m_ImageButton, 0, wxALL | wxALIGN_LEFT, 0)->GetId();
 			mainBoxSizer2->Add(m_ImageSizer);
 
 			// BUTTON - Change Producer Brand Image
@@ -374,7 +375,7 @@ void appGUIDialogProsthesis::UpdateDialog()
 		{
 			if (m_ImageButton != NULL)
 			{
-				m_ImageSizer->Remove(m_ImageButton);
+				m_ImageSizer->Remove(m_ImageButtonId);
 				delete m_ImageButton;
 			}
 
@@ -383,10 +384,10 @@ void appGUIDialogProsthesis::UpdateDialog()
 			previewImage->LoadFile(m_ProsthesisImageFullName, wxBITMAP_TYPE_ANY);
 
 			wxBitmap *previewBitmap;
-			previewBitmap = new wxBitmap(previewImage);
+			previewBitmap = new wxBitmap(*previewImage);
 
 			m_ImageButton = new albaGUIPicButton(this, previewBitmap, -1);
-			m_ImageSizer->Add(m_ImageButton);
+			m_ImageButtonId=m_ImageSizer->Add(m_ImageButton)->GetId();
 
 			m_ImageSizer->Fit(this);
 			m_MainBoxSizer->Fit(this);
@@ -464,7 +465,7 @@ void appGUIDialogProsthesis::SetProsthesis(albaProDBProsthesis *prosthesis)
 //----------------------------------------------------------------------------
 void appGUIDialogProsthesis::SelectImage()
 {
-	albaString fileNameFullPath = albaGetDocumentsDirectory().c_str();
+	albaString fileNameFullPath = albaGetDocumentsDirectory();
 	albaString wildc = "Image file (*.bmp)|*.bmp";
 	wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
 
