@@ -125,7 +125,7 @@ void appGUIDialogProducer::CreateProducerDialog()
 
 		m_MainBoxSizer = new wxBoxSizer(wxVERTICAL);
 		
-		wxString imagesPath =albaGetConfigDirectory().c_str();
+		wxString imagesPath =albaGetConfigDirectory();
 		wxString imgPath = imagesPath + "/Wizard/Producer.bmp"; // Default
 
 		if (wxFileExists(m_ProducerImageFullName))
@@ -139,7 +139,7 @@ void appGUIDialogProducer::CreateProducerDialog()
 			m_ImageSizer = new wxBoxSizer(wxVERTICAL);
 
 			wxImage *previewImage = new wxImage();
-			previewImage->LoadFile(imgPath.c_str(), wxBITMAP_TYPE_ANY);
+			previewImage->LoadFile(imgPath.ToAscii(), wxBITMAP_TYPE_ANY);
 
 			wxBitmap *previewBitmap = new wxBitmap(*previewImage);
 			m_ProducerImageButton = new albaGUIPicButton(this, previewBitmap, -1);
@@ -291,7 +291,7 @@ void appGUIDialogProducer::SelectImage()
 {
 	albaString fileNameFullPath = albaGetDocumentsDirectory();
 	albaString wildc = "Image file (*.bmp)|*.bmp";
-	wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
+	wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file");
 
 	if (wxFileExists(imagePath))
 	{		

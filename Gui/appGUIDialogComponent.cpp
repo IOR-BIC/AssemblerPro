@@ -210,7 +210,7 @@ void appGUIDialogComponent::AddVTKFromFile()
 {
 	albaString fileNameFullPath = albaGetLastUserFolder();
 	albaString wildc = "STL file (*.stl)|*.stl|VTK file (*.vtk)|*.vtk";
-	wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
+	wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file");
 
 	if (wxFileExists(imagePath))
 	{

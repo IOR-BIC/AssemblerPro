@@ -246,7 +246,7 @@ void appOpExportProsthesisDB::ExportDB()
 		wxArrayString files;
 
 		wxString DBPath = m_ProsthesesDBManager->GetDBDir();
-		wxString configPath = albaGetConfigDirectory().c_str();
+		wxString configPath = albaGetConfigDirectory();
 
 		//files.Add(configPath + "/Wizard/Producer.bmp"); // Add image file to ZIP (default)
 		//files.Add(configPath + "/Wizard/Model.bmp"); // Add image file to ZIP (default)

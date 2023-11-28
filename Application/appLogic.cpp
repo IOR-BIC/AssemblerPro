@@ -77,8 +77,8 @@ void appLogic::Init(int argc, char **argv)
 	albaLogicWithManagers::Init(argc, argv);
 	m_Win->ShowDockPane("logbar", false);
 
-	if (!wxDirExists(albaGetAppDataDirectory().c_str()))
-		wxMkDir(albaGetAppDataDirectory().c_str());
+	if (!wxDirExists(albaGetAppDataDirectory()))
+		wxMkDir(albaGetAppDataDirectory());
 
 #ifdef _DEBUG
 	albaSetAppDebugDir(ASB_SOURCE_DIR);
@@ -106,7 +106,7 @@ void appLogic::InitAboutDialog()
 
 	// About Image
 	wxString imageName = "AppAbout";
-	wxString imagesPath = albaGetConfigDirectory().c_str();
+	wxString imagesPath = albaGetConfigDirectory();
 	m_AboutDialog->SetImagePath(imagesPath + "/" + imageName + ".bmp");
 }
 

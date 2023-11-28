@@ -100,11 +100,11 @@ albaOp* appOpExportOldProsthesis::Copy()
 void appOpExportOldProsthesis::OpRun()
 {
 	albaString wildc = "Zip file (*.zip)|*.zip";
-	wxString prosthesisFile = albaGetSaveFile(albaGetLastUserFolder().c_str(), wildc, "Select file").c_str();
+	wxString prosthesisFile = albaGetSaveFile(albaGetLastUserFolder().ToAscii(), wildc, "Select file");
 
 	albaString dbDir = GetLogicManager()->GetProsthesesDBManager()->GetDBDir();
 
-	wxString tmpFolder = albaGetAppDataDirectory().c_str();
+	wxString tmpFolder = albaGetAppDataDirectory();
 	tmpFolder += "\\tmpExport\\";
 
 

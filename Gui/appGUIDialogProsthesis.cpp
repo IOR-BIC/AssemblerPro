@@ -167,7 +167,7 @@ void appGUIDialogProsthesis::CreateDialog()
 		wxBoxSizer *mainBoxSizer2 = new wxBoxSizer(wxVERTICAL);
 		wxBoxSizer *mainBoxSizer3 = new wxBoxSizer(wxHORIZONTAL);
 
-		wxString imagesPath = albaGetConfigDirectory().c_str();
+		wxString imagesPath = albaGetConfigDirectory();
 		wxString imgPath = imagesPath + "/Wizard/Model.bmp"; // Default
 
 		if (wxFileExists(m_ProsthesisImageFullName))
@@ -181,7 +181,7 @@ void appGUIDialogProsthesis::CreateDialog()
 			m_ImageSizer = new wxBoxSizer(wxVERTICAL);
 
 			wxImage *previewImage = new wxImage();
-			previewImage->LoadFile(imgPath.c_str(), wxBITMAP_TYPE_ANY);
+			previewImage->LoadFile(imgPath.ToAscii(), wxBITMAP_TYPE_ANY);
 
 			wxBitmap *previewBitmap = new wxBitmap(*previewImage);
 			m_ImageButton = new albaGUIPicButton(this, previewBitmap, -1);
@@ -467,7 +467,7 @@ void appGUIDialogProsthesis::SelectImage()
 {
 	albaString fileNameFullPath = albaGetDocumentsDirectory();
 	albaString wildc = "Image file (*.bmp)|*.bmp";
-	wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file").c_str();
+	wxString imagePath = albaGetOpenFile(fileNameFullPath.GetCStr(), wildc, "Select file");
 
 	if (wxFileExists(imagePath))
 	{

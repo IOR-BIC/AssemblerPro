@@ -76,11 +76,11 @@ albaOp* appOpImportOldProsthesis::Copy()
 void appOpImportOldProsthesis::OpRun()
 {
 	albaString wildc = "MSF file (*.msf)|*.msf";
-	wxString prosthesisFile = albaGetOpenFile(albaGetLastUserFolder().c_str(), wildc, "Select file").c_str();
+	wxString prosthesisFile = albaGetOpenFile(albaGetLastUserFolder().ToAscii(), wildc, "Select file").ToAscii();
 
 
 	wxString path, name, ext;
-	wxFileName::SplitPath(prosthesisFile.c_str(), &path, &name, &ext);
+	wxFileName::SplitPath(prosthesisFile, &path, &name, &ext);
 
 	albaVMEStorage *storage;
 	storage = albaVMEStorage::New();
@@ -90,7 +90,7 @@ void appOpImportOldProsthesis::OpRun()
 	root->SetName("RootB");
 
 	albaMSFImporter *importer = new albaMSFImporter; //Import prosthesis MSF
-	importer->SetURL(prosthesisFile.c_str());
+	importer->SetURL(prosthesisFile.ToAscii());
 	importer->SetRoot(root);
 	importer->Restore();
 
