@@ -107,8 +107,6 @@ protected:
 	/* Initialize Prosthesis DB Manager*/
 	void InitVMEProsthesis();
 
-  bool m_OpeningMSF;
-
 	wxToolBar *m_ViewToolbar;
 	wxToolBar *m_OperationToolbar;
 	wxToolBar *m_ExtraToolbar;

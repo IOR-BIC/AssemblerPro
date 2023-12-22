@@ -52,8 +52,6 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 appLogic::appLogic() : albaLogicWithManagers()
 {
-	m_OpeningMSF = false;
-
 	m_Win->Maximize();
 
 	m_ProsthesisDBManager = NULL;
@@ -179,9 +177,7 @@ void appLogic::OnEvent(albaEventBase *alba_event)
 		case wxID_FILE8:
 		case wxID_FILE9:
 		{
-			m_OpeningMSF = true;
 			OnFileHistory(e->GetId());
-			m_OpeningMSF = false;
 
 			ShowVMEOnView();
 		}
@@ -192,7 +188,6 @@ void appLogic::OnEvent(albaEventBase *alba_event)
 			break;
 		case MENU_FILE_OPEN:
 		{
-			m_OpeningMSF = true;
 			albaString *filename = e->GetString();
 			if (filename)
 			{
@@ -204,7 +199,6 @@ void appLogic::OnEvent(albaEventBase *alba_event)
 			}
 
 			UpdateFrameTitle();
-			m_OpeningMSF = false;
 
 			InitVMEProsthesis();
 			ShowVMEOnView();
