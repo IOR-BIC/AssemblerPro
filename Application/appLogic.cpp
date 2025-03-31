@@ -52,8 +52,6 @@ PURPOSE. See the above copyright notice for more information.
 //----------------------------------------------------------------------------
 appLogic::appLogic() : albaLogicWithManagers()
 {
-	m_OpeningMSF = false;
-
 	m_Win->Maximize();
 
 	m_ProsthesisDBManager = NULL;
@@ -77,8 +75,8 @@ void appLogic::Init(int argc, char **argv)
 	albaLogicWithManagers::Init(argc, argv);
 	m_Win->ShowDockPane("logbar", false);
 
-	if (!wxDirExists(albaGetAppDataDirectory().c_str()))
-		wxMkDir(albaGetAppDataDirectory().c_str());
+	if (!wxDirExists(albaGetAppDataDirectory()))
+		wxMkDir(albaGetAppDataDirectory());
 
 #ifdef _DEBUG
 	albaSetAppDebugDir(ASB_SOURCE_DIR);
@@ -106,7 +104,7 @@ void appLogic::InitAboutDialog()
 
 	// About Image
 	wxString imageName = "AppAbout";
-	wxString imagesPath = albaGetConfigDirectory().c_str();
+	wxString imagesPath = albaGetConfigDirectory();
 	m_AboutDialog->SetImagePath(imagesPath + "/" + imageName + ".bmp");
 }
 
@@ -179,9 +177,7 @@ void appLogic::OnEvent(albaEventBase *alba_event)
 		case wxID_FILE8:
 		case wxID_FILE9:
 		{
-			m_OpeningMSF = true;
 			OnFileHistory(e->GetId());
-			m_OpeningMSF = false;
 
 			ShowVMEOnView();
 		}
@@ -192,7 +188,6 @@ void appLogic::OnEvent(albaEventBase *alba_event)
 			break;
 		case MENU_FILE_OPEN:
 		{
-			m_OpeningMSF = true;
 			albaString *filename = e->GetString();
 			if (filename)
 			{
@@ -204,7 +199,6 @@ void appLogic::OnEvent(albaEventBase *alba_event)
 			}
 
 			UpdateFrameTitle();
-			m_OpeningMSF = false;
 
 			InitVMEProsthesis();
 			ShowVMEOnView();
@@ -479,9 +473,9 @@ void appLogic::CreateToolbar()
 	m_ToolBar->SetToolBitmapSize(wxSize(20, 20));
 
 	// File
-	m_ToolBar->AddTool(MENU_FILE_NEW, albaPictureFactory::GetPictureFactory()->GetBmp("FILE_NEW"), _("New project"));
-	m_ToolBar->AddTool(MENU_FILE_OPEN, albaPictureFactory::GetPictureFactory()->GetBmp("FILE_OPEN"), _("Open project"));
-	m_ToolBar->AddTool(MENU_FILE_SAVE, albaPictureFactory::GetPictureFactory()->GetBmp("FILE_SAVE"), _("Save project"));
+	m_ToolBar->AddTool(MENU_FILE_NEW, _("New project"), albaPictureFactory::GetPictureFactory()->GetBmp("FILE_NEW"), _("New project"));
+	m_ToolBar->AddTool(MENU_FILE_OPEN, _("Open project"), albaPictureFactory::GetPictureFactory()->GetBmp("FILE_OPEN"), _("Open project"));
+	m_ToolBar->AddTool(MENU_FILE_SAVE, _("Save project"), albaPictureFactory::GetPictureFactory()->GetBmp("FILE_SAVE"), _("Save project"));
 	m_ToolBar->Realize();
 
 	m_Win->AddDockPane(m_ToolBar, wxPaneInfo()
@@ -509,8 +503,8 @@ void appLogic::CreateToolbar()
 		m_ExtraToolbar->SetToolBitmapSize(wxSize(20, 20));
 
 		// Snapshot 
-		m_ExtraToolbar->AddTool(MENU_FILE_SNAPSHOT, albaPictureFactory::GetPictureFactory()->GetBmp("CAMERA"), _("Create Snapshot"));
-		m_ExtraToolbar->AddTool(MENU_FILE_MANAGE_SNAPSHOT, albaPictureFactory::GetPictureFactory()->GetBmp("IMAGE_PREVIEW"), _("Manage Snapshots"));
+		m_ExtraToolbar->AddTool(MENU_FILE_SNAPSHOT, _("Create Snapshot"), albaPictureFactory::GetPictureFactory()->GetBmp("CAMERA"), _("Create Snapshot"));
+		m_ExtraToolbar->AddTool(MENU_FILE_MANAGE_SNAPSHOT, _("Manage Snapshots"), albaPictureFactory::GetPictureFactory()->GetBmp("IMAGE_PREVIEW"), _("Manage Snapshots"));
 		m_ExtraToolbar->Realize();
 
 		m_Win->AddDockPane(m_ExtraToolbar, wxPaneInfo()
@@ -537,7 +531,7 @@ void appLogic::CreateToolbar()
 	m_ViewToolbar->SetToolBitmapSize(wxSize(20, 20));
 
 	// Views	
-	m_ViewToolbar->AddTool(ID_SHOW_SURFACE_VIEW, albaPictureFactory::GetPictureFactory()->GetBmp("VIEW_IMAGE_ICON"), _("View Surface"));
+	m_ViewToolbar->AddTool(ID_SHOW_SURFACE_VIEW, _("View Surface"), albaPictureFactory::GetPictureFactory()->GetBmp("VIEW_IMAGE_ICON"), _("View Surface"));
 	m_ViewToolbar->Realize();
 
 	m_Win->AddDockPane(m_ViewToolbar, wxPaneInfo()
@@ -562,12 +556,12 @@ void appLogic::CreateToolbar()
 	m_OperationToolbar->SetToolBitmapSize(wxSize(20, 20));
 
 	// Operations
-	m_OperationToolbar->AddTool(OP_IMPORT_PROSTHESIS_DB, albaPictureFactory::GetPictureFactory()->GetBmp("OP_IMPORT_PROSTHESIS"), _("Import Prosthesis DB"));
-	m_OperationToolbar->AddTool(OP_EXPORT_PROSTHESIS_DB, albaPictureFactory::GetPictureFactory()->GetBmp("OP_EXPORT_PROSTHESIS"), _("Export Prosthesis DB"));
+	m_OperationToolbar->AddTool(OP_IMPORT_PROSTHESIS_DB, _("Import Prosthesis DB"), albaPictureFactory::GetPictureFactory()->GetBmp("OP_IMPORT_PROSTHESIS"), _("Import Prosthesis DB"));
+	m_OperationToolbar->AddTool(OP_EXPORT_PROSTHESIS_DB, _("Export Prosthesis DB"), albaPictureFactory::GetPictureFactory()->GetBmp("OP_EXPORT_PROSTHESIS"), _("Export Prosthesis DB"));
 	m_OperationToolbar->AddSeparator();
 	
-	m_OperationToolbar->AddTool(OP_CREATE_PROSTHESIS, albaPictureFactory::GetPictureFactory()->GetBmp("OP_CREATE_PROSTHESIS"), _("Create Prosthesis"));
-	m_OperationToolbar->AddTool(OP_SEARCH_PROSTHESIS, albaPictureFactory::GetPictureFactory()->GetBmp("OP_SEARCH_PROSTHESIS"), _("Search Prosthesis"));
+	m_OperationToolbar->AddTool(OP_CREATE_PROSTHESIS, _("Create Prosthesis"), albaPictureFactory::GetPictureFactory()->GetBmp("OP_CREATE_PROSTHESIS"), _("Create Prosthesis"));
+	m_OperationToolbar->AddTool(OP_SEARCH_PROSTHESIS, _("Search Prosthesis"), albaPictureFactory::GetPictureFactory()->GetBmp("OP_SEARCH_PROSTHESIS"), _("Search Prosthesis"));
 
 
 	m_OperationToolbar->Realize();

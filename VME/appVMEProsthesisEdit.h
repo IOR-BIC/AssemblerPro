@@ -115,6 +115,8 @@ protected:
 	void TransformFromGUI();
 	void ResetTransform();
 
+	void DBModified();
+
 	albaProsthesesDBManager *m_DBManager;
 
 	wxComboBox *m_ProsthesisComboBox;

@@ -125,7 +125,8 @@ void appGUIDialogMatrix::CreateMatrixDialog()
 		wxBoxSizer *infoBoxSizer = new wxBoxSizer(wxVERTICAL);
 
 		// TEXT - Component Matrix
-		wxGridSizer *matrixGridSizer = new wxGridSizer(4, 4);
+		wxGridSizer *matrixGridSizer = new wxGridSizer(4, 4,2,2);
+
 
 		for (int i=0; i<4; i++)
 			for (int j = 0; j < 4; j++)

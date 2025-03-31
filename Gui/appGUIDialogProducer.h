@@ -67,6 +67,7 @@ protected:
 	wxBoxSizer *m_ImageSizer;
 	albaGUIPicButton *m_ProducerImageButton;
 
+
 	wxTextCtrl *m_ProducerName_textCtrl;
 	wxTextCtrl *m_ProducerSite_textCtrl;
 

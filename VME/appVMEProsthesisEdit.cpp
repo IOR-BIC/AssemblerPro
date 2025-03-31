@@ -246,20 +246,21 @@ void appVMEProsthesisEdit::OnEvent(albaEventBase *alba_event)
 			break;
 		case ID_PROSTHESIS_EDIT: 
 			EditProsthesis(m_Prosthesis);
-			m_DBManager->SaveDB();
+			DBModified();
 			break;
 		case ID_GROUP_CREATE: 
 			CreateNewComponentGroup();
-			m_DBManager->SaveDB();
+			DBModified();
 			break;
 
 		case ID_TRA_TRANSFORM: 
 		case ID_ROT_TRANSFORM:
 			TransformFromGUI(); 
-			m_DBManager->SaveDB();
+			DBModified();
 			break;
 		case ID_RESET_TRANSFORM: 
 			ResetTransform();
+			DBModified();
 			break;
 
 		default:
@@ -285,37 +286,43 @@ void appVMEProsthesisEdit::OnComponentEvent(int compGroup, int id)
 
 	switch (id)
 	{
-	case ID_REM_COMPONENT_GROUP: DeleteComponentGroup(compGroup); break;
-
+	case ID_REM_COMPONENT_GROUP: 
+		DeleteComponentGroup(compGroup);
+		DBModified();
+		break;
 	case ID_SHOW_COMPONENT: 
-		ShowComponent(compGroup); 
+		ShowComponent(compGroup, m_ShowComponents[compGroup]);
 		break;
 	case ID_SELECT_COMPONENT: 
-		SelectComponent(compGroup);
+		SelectComponent(compGroup, m_ComponentListBox[compGroup]->GetSelection());
 		break;
 	case ID_NAME_COMPONENT:
 		RenameComponentGroup(compGroup);			
-		m_DBManager->SaveDB();
+		DBModified();
 		break;
 	case ID_ADD_COMPONENT:
 		AddNewComponent(compGroup);
-		m_DBManager->SaveDB();
+		DBModified();
 		break;
 	case ID_EDIT_COMPONENT:
 		EditComponent(compGroup);
-		m_DBManager->SaveDB();
+		DBModified();
 		break;
-	case ID_REM_COMPONENT: 
-		RemoveComponent(compGroup); 
-		m_DBManager->SaveDB();
+	case ID_REM_COMPONENT:
+		//remove the entire group on remove of last component
+		if (m_Prosthesis->GetCompGroups()->at(compGroup)->GetComponents()->size() == 0)
+			DeleteComponentGroup(compGroup);
+		else
+			RemoveComponent(compGroup); 
+		DBModified();
 		break;
 	case ID_TRANSFORM_COMPONENT: 
 		TransformComponent(compGroup);
-		m_DBManager->SaveDB();
+		DBModified();
 		break;
 	case ID_MATRIX_COMPONENT:
 		EditComponentMatrix(compGroup); 
-		m_DBManager->SaveDB();
+		DBModified();
 		break;
 
 	default:
@@ -367,16 +374,19 @@ void appVMEProsthesisEdit::CreateNewComponentGroup()
 	std::vector<albaProDBProsthesis *> DBprosthesis = m_DBManager->GetProstheses();
 	std::vector<albaProDBCompGroup *> *DBCompGroups = DBprosthesis[m_SelectedProsthesis]->GetCompGroups();
 
-	albaProDBCompGroup *gaux = DBCompGroups->at(0);
-	albaProDBComponent *caux = gaux->GetComponents()->at(0);
-
 	albaProDBCompGroup *newDBGroup = new albaProDBCompGroup();
 	newDBGroup->SetName(name);
 
 	albaProDBComponent *newComponent = new albaProDBComponent();
 	newComponent->SetName("New Comp");
-	newComponent->SetMatrix(caux->GetMatrix());
-	newComponent->SetVTKData(caux->GetVTKData());
+	if (DBCompGroups->size() > 0)
+	{
+		albaProDBCompGroup *gaux = DBCompGroups->at(0);
+		albaProDBComponent *caux = gaux->GetComponents()->at(0);
+		newComponent->SetMatrix(caux->GetMatrix());
+		newComponent->SetVTKData(caux->GetVTKData());
+	}
+
 	newDBGroup->GetComponents()->push_back(newComponent);
 
 	DBCompGroups->push_back(newDBGroup);
@@ -449,9 +459,9 @@ void appVMEProsthesisEdit::DeleteComponentGroup(int compGroup)
 
 	if (group)
 	{
-		for (int c = 0; c < group->GetComponents()->size(); c++)
+		for (int c = group->GetComponents()->size()-1; c >=0 ; c--)
 		{
-			RemoveComponent(c);
+			RemoveComponent(compGroup);
 		}
 
 		compGroups->erase(compGroups->begin() + compGroup);
@@ -510,10 +520,12 @@ void appVMEProsthesisEdit::RemoveComponent(int compGroup)
 	{
 		std::vector<albaProDBComponent *> *components = compGroups->at(compGroup)->GetComponents();
 		int compId = m_ComponentListBox[compGroup]->GetSelection();
-		albaProDBComponent *component = components->at(compId);
 
 		components->erase(components->begin() + compId);
 		m_ComponentListBox[compGroup]->Delete(compId);
+
+		if (components->size() > 0)
+			SelectComponent(compGroup, MIN(compId, components->size()-1));
 
 		UpdateGui();
 	}
@@ -710,7 +722,7 @@ void appVMEProsthesisEdit::PostMultiplyEventMatrix(albaEventBase *alba_event)
 				m_ComponentRefSys->SetAbsMatrix(components->at(compId)->GetMatrix());
 				m_ComponentRefSys->Update();
 
-				SelectComponent(m_CurrCompGroup);
+				SelectComponent(m_CurrCompGroup, compId);
 
 				albaTransform::GetPosition(absPose, m_Position);
 				albaTransform::GetOrientation(absPose, m_Orientation);
@@ -781,11 +793,17 @@ void appVMEProsthesisEdit::ResetTransform()
 		m_ComponentRefSys->SetAbsMatrix(m_OldComponentMatrix);
 		m_ComponentRefSys->Update();
 
-		SelectComponent(m_CurrCompGroup);
+		SelectComponent(m_CurrCompGroup, compId);
 
 		albaTransform::GetPosition(m_OldComponentMatrix, m_Position);
 		albaTransform::GetOrientation(m_OldComponentMatrix, m_Orientation);
 
 		m_Gui->Update();
 	}
+}
+
+void appVMEProsthesisEdit::DBModified()
+{
+	m_DBManager->SaveDB();
+	UpdateGui();
 }

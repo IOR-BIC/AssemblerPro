@@ -33,6 +33,7 @@ PURPOSE. See the above copyright notice for more information.
 #include <wx/zstream.h>
 #include <wx/ffile.h>
 #include <wx/wfstream.h>
+#include "wx/filename.h"
 
 //----------------------------------------------------------------------------
 albaCxxTypeMacro(appOpExportProsthesisDB);
@@ -229,23 +230,23 @@ void appOpExportProsthesisDB::UpdateGui()
 //----------------------------------------------------------------------------
 void appOpExportProsthesisDB::ExportDB()
 {
-	albaString fileNameFullPath = albaGetDocumentsDirectory().c_str();
+	albaString fileNameFullPath = albaGetDocumentsDirectory();
 	fileNameFullPath.Append("\\newDB.zip");
 
 	albaString wildc = "DB file (*.zip)|*.zip";
-	albaString newFileName = albaGetSaveFile(fileNameFullPath.GetCStr(), wildc, "Save DB", 0, false).c_str();
+	albaString newFileName = albaGetSaveFile(fileNameFullPath.GetCStr(), wildc, "Save DB", 0, false);
 
 	if (!newFileName.IsEmpty())
 	{
 		wxString path, name, ext;
-		wxSplitPath(newFileName, &path, &name, &ext);
+		wxFileName::SplitPath(newFileName.GetCStr(), &path, &name, &ext);
 
 		albaString xmlFileName = path + "\\" + name + ".xml";
 		albaString zipFileName = path + "\\" + name + ".zip";
 		wxArrayString files;
 
 		wxString DBPath = m_ProsthesesDBManager->GetDBDir();
-		wxString configPath = albaGetConfigDirectory().c_str();
+		wxString configPath = albaGetConfigDirectory();
 
 		//files.Add(configPath + "/Wizard/Producer.bmp"); // Add image file to ZIP (default)
 		//files.Add(configPath + "/Wizard/Model.bmp"); // Add image file to ZIP (default)
@@ -347,7 +348,7 @@ bool appOpExportProsthesisDB::MakeZip(const albaString &zipname, wxArrayString *
 	for (size_t i = 0; i < files->GetCount(); i++)
 	{
 		name = files->Item(i);
-		wxSplitPath(name, &path, &short_name, &ext);
+		wxFileName::SplitPath(name, &path, &short_name, &ext);
 		short_name += ".";
 		short_name += ext;
 
